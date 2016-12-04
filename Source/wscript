@@ -1,0 +1,25 @@
+SUBFOLDERS = ['Core', 'Pluto']
+
+from waflib.Configure import conf
+
+@conf
+def find_files(bld, p):
+	excl = []
+
+	v = bld.env
+	excl.append('**/Tests/*')
+	if v.PLATFORM == 'win64':
+		excl.append('**/Linux/*')
+		excl.append('**/MacOSX/*')
+		excl.append('**/Posix/*')
+	if v.PLATFORM == 'macosx':
+		excl.append('**/Windows/*')
+		excl.append('**/Linux/*')
+	if v.PLATFORM == 'linux_x64_gcc' or v.PLATFORM == 'linux_x64_clang':
+		excl.append('**/Windows/*')
+		excl.append('**/MacOSX/*')
+
+	return bld.path.ant_glob(p, excl=excl)
+
+def build(bld):	
+	bld.recurse(SUBFOLDERS, mandatory=False)

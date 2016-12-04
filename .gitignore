@@ -1,0 +1,11 @@
+Scripts/*.pyc
+External/
+waf3-1.9.5-*
+.lock-waf*
+Build/
+Bin/
+Pluto.sln
+Pluto.VC*
+Pluto.lastbuildstate
+.depproj/
+**/__pycache__/*

@@ -1,0 +1,27 @@
+from waflib.Configure import conf
+
+
+def build(bld):	
+	qt_lib = 'QT5'
+
+	if bld.configuration == 'debug':
+		qt_lib = 'QT5_DEBUG'
+ 	
+	if bld.platform == 'win64':
+		flags = '/SUBSYSTEM:CONSOLE' if bld.configuration == 'debug' else '/SUBSYSTEM:WINDOWS'
+	else:
+		flags = ''
+
+	bld.program(
+		features='qt5',
+		target='Pluto',
+		source=bld.find_files('**/(*.cpp)'), 
+		moc=[
+			'MainWindow.h',
+			'Console/ConsoleWidget.h',
+			'Console/CommandInvoker.h'
+			],
+		includes='. ..',
+		use='Core ' + qt_lib,
+		linkflags=flags,
+	)
