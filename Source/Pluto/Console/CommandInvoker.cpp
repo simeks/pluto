@@ -63,7 +63,7 @@ void CommandInvoker::on_stdout(const char* text)
 }
 void CommandInvoker::on_stderr(const char* text)
 {
-    emit output(text);
+    emit error_output(text);
 }
 void CommandInvoker::invoke(const QString& command)
 {

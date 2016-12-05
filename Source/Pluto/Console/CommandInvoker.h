@@ -26,6 +26,7 @@ public slots:
 signals:
     void ready();
     void output(const QString& text);
+    void error_output(const QString& text);
 
 private:
     PythonKernel* _kernel;

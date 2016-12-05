@@ -8,6 +8,12 @@
 
 #include "CommandInvoker.h"
 
+static const char* console_stylesheet = 
+"QTextEdit{ background-color: white; color: black; selection - background-color: blue }"
+".error{ color: red; }"
+".in-prompt{ color: navy; }"
+".in-prompt-number{ font-weight: bold; }";
+
 ConsoleWidget::ConsoleWidget(QWidget *parent) :
     QTextEdit(parent),
     _prompt(">>> ")
@@ -19,15 +25,17 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
     connect(this, SIGNAL(interrupt_kernel()), _command_invoker, SLOT(interrupt()), Qt::DirectConnection);
     connect(_command_invoker, SIGNAL(ready()), this, SLOT(kernel_ready()));
     connect(_command_invoker, SIGNAL(output(const QString&)), this, SLOT(kernel_output(const QString&)));
+    connect(_command_invoker, SIGNAL(error_output(const QString&)), this, SLOT(kernel_error_output(const QString&)));
 
     setReadOnly(true);
+    setStyleSheet(console_stylesheet);
 
     QMetaObject::invokeMethod(_command_invoker, "start", Qt::AutoConnection);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
-    QMetaObject::invokeMethod(_command_invoker, "stop", Qt::DirectConnection);
+    _command_invoker->stop();
     delete _command_invoker;
     _command_invoker = nullptr;
 }
@@ -38,7 +46,17 @@ void ConsoleWidget::append_text(const QString& text)
         cursor.setPosition(_prompt_position-_prompt.length());
 
     cursor.movePosition(QTextCursor::End);
-    cursor.insertText(text);
+    cursor.insertHtml(text.toHtmlEscaped());
+    _prompt_position = cursor.position() + _prompt.length();
+}
+void ConsoleWidget::append_html(const QString& text)
+{
+    QTextCursor cursor = textCursor();
+    if (!isReadOnly())
+        cursor.setPosition(_prompt_position - _prompt.length());
+
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertHtml(text);
     _prompt_position = cursor.position() + _prompt.length();
 }
 
@@ -164,13 +182,13 @@ void ConsoleWidget::show_prompt()
     cursor.movePosition(QTextCursor::End);
     if (cursor.position() > 0)
     {
-        if (!toPlainText().endsWith("\n"))
+        if (!toHtml().endsWith("<br/>"))
         {
             cursor.insertBlock();
         }
     }
 
-    cursor.insertText(_prompt);
+    cursor.insertHtml(_prompt.toHtmlEscaped());
     cursor.movePosition(QTextCursor::EndOfLine);
     _prompt_position = cursor.position();
     setTextCursor(cursor);
@@ -201,5 +219,11 @@ void ConsoleWidget::kernel_ready()
 void ConsoleWidget::kernel_output(const QString& text)
 {
     append_text(text);
+}
+void ConsoleWidget::kernel_error_output(const QString& text)
+{
+    QString formatted = QString("<span class=\"error\">%1</span>").arg(text);
+    formatted.replace("\n", "<br/>");
+    append_html(formatted);
 }
 

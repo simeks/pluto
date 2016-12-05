@@ -18,6 +18,7 @@ public:
 
     /// Appends text before the prompt
     void append_text(const QString& text);
+    void append_html(const QString& text);
 
 private:
     void keyPressEvent(QKeyEvent *e) OVERRIDE;
@@ -44,6 +45,7 @@ private:
 public slots:
     void kernel_ready();
     void kernel_output(const QString& text);
+    void kernel_error_output(const QString& text);
 
 signals:
     /// Executed when a command is executed

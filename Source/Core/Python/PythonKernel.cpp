@@ -43,11 +43,23 @@ void PythonKernel::run_code(const std::string& source)
     if (!_module)
         return;
 
-    PyObject* ret = PyRun_String(source.c_str(), Py_file_input, PyModule_GetDict(_module), PyModule_GetDict(_module));
+    int inp = Py_single_input;
+    for (char c : source)
+    {
+        if (c == '\n')
+        {
+            inp = Py_file_input;
+            break;
+        }
+    }
+    
+    PyObject* ret = PyRun_String(source.c_str(), inp, PyModule_GetDict(_module), PyModule_GetDict(_module));
     if (!ret)
     {
         PyErr_Print();
     }
+    else
+        std::cout << ((PyTypeObject*)PyObject_Type(ret))->tp_name << std::endl;
 }
 void PythonKernel::interrupt()
 {
