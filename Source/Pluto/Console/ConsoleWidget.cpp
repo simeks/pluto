@@ -37,6 +37,7 @@ void ConsoleWidget::append_text(const QString& text)
     if (!isReadOnly())
         cursor.setPosition(_prompt_position-_prompt.length());
 
+    cursor.movePosition(QTextCursor::End);
     cursor.insertText(text);
     _prompt_position = cursor.position() + _prompt.length();
 }
@@ -45,7 +46,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
 {
     if (e->modifiers() == Qt::ControlModifier)
     {
-        if (e->key() == Qt::Key_C && isReadOnly())
+        if (e->key() == Qt::Key_C && isReadOnly() && !textCursor().hasSelection())
         {
             emit interrupt_kernel();
         }
