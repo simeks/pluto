@@ -16,17 +16,18 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
 
     _command_invoker = new CommandInvoker();
     connect(this, SIGNAL(invoke_command(const QString&)), _command_invoker, SLOT(invoke(const QString&)));
+    connect(this, SIGNAL(interrupt_kernel()), _command_invoker, SLOT(interrupt()), Qt::DirectConnection);
     connect(_command_invoker, SIGNAL(ready()), this, SLOT(kernel_ready()));
     connect(_command_invoker, SIGNAL(output(const QString&)), this, SLOT(kernel_output(const QString&)));
 
     setReadOnly(true);
 
-    _command_invoker->start();
+    QMetaObject::invokeMethod(_command_invoker, "start", Qt::AutoConnection);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
-    _command_invoker->stop();
+    QMetaObject::invokeMethod(_command_invoker, "stop", Qt::DirectConnection);
     delete _command_invoker;
     _command_invoker = nullptr;
 }
@@ -42,6 +43,14 @@ void ConsoleWidget::append_text(const QString& text)
 
 void ConsoleWidget::keyPressEvent(QKeyEvent *e)
 {
+    if (e->modifiers() == Qt::ControlModifier)
+    {
+        if (e->key() == Qt::Key_C && isReadOnly())
+        {
+            emit interrupt_kernel();
+        }
+    }
+
     if (e->matches(QKeySequence::Cut))
     {
         cut();

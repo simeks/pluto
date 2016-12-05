@@ -5,6 +5,7 @@ waf3-1.9.5-*
 Build/
 Bin/
 Pluto.sln
+Pluto.sdf
 Pluto.VC*
 Pluto.lastbuildstate
 .depproj/

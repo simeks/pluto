@@ -48,7 +48,8 @@ public slots:
 signals:
     /// Executed when a command is executed
     void invoke_command(const QString& command);
-
+    /// Interrupts the kernel, aborting any ongoing execution
+    void interrupt_kernel();
     
 };
 

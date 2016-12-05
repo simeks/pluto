@@ -12,14 +12,16 @@ public:
     CommandInvoker();
     ~CommandInvoker();
 
-    void start();
-    void stop();
-
     void on_stdout(const char* text);
     void on_stderr(const char* text);
 
 public slots:
+    void start();
+    void stop();
+
     void invoke(const QString& command);
+    /// Interrupts the kernel, aborting any ongoing execution. This may be called from any thread.
+    void interrupt();
 
 signals:
     void ready();

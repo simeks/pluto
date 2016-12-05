@@ -18,6 +18,8 @@ PythonKernel::~PythonKernel()
 void PythonKernel::start()
 {
     Py_Initialize();
+    PyEval_InitThreads();
+
     _module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
 
     py_std_stream::init_type();
@@ -41,11 +43,15 @@ void PythonKernel::run_code(const std::string& source)
     if (!_module)
         return;
 
-    PyObject* ret = PyRun_String(source.c_str(), Py_single_input, PyModule_GetDict(_module), PyModule_GetDict(_module));
+    PyObject* ret = PyRun_String(source.c_str(), Py_file_input, PyModule_GetDict(_module), PyModule_GetDict(_module));
     if (!ret)
     {
         PyErr_Print();
     }
+}
+void PythonKernel::interrupt()
+{
+    PyErr_SetInterrupt();
 }
 void PythonKernel::set_stdout_callback(OutputCallback* fn, void* data)
 {

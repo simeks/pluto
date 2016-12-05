@@ -4,6 +4,9 @@
 
 #include <Core/Python/PythonKernel.h>
 
+#include <Core/Platform/WindowsWrapper.h>
+
+
 namespace
 {
     void kernel_stdout(void* data, const char* text)
@@ -14,7 +17,6 @@ namespace
     }
     void kernel_stderr(void* data, const char* text)
     {
-        std::cout << "Err: " << text << std::endl;
         CommandInvoker* s = (CommandInvoker*)data;
         s->on_stderr(text);
     }
@@ -22,15 +24,22 @@ namespace
 
 CommandInvoker::CommandInvoker()
 {
-}
-CommandInvoker::~CommandInvoker()
-{
-}
-void CommandInvoker::start()
-{
     this->moveToThread(&_thread);
     _thread.start();
 
+}
+CommandInvoker::~CommandInvoker()
+{
+    _thread.quit();
+    _thread.wait(1000);
+    if (_thread.isRunning())
+    {
+        _thread.terminate();
+        _thread.wait();
+    }
+}
+void CommandInvoker::start()
+{
     _kernel = new PythonKernel();
     _kernel->start();
 
@@ -42,14 +51,6 @@ void CommandInvoker::start()
 }
 void CommandInvoker::stop()
 {
-    _thread.quit();
-    _thread.wait(1000);
-    if (_thread.isRunning())
-    {
-        _thread.terminate();
-        _thread.wait();
-    }
-
     _kernel->set_stdout_callback(nullptr, nullptr);
     _kernel->set_stderr_callback(nullptr, nullptr);
 
@@ -68,5 +69,9 @@ void CommandInvoker::invoke(const QString& command)
 {
     _kernel->run_code(command.toStdString());
     emit ready();
+}
+void CommandInvoker::interrupt()
+{
+    _kernel->interrupt();
 }
 

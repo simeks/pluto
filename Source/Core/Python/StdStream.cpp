@@ -34,9 +34,14 @@ static PyObject *PythonStdStream_write(PythonStdStream* self, PyObject *args)
 
     Py_RETURN_NONE;
 }
+static PyObject *PythonStdStream_flush(PythonStdStream* /*self*/, PyObject* /*args*/)
+{
+    Py_RETURN_NONE;
+}
 
 static PyMethodDef PythonStdStream_methods[] = {
     { "write", (PyCFunction)PythonStdStream_write, METH_VARARGS, "" },
+    { "flush", (PyCFunction)PythonStdStream_flush, METH_VARARGS, "" },
     { NULL,    NULL, 0 , NULL } /* sentinel */
 };
 
