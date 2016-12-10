@@ -21,6 +21,8 @@ public:
     void append_html(const QString& text);
 
 private:
+    QFont get_font();
+
     void keyPressEvent(QKeyEvent *e) OVERRIDE;
 
     void handle_return();

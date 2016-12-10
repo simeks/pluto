@@ -8,18 +8,20 @@
 
 #include "CommandInvoker.h"
 
-static const char* console_stylesheet = 
-"QTextEdit{ background-color: white; color: black; selection - background-color: blue }"
-".error{ color: red; }"
-".in-prompt{ color: navy; }"
-".in-prompt-number{ font-weight: bold; }";
+//static const char* console_stylesheet =
+//"QPlainTextEdit, QTextEdit { background-color: white; color: black; selection-background-color: blue; }\n"
+//".error { color: red; white-space: pre-wrap; }\n"
+//".output { color: black; white-space: pre-wrap; }\n";
+
+static const char* console_stylesheet =
+"QPlainTextEdit, QTextEdit { background-color: #1E1E1E; color: #DADADA; selection-background-color: #264F78; }\n"
+".error { color: #FC3E36; white-space: pre-wrap; }\n"
+".output { color: #DADADA; white-space: pre-wrap; }\n";
 
 ConsoleWidget::ConsoleWidget(QWidget *parent) :
     QTextEdit(parent),
     _prompt(">>> ")
 {
-    setFontFamily("Consolas");
-
     _command_invoker = new CommandInvoker();
     connect(this, SIGNAL(invoke_command(const QString&)), _command_invoker, SLOT(invoke(const QString&)));
     connect(this, SIGNAL(interrupt_kernel()), _command_invoker, SLOT(interrupt()), Qt::DirectConnection);
@@ -28,7 +30,13 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
     connect(_command_invoker, SIGNAL(error_output(const QString&)), this, SLOT(kernel_error_output(const QString&)));
 
     setReadOnly(true);
+
+    QFont font = get_font();
+    setFont(font);
+    document()->setDefaultFont(font);
+
     setStyleSheet(console_stylesheet);
+    document()->setDefaultStyleSheet(console_stylesheet);
 
     QMetaObject::invokeMethod(_command_invoker, "start", Qt::AutoConnection);
 }
@@ -57,6 +65,18 @@ void ConsoleWidget::append_html(const QString& text)
     cursor.movePosition(QTextCursor::End);
     cursor.insertHtml(text);
     _prompt_position = cursor.position() + _prompt.length();
+}
+QFont ConsoleWidget::get_font()
+{
+    QFont font = QFont("Consolas", 10);
+
+    QFontInfo font_info = QFontInfo(font);
+    if (font_info.family() != "Consolas")
+    {
+        // TODO:
+        std::cout << "Error: Could not find font 'Consolas'." << std::endl;
+    }
+    return font;
 }
 
 void ConsoleWidget::keyPressEvent(QKeyEvent *e)
@@ -216,11 +236,13 @@ void ConsoleWidget::kernel_ready()
 }
 void ConsoleWidget::kernel_output(const QString& text)
 {
-    append_text(text);
+    QString formatted = QString("<span class='output'>%1</span>").arg(text);
+    formatted.replace("\n", "<br/>");
+    append_html(formatted);
 }
 void ConsoleWidget::kernel_error_output(const QString& text)
 {
-    QString formatted = QString("<span class=\"error\">%1</span>").arg(text);
+    QString formatted = QString("<span class='error'>%1</span>").arg(text);
     formatted.replace("\n", "<br/>");
     append_html(formatted);
 }
