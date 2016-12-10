@@ -1,12 +1,14 @@
 #include "Common.h"
-#include "PythonWrapper.h"
-
+#include "Pluto/PlutoModule.h"
 #include "PythonKernel.h"
-#include "PythonWrapper.h"
+#include "PythonModule.h"
+#include "PythonCommon.h"
 #include "StdStream.h"
 
+#include "Object/PythonObject.h"
+
 PythonKernel::PythonKernel() 
-    : _module(nullptr),
+    : _main(nullptr),
     _stdout(nullptr),
     _stderr(nullptr)
 {
@@ -20,29 +22,57 @@ void PythonKernel::start()
     Py_Initialize();
     PyEval_InitThreads();
 
-    _module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
+    PythonType::ready_all();
 
-    py_std_stream::init_type();
+    _main = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
+
+    PythonModule* pluto_module = new PlutoModule();
+    pluto_module->create();
+    install_module(pluto_module);
+    _modules.push_back(pluto_module);
 
     PyObject* sys = PyImport_ImportModule("sys");
 
-    _stdout = py_std_stream::create_stream();
-    PyModule_AddObject(sys, "stdout", _stdout);
-    _stderr = py_std_stream::create_stream();
-    PyModule_AddObject(sys, "stderr", _stderr);
+    _stdout = new PyStdStream();
+    _stdout->addref();
+    if (PyModule_AddObject(sys, "stdout", _stdout->python_object()) < 0)
+        PyErr_Print();
+    _stderr = new PyStdStream();
+    _stderr->addref();
+    if (PyModule_AddObject(sys, "stderr", _stderr->python_object()) < 0)
+        PyErr_Print();
 }
 void PythonKernel::stop()
 {
-    _module = nullptr;
+    if (_stdout)
+    {
+        _stdout->release();
+        _stdout = nullptr;
+    }
+    if (_stderr)
+    {
+        _stderr->release();
+        _stderr = nullptr;
+    }
+
     Py_Finalize();
+
+    for (PythonModule* m : _modules)
+    {
+        delete m;
+    }
+    _modules.clear();
+    delete _main;
+    _main = nullptr;
+
 }
 
 void PythonKernel::run_code(const std::string& source)
 {
-    assert(_module);
-    if (!_module)
+    assert(_main);
+    if (!_main)
         return;
-
+    
     int inp = Py_single_input;
     for (char c : source)
     {
@@ -53,24 +83,29 @@ void PythonKernel::run_code(const std::string& source)
         }
     }
     
-    PyObject* ret = PyRun_String(source.c_str(), inp, PyModule_GetDict(_module), PyModule_GetDict(_module));
+    PyObject* ret = PyRun_String(source.c_str(), inp, _main->dict(), _main->dict());
     if (!ret)
     {
         PyErr_Print();
     }
-    else
-        std::cout << ((PyTypeObject*)PyObject_Type(ret))->tp_name << std::endl;
 }
 void PythonKernel::interrupt()
 {
     PyErr_SetInterrupt();
 }
+void PythonKernel::install_module(PythonModule* module)
+{
+    PyDict_SetItemString(PyImport_GetModuleDict(), module->name(), module->module());
+}
+
 void PythonKernel::set_stdout_callback(OutputCallback* fn, void* data)
 {
-    py_std_stream::set_callback(_stdout, fn, data);
+    if (_stdout)
+        _stdout->set_callback(fn, data);
 }
 void PythonKernel::set_stderr_callback(OutputCallback* fn, void* data)
 {
-    py_std_stream::set_callback(_stderr, fn, data);
+    if (_stderr)
+        _stderr->set_callback(fn, data);
 }
 

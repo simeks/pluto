@@ -51,9 +51,6 @@ void CommandInvoker::start()
 }
 void CommandInvoker::stop()
 {
-    _kernel->set_stdout_callback(nullptr, nullptr);
-    _kernel->set_stderr_callback(nullptr, nullptr);
-
     _kernel->stop();
     delete _kernel;
 }

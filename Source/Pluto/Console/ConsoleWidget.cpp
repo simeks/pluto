@@ -35,8 +35,7 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
 
 ConsoleWidget::~ConsoleWidget()
 {
-    _command_invoker->stop();
-    delete _command_invoker;
+    QMetaObject::invokeMethod(_command_invoker, "stop", Qt::AutoConnection);
     _command_invoker = nullptr;
 }
 void ConsoleWidget::append_text(const QString& text)
@@ -143,6 +142,8 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
 }
 void ConsoleWidget::handle_return()
 {
+    moveCursor(QTextCursor::End);
+
     if (cursor_in_prompt(textCursor()))
     {
         QString cmd = read_prompt();
@@ -151,16 +152,13 @@ void ConsoleWidget::handle_return()
             hide_prompt();
             _history.push(cmd);
             emit invoke_command(cmd);
+
             textCursor().insertBlock();
         }
         else
         {
             show_prompt();
         }
-    }
-    else
-    {
-        moveCursor(QTextCursor::End);
     }
 
 }

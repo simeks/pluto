@@ -4,7 +4,6 @@
 #include <QMainWindow>
 
 class ConsoleWidget;
-class QtFlowDiagramView;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

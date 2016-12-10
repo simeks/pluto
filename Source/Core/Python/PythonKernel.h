@@ -3,7 +3,8 @@
 
 #include <Core/API.h>
 
-
+class PythonModule;
+class PyStdStream;
 class CORE_API PythonKernel
 {
 public:
@@ -20,13 +21,17 @@ public:
     /// Interrupts the kernel, aborting any ongoing execution. This may be called from any thread.
     void interrupt();
 
+    void install_module(PythonModule* module);
+
     void set_stdout_callback(OutputCallback* fn, void* data);
     void set_stderr_callback(OutputCallback* fn, void* data);
 
 private:
-    PyObject* _module;
-    PyObject* _stdout;
-    PyObject* _stderr;
+    PythonModule* _main;
+    std::vector<PythonModule*> _modules;
+
+    PyStdStream* _stdout;
+    PyStdStream* _stderr;
 
 };
 

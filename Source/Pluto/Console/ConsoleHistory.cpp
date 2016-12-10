@@ -27,7 +27,6 @@ QString ConsoleHistory::find_next()
     while (i < _history.size())
     {
         ++i;
-        std::cout << i << ", " << _history.size() << ", " << _index << ", " << _prefix.toStdString() << std::endl;
         if (i == _history.size())
         {
             _index = i;
