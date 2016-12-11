@@ -10,9 +10,11 @@
 
 namespace numpy
 {
-    void initialize();
+    CORE_API void initialize();
 
-    int pixel_type_to_numpy(int pixel_type);
+    CORE_API int pixel_type_to_numpy(int pixel_type);
+
+    CORE_API bool check_type(PyObject* obj);
 }
 
 class NumpyArray

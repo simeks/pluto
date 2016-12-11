@@ -1,7 +1,7 @@
 APPNAME = 'Pluto'
 VERSION = '0.0.1'
 
-SUBFOLDERS = ['Source']
+SUBFOLDERS = ['Source', 'Tests']
 
 top = '.'
 out = 'Build'

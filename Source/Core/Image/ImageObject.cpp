@@ -288,7 +288,7 @@ int ImageObject::object_init(const Tuple& args, const Dict&)
     PyObject* hint_str = nullptr;
     if (PyArg_ParseTuple(args.tuple(), "|OU:__init__", &arr, &hint_str))
     {
-        if (arr)
+        if (numpy::check_type(arr))
         {
             int hint = image::PixelType_Unknown;
             if (hint_str)

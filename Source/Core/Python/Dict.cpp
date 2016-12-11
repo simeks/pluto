@@ -1,7 +1,6 @@
 #include "Common.h"
 
 #include "Object/Object.h"
-#include "Object/PythonObject.h"
 #include "PythonCommon.h"
 #include "Dict.h"
 
@@ -39,6 +38,10 @@ void Dict::set(const std::string& key, PyObject* item)
 void Dict::set(const std::string& key, Object* item)
 {
     set(key, item->python_object());
+}
+bool Dict::valid() const
+{
+    return _d != nullptr;
 }
 PyObject* Dict::dict() const
 {

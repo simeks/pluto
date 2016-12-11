@@ -1,10 +1,12 @@
 #include "Common.h"
 
 #include "Object/Object.h"
-#include "Object/PythonObject.h"
 #include "PythonCommon.h"
 #include "Tuple.h"
 
+Tuple::Tuple() : _t(nullptr)
+{
+}
 Tuple::Tuple(size_t size)
 {
     _t = PyTuple_New(size);
@@ -37,6 +39,10 @@ PyObject* Tuple::get(size_t idx) const
 Object* Tuple::get_object(size_t idx) const
 {
     return py_object::object(get(idx));
+}
+bool Tuple::valid() const
+{
+    return _t != nullptr;
 }
 PyObject* Tuple::tuple() const
 {

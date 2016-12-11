@@ -2,7 +2,6 @@
 
 #include "Object.h"
 
-#include "PythonObject.h"
 #include "Python/PythonCommon.h"
 
 OBJECT_PYTHON_NOARGS_METHOD_IMPL(Object, object_type);
@@ -98,3 +97,24 @@ void Object::validate()
     }
 }
 
+typedef struct {
+    PyObject_HEAD
+        Object* obj;
+} PyPlutoObject;
+
+PythonType* py_object::register_python_type(const char* name)
+{
+    PythonType* type = new PythonType(name, sizeof(PyPlutoObject));
+    return type;
+}
+void py_object::set_object(PyObject* self, Object* obj)
+{
+    if (self)
+        ((PyPlutoObject*)self)->obj = obj;
+}
+Object* py_object::object(PyObject* self)
+{
+    if (self)
+        return ((PyPlutoObject*)self)->obj;
+    return nullptr;
+}

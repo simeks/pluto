@@ -16,6 +16,7 @@ public:
     Class* super_class() const;
     void set_super(Class* super);
 
+    // Checks if this class is either c or a subclass of c
     bool is_class(Class* c) const;
 
 private:

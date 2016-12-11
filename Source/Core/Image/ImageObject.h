@@ -1,8 +1,7 @@
 #ifndef __CORE_FLOW_IMAGE_H__
 #define __CORE_FLOW_IMAGE_H__
 
-#include <Object/Object.h>
-
+#include <Core/Object/Object.h>
 #include <Core/Image/Image.h>
 
 class CORE_API ImageObject : public Object

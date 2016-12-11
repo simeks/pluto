@@ -7,6 +7,7 @@ class Object;
 class Tuple
 {
 public:
+    Tuple();
     explicit Tuple(size_t size);
     explicit Tuple(PyObject* t);
     ~Tuple();
@@ -21,6 +22,8 @@ public:
 
     void set(size_t idx, PyObject* obj);
     void set(size_t idx, Object* obj);
+
+    bool valid() const;
 
     PyObject* tuple() const;
 

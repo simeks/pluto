@@ -6,8 +6,8 @@
 #include "Python/PythonFunction.h"
 #include "Python/StdStream.h"
 
-PYTHON_NOARGS_FUNCTION_IMPL_CLASS(PlutoModule, version);
-PYTHON_VARARGS_FUNCTION_IMPL_CLASS(PlutoModule, print_html);
+PYTHON_FUNCTION_IMPL_CLASS_ARGS0_RETURN(PlutoModule, version);
+PYTHON_FUNCTION_IMPL_CLASS_ARGS1(PlutoModule, print_html, std::string);
 
 
 PlutoModule::PlutoModule(PlutoModuleCallback* callback) : PythonModule("pluto"), _callback(callback)
@@ -27,26 +27,11 @@ void PlutoModule::create()
     add_type("StdStream", PyStdStream::python_type());
     add_type("Image", ImageObject::python_type());
 }
-PyObject* PlutoModule::version()
+const char* PlutoModule::version()
 {
-    return PyUnicode_FromString("PrePrePre");
+    return "PrePrePre";
 }
-PyObject* PlutoModule::print_html(const Tuple& args)
+void PlutoModule::print_html(const std::string& txt)
 {
-    if (args.size() != 1)
-    {
-        PyErr_SetString(PyExc_TypeError, "Expecting only 1 argument");
-        return nullptr;
-    }
-
-    if (_callback)
-    {
-        if (!PyUnicode_Check(args.get(0)))
-        {
-            PyErr_SetString(PyExc_TypeError, "Expecting str");
-            return nullptr;
-        }
-        _callback->print_html(PyUnicode_AsUTF8(args.get(0)));
-    }
-    Py_RETURN_NONE;
+    _callback->print_html(txt.c_str());
 }

@@ -5,7 +5,7 @@
 #include "Types.h"
 #include "Vec3.h"
 
-#include "Python/Numpy.h"
+#include <Core/Python/NumPy.h>
 
 namespace image
 {

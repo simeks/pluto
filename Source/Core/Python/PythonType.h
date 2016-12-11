@@ -3,7 +3,7 @@
 
 #include "PythonCommon.h"
 
-class PythonType
+class CORE_API PythonType
 {
 public:
     explicit PythonType(const char* name, size_t basic_size);
@@ -20,6 +20,8 @@ public:
     int ready();
 
     PyObject* create_object(PyObject* args, PyObject* kw);
+
+    bool check_type(PyObject* instance);
 
     const char* name() const;
     PyTypeObject* type_object();

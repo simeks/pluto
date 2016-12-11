@@ -36,6 +36,10 @@ int numpy::pixel_type_to_numpy(int pixel_type)
     }
     return -1;
 }
+bool numpy::check_type(PyObject* obj)
+{
+    return obj && PyArray_Check(obj) != 0;
+}
 
 NumpyArray::NumpyArray() : _arr(nullptr)
 {

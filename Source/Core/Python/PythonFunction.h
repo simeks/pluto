@@ -2,33 +2,79 @@
 #define __CORE_PYTHON_FUNCTION_H__
 
 #include "PythonCommon.h"
+#include "PythonHelpers.h"
 
 #define PYTHON_FUNCTION_NAME_CLASS(TClass, Name) _py_wrapper_##TClass##_##Name
 
-#define PYTHON_NOARGS_FUNCTION_IMPL_CLASS(TClass, Name) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Name)(PyObject* self, PyObject* , PyObject* ) \
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS0(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
     { \
         TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
-        return tself->Name(); \
+        tself->Fn(); \
+        Py_RETURN_NONE; \
     }
 
-#define PYTHON_VARARGS_FUNCTION_IMPL_CLASS(TClass, Name) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Name)(PyObject* self, PyObject* args, PyObject* ) \
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS1(TClass, Fn, A) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
-        return tself->Name(Tuple(args)); \
+        A a; \
+        python_helpers::parse_args(args, a); \
+        tself->Fn(a); \
+        Py_RETURN_NONE; \
     }
-
-#define PYTHON_KEYWORDS_FUNCTION_IMPL_CLASS(TClass, Name) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Name)(PyObject* self, PyObject* args, PyObject* kw) \
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS2(TClass, Fn, A) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
-        return tself->Name(Tuple(args), Dict(kw)); \
+        A a; B b; \
+        python_helpers::parse_args(args, a, b); \
+        tself->Fn(a, b); \
+        Py_RETURN_NONE; \
+    }
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS3(TClass, Fn, A) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
+    { \
+        TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
+        A a; B b; C c; \
+        python_helpers::parse_args(args, a, b, c); \
+        tself->Fn(a, b, c); \
+        Py_RETURN_NONE; \
     }
 
-#define PYTHON_CREATE_FUNCTION(TClass, Name, Flags, Doc) \
-    python_function::create_function(this, #Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), Flags, Doc)
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS0_RETURN(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    { \
+        TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
+        return python_convert::to_python(tself->Fn()); \
+    }
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS1_RETURN(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    { \
+        TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
+        A a; \
+        python_helpers::parse_args(args, a); \
+        return python_convert::to_python(tself->Fn(a)); \
+    }
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS2_RETURN(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    { \
+        TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
+        A a; B b; \
+        python_helpers::parse_args(args, a, b); \
+        return python_convert::to_python(tself->Fn(a, b)); \
+    }
+#define PYTHON_FUNCTION_IMPL_CLASS_ARGS3_RETURN(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    { \
+        TClass* tself = (TClass*)PyCapsule_GetPointer(self, nullptr); \
+        A a; B b; C c; \
+        python_helpers::parse_args(args, a, b, c); \
+        return python_convert::to_python(tself->Fn(a, b, c)); \
+    }
 
+template<typename TClass, typename R>
+void create_function(R TClass::*fn);
 
 class PythonFunction
 {

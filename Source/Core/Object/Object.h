@@ -2,7 +2,20 @@
 #define __CORE_OBJECT_H__
 
 #include "Class.h"
-#include "PythonObject.h"
+#include <Core/Python/Convert.h>
+
+template<typename TClass, typename M, typename R, typename A>
+static PyObject* _py_method_wrapper_noargs(PyObject* self, PyObject* , PyObject*)
+{
+    TClass* tself = (TClass*)py_object::object(self);
+    return tself->M();
+}
+template<typename TClass, typename M, typename R, typename A>
+static PyObject* _py_method_wrapper_varargs(PyObject* self, PyObject* args, PyObject* )
+{
+    TClass* tself = (TClass*)py_object::object(self);
+    return tself->M(Tuple(args));
+}
 
 #define OBJECT_INIT_TYPE_FN_NAME(TClass) TClass##_init_type
 
@@ -36,7 +49,30 @@
 
 #define OBJECT_PYTHON_ADD_METHOD(TClass, Name, Flags, Doc) \
     type->add_method(#Name, (PyCFunction)OBJECT_PYTHON_METHOD_NAME(TClass, Name), Flags, Doc);
-    
+
+#define OBJECT_PYTHON_ADD_METHOD_NOARGS(TClass, Name, Flags, Doc) \
+    type->add_method(#Name, (PyCFunction)_py_method_wrapper_noargs<TClass, Name, int, int>((TClass, Name), Flags, Doc);
+
+#define OBJECT_PYTHON_ADD_METHOD_VARARGS(TClass, Name, Flags, Doc) \
+    type->add_method(#Name, (PyCFunction)_py_method_wrapper_varargs<TClass, Name, int, int>((TClass, Name), Flags, Doc);
+
+
+#define OBJECT_FROM_PYTHON(T) \
+    template<> \
+    CORE_API T* from_python(PyObject* obj) \
+    { \
+        if (Object::python_type()->check_type(obj)) \
+        { \
+            Object* ret = py_object::object(obj); \
+            if (ret->is_a(T::static_class())) \
+            { \
+                return object_cast<T>(ret); \
+            } \
+        } \
+        PyErr_SetString(PyExc_ValueError, "Failed to convert Object"); \
+        return nullptr; \
+    }
+
 
 #define DECLARE_OBJECT(TClass, TSuperClass) \
     public: \
@@ -52,6 +88,10 @@
     virtual PyObject* python_object(); 
 
 #define IMPLEMENT_OBJECT(TClass, Name) \
+    namespace python_convert \
+    { \
+        OBJECT_FROM_PYTHON(TClass); \
+    } \
     static PyObject* py_##TClass##_new(PyTypeObject* type, PyObject* args, PyObject*) \
     { \
         PyObject* pyobj = type->tp_alloc(type, 0); \
@@ -193,5 +233,12 @@ Type* object_cast(Object* object)
     return (Type*)object;
 }
 
+namespace py_object
+{
+    PythonType* register_python_type(const char* name);
+
+    void set_object(PyObject* self, Object* obj);
+    Object* object(PyObject* self);
+}
 
 #endif // __CORE_OBJECT_H__

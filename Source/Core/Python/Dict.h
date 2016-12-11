@@ -22,6 +22,8 @@ public:
     void set(const std::string& key, PyObject* item);
     void set(const std::string& key, Object* item);
 
+    bool valid() const;
+
     PyObject* dict() const;
 
 private:

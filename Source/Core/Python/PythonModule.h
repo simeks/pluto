@@ -6,6 +6,7 @@
 #define MODULE_ADD_PYTHON_FUNCTION(TClass, Name, Flags, Doc) \
     add_function(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), Flags, Doc);
 
+
 class PythonFunction;
 class PythonType;
 class PythonModule
@@ -39,5 +40,6 @@ private:
     std::vector<PythonFunction*> _functions;
 
 };
+
 
 #endif // __CORE_PYTHON_MODULE_H__

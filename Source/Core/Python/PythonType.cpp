@@ -109,6 +109,10 @@ PyObject* PythonType::create_object(PyObject* args, PyObject* kw)
         PyErr_Print();
     return ret;
 }
+bool PythonType::check_type(PyObject* instance)
+{
+    return PyObject_IsInstance(instance, (PyObject*)&_type) != 0;
+}
 const char* PythonType::name() const
 {
     return _type.tp_name;

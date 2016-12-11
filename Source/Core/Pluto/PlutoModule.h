@@ -13,8 +13,8 @@ public:
 
     virtual void create() OVERRIDE;
 
-    PyObject* version();
-    PyObject* print_html(const Tuple& args);
+    const char* version();
+    void print_html(const std::string& txt);
 
 private:
     PlutoModuleCallback* _callback;

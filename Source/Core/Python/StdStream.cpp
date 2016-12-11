@@ -3,7 +3,6 @@
 #include "StdStream.h"
 
 #include "PythonType.h"
-#include "Object/PythonObject.h"
 #include "PythonCommon.h"
 
 
