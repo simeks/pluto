@@ -6,7 +6,7 @@
 #include <QTextEdit>
 #include <QTextDocumentFragment>
 
-#include "CommandInvoker.h"
+#include "PlutoKernelRunner.h"
 
 //static const char* console_stylesheet =
 //"QPlainTextEdit, QTextEdit { background-color: white; color: black; selection-background-color: blue; }\n"
@@ -22,12 +22,12 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
     QTextEdit(parent),
     _prompt(">>> ")
 {
-    _command_invoker = new CommandInvoker();
-    connect(this, SIGNAL(invoke_command(const QString&)), _command_invoker, SLOT(invoke(const QString&)));
-    connect(this, SIGNAL(interrupt_kernel()), _command_invoker, SLOT(interrupt()), Qt::DirectConnection);
-    connect(_command_invoker, SIGNAL(ready()), this, SLOT(kernel_ready()));
-    connect(_command_invoker, SIGNAL(output(const QString&)), this, SLOT(kernel_output(const QString&)));
-    connect(_command_invoker, SIGNAL(error_output(const QString&)), this, SLOT(kernel_error_output(const QString&)));
+    _kernel_runner = new PlutoKernelRunner();
+    connect(this, SIGNAL(invoke_command(const QString&)), _kernel_runner, SLOT(invoke(const QString&)));
+    connect(this, SIGNAL(interrupt_kernel()), _kernel_runner, SLOT(interrupt()), Qt::DirectConnection);
+    connect(_kernel_runner, SIGNAL(ready()), this, SLOT(kernel_ready()));
+    connect(_kernel_runner, SIGNAL(output(const QString&, bool)), this, SLOT(kernel_output(const QString&, bool)));
+    connect(_kernel_runner, SIGNAL(error_output(const QString&)), this, SLOT(kernel_error_output(const QString&)));
 
     setReadOnly(true);
 
@@ -38,13 +38,13 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
     setStyleSheet(console_stylesheet);
     document()->setDefaultStyleSheet(console_stylesheet);
 
-    QMetaObject::invokeMethod(_command_invoker, "start", Qt::AutoConnection);
+    QMetaObject::invokeMethod(_kernel_runner, "start", Qt::AutoConnection);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
-    QMetaObject::invokeMethod(_command_invoker, "stop", Qt::AutoConnection);
-    _command_invoker = nullptr;
+    QMetaObject::invokeMethod(_kernel_runner, "stop", Qt::AutoConnection);
+    _kernel_runner = nullptr;
 }
 void ConsoleWidget::append_text(const QString& text)
 {
@@ -234,11 +234,20 @@ void ConsoleWidget::kernel_ready()
     setReadOnly(false);
     show_prompt();
 }
-void ConsoleWidget::kernel_output(const QString& text)
+void ConsoleWidget::kernel_output(const QString& text, bool html)
 {
-    QString formatted = QString("<span class='output'>%1</span>").arg(text);
-    formatted.replace("\n", "<br/>");
-    append_html(formatted);
+    if (html)
+    {
+        QString formatted = text;
+        formatted.replace("\n", "<br/>");
+        append_html(formatted);
+    }
+    else
+    {
+        QString formatted = QString("<span class='output'>%1</span>").arg(text.toHtmlEscaped());
+        formatted.replace("\n", "<br/>");
+        append_html(formatted);
+    }
 }
 void ConsoleWidget::kernel_error_output(const QString& text)
 {

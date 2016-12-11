@@ -7,7 +7,7 @@
 
 #include "ConsoleHistory.h"
 
-class CommandInvoker;
+class PlutoKernelRunner;
 class ConsoleWidget : public QTextEdit
 {
     Q_OBJECT
@@ -40,13 +40,13 @@ private:
     QString _prompt;
     int _prompt_position;
 
-    CommandInvoker* _command_invoker;
+    PlutoKernelRunner* _kernel_runner;
 
     ConsoleHistory _history;
 
 public slots:
     void kernel_ready();
-    void kernel_output(const QString& text);
+    void kernel_output(const QString& text, bool html);
     void kernel_error_output(const QString& text);
 
 signals:

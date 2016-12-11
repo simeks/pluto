@@ -11,7 +11,6 @@ Dict::Dict()
 }
 Dict::Dict(PyObject* d) : _d(d)
 {
-    assert(PyDict_Check(d));
     Py_XINCREF(_d);
 }
 Dict::~Dict()

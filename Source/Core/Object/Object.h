@@ -2,7 +2,7 @@
 #define __CORE_OBJECT_H__
 
 #include "Class.h"
-
+#include "PythonObject.h"
 
 #define OBJECT_INIT_TYPE_FN_NAME(TClass) TClass##_init_type
 
@@ -68,10 +68,12 @@
         py_object::set_object(pyobj, TClass::create_object(pyobj)); \
         return pyobj; \
     } \
-    static int py_##TClass##_init(PyObject* , PyObject* arg, PyObject*) \
+    static int py_##TClass##_init(PyObject* self, PyObject* arg, PyObject* kw) \
     { \
-        if (PyCapsule_CheckExact(arg)) \
-            return 0; \
+        if (!PyCapsule_CheckExact(arg)) \
+        {\
+            return py_object::object(self)->object_init(Tuple(arg), Dict(kw)); \
+        }\
         return 0; \
     } \
     static void py_##TClass##_dealloc(PyObject* self) \
@@ -173,6 +175,7 @@ public:
     PyObject* invoke_method(const char* name, const Tuple& args);
     PyObject* invoke_method(const char* name, PyObject* args);
 
+    virtual int object_init(const Tuple&, const Dict&) { return 0; }
 protected:
     void set_python_object(PyObject* obj);
     void validate();

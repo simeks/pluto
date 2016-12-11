@@ -66,7 +66,7 @@ void MainWindow::setup_ui()
     menu_file->addSeparator();
     menu_file->addAction(action_exit);
 
-    setWindowTitle("MainWindow");
+    setWindowTitle("Plumbing Toolbox");
     menu_file->setTitle("File");
     action_exit->setText("Exit");
 

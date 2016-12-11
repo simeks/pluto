@@ -19,7 +19,7 @@ def build(bld):
 		moc=[
 			'MainWindow.h',
 			'Console/ConsoleWidget.h',
-			'Console/CommandInvoker.h'
+			'Console/PlutoKernelRunner.h'
 			],
 		includes='. ..',
 		use='Core ' + qt_lib,
