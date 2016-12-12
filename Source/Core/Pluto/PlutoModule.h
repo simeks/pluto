@@ -14,6 +14,8 @@ public:
     virtual void create() OVERRIDE;
 
     const char* version();
+    const char* get_user_dir();
+
     void print_html(const std::string& txt);
 
 private:

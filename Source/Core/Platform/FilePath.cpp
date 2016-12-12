@@ -32,6 +32,16 @@ void FilePath::clear()
 {
     _path.clear();
 }
+void FilePath::join(const char* path)
+{
+    *this += PATH_SEPARATOR;
+    *this += path;
+}
+void FilePath::join(const std::string& path)
+{
+    *this += PATH_SEPARATOR;
+    *this += path;
+}
 void FilePath::set_separator(char c)
 {
     char* path = &_path[0];

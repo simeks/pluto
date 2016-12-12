@@ -9,6 +9,8 @@ public:
     virtual void print_html(const char* text) = 0;
 };
 
+class ImageModule;
+class PlutoModule;
 class PythonModule;
 class PyStdStream;
 class CORE_API PlutoKernel
@@ -22,7 +24,11 @@ public:
     void start();
     void stop();
 
+    /// Run the specified code within the __main__ module
     void run_code(const std::string& source);
+
+    /// Run the specified file within the __main__ module
+    void run_file(const std::string& filename);
     
     void print(const std::string& text);
     void print_html(const std::string& text);
@@ -41,8 +47,11 @@ public:
     void set_htmlout_callback(OutputCallback* fn, void* data);
 
 private:
+    void perform_startup();
+
     PythonModule* _main_module;
-    PythonModule* _pluto_module;
+    PlutoModule* _pluto_module;
+    ImageModule* _image_module;
 
     PyStdStream* _stdout;
     PyStdStream* _stderr;

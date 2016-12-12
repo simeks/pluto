@@ -16,6 +16,11 @@ public:
     void set(const std::string& path);
     void clear();
 
+    /// Joins the given path separated by a path separator to this path.
+    void join(const char* path);
+    /// Joins the given path separated by a path separator to this path.
+    void join(const std::string& path);
+
     /// Converts the path to use the specified separator
     void set_separator(char c);
 

@@ -1,4 +1,7 @@
 #include "Common.h"
+#include "Image/ImageModule.h"
+#include "Platform/FilePath.h"
+#include "Platform/FileUtil.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
 #include "Python/NumPy.h"
@@ -6,10 +9,13 @@
 #include "Python/PythonCommon.h"
 #include "Python/StdStream.h"
 
+#include <fstream>
+
 PlutoKernel::PlutoKernel(PlutoModuleCallback* callback)
     : _main_module(nullptr), _pluto_module(nullptr)
 {
     _pluto_module = new PlutoModule(callback);
+    _image_module = new ImageModule();
 
     _stdout = new PyStdStream();
     _htmlout = new PyStdStream();
@@ -17,6 +23,12 @@ PlutoKernel::PlutoKernel(PlutoModuleCallback* callback)
 }
 PlutoKernel::~PlutoKernel()
 {
+    delete _image_module;
+    _image_module = nullptr;
+    delete _pluto_module;
+    _pluto_module = nullptr;
+    delete _main_module;
+    _main_module = nullptr;
 }
 
 void PlutoKernel::start()
@@ -33,6 +45,9 @@ void PlutoKernel::start()
     _pluto_module->create();
     install_module(_pluto_module);
 
+    _image_module->create();
+    install_module(_image_module);
+
     PyObject* sys = PyImport_ImportModule("sys");
 
     _stdout->addref();
@@ -44,7 +59,7 @@ void PlutoKernel::start()
 
     print_banner();
 
-    import_module("pluto");
+    perform_startup();
 }
 void PlutoKernel::stop()
 {
@@ -54,13 +69,8 @@ void PlutoKernel::stop()
         _htmlout->release();
     if (_stderr)
         _stderr->release();
-    
-    Py_Finalize();
 
-    delete _pluto_module;
-    _pluto_module = nullptr;
-    delete _main_module;
-    _main_module = nullptr;
+    Py_Finalize();
 }
 
 void PlutoKernel::run_code(const std::string& source)
@@ -68,7 +78,7 @@ void PlutoKernel::run_code(const std::string& source)
     assert(_main_module);
     if (!_main_module)
         return;
-    
+
     int inp = Py_single_input;
     for (char c : source)
     {
@@ -78,11 +88,27 @@ void PlutoKernel::run_code(const std::string& source)
             break;
         }
     }
-    
+
     PyObject* ret = PyRun_String(source.c_str(), inp, _main_module->dict(), _main_module->dict());
     if (!ret)
     {
         PyErr_Print();
+    }
+}
+void PlutoKernel::run_file(const std::string& filename)
+{
+    std::ifstream f(filename, std::ifstream::in);
+    if (f.is_open())
+    {
+        std::stringstream buf;
+        buf << f.rdbuf();
+
+        PyRun_SimpleString(buf.str().c_str());
+        f.close();
+    }
+    else
+    {
+        // TODO: Log that file was not run?
     }
 }
 void PlutoKernel::print(const std::string& text)
@@ -137,5 +163,12 @@ void PlutoKernel::set_stderr_callback(OutputCallback* fn, void* data)
 {
     if (_stderr)
         _stderr->set_callback(fn, data);
+}
+void PlutoKernel::perform_startup()
+{
+    // Run startup script (if any)
+    FilePath path(_pluto_module->get_user_dir());
+    path.join("startup.py");
+    run_file(path.get());
 }
 
