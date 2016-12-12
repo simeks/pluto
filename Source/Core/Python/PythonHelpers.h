@@ -4,6 +4,23 @@
 #include "Convert.h"
 #include "PythonWrapper.h"
 
+#define _PYTHON_PARSE_ARGS_ERROR_CHECK(N) \
+    if (PySequence_Length(args) != N) \
+    { \
+        PyErr_SetString(PyExc_TypeError, "wrong number of arguments"); \
+        return; \
+    } \
+    PyObject* obj[N]; \
+    for (int i = 0; i < N; ++i) \
+    { \
+        obj[i] = PySequence_GetItem(args, i); \
+        if (!obj[i]) \
+        { \
+            PyErr_SetString(PyExc_TypeError, "missing required argument"); \
+            return; \
+        } \
+    }
+
 namespace python_helpers
 {
     template<typename A>
@@ -11,7 +28,8 @@ namespace python_helpers
     {
         if (PySequence_Check(args))
         {
-            a = python_convert::from_python<A>(PySequence_GetItem(args, 0));
+            _PYTHON_PARSE_ARGS_ERROR_CHECK(1);
+            a = python_convert::from_python<A>(obj[0]);
         }
     }
     template<typename A, typename B>
@@ -19,8 +37,9 @@ namespace python_helpers
     {
         if (PySequence_Check(args))
         {
-            a = python_convert::from_python<A>(PySequence_GetItem(args, 0));
-            b = python_convert::from_python<B>(PySequence_GetItem(args, 1));
+            _PYTHON_PARSE_ARGS_ERROR_CHECK(2);
+            a = python_convert::from_python<A>(obj[0]);
+            b = python_convert::from_python<B>(obj[1]);
         }
     }
     template<typename A, typename B, typename C>
@@ -28,9 +47,10 @@ namespace python_helpers
     {
         if (PySequence_Check(args))
         {
-            a = python_convert::from_python<A>(PySequence_GetItem(args, 0));
-            b = python_convert::from_python<B>(PySequence_GetItem(args, 1));
-            c = python_convert::from_python<C>(PySequence_GetItem(args, 2));
+            _PYTHON_PARSE_ARGS_ERROR_CHECK(3);
+            a = python_convert::from_python<A>(obj[0]);
+            b = python_convert::from_python<B>(obj[1]);
+            c = python_convert::from_python<C>(obj[2]);
         }
     }
     template<typename A, typename B, typename C, typename D>
@@ -38,10 +58,11 @@ namespace python_helpers
     {
         if (PySequence_Check(args))
         {
-            a = python_convert::from_python<A>(PySequence_GetItem(args, 0));
-            b = python_convert::from_python<B>(PySequence_GetItem(args, 1));
-            c = python_convert::from_python<C>(PySequence_GetItem(args, 2));
-            d = python_convert::from_python<D>(PySequence_GetItem(args, 3));
+            _PYTHON_PARSE_ARGS_ERROR_CHECK(4);
+            a = python_convert::from_python<A>(obj[0]);
+            b = python_convert::from_python<B>(obj[1]);
+            c = python_convert::from_python<C>(obj[2]);
+            d = python_convert::from_python<D>(obj[3]);
         }
     }
 }
