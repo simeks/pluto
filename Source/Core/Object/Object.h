@@ -179,8 +179,14 @@ public:
 
     PyObject* object_type();
 
-    PyObject* invoke_method(const char* name, const Tuple& args);
     PyObject* invoke_method(const char* name, PyObject* args);
+
+    template<typename R, typename A>
+    R invoke_method(const char* name, const A& a);
+    template<typename R, typename A, typename B>
+    R invoke_method(const char* name, const A& a, const B& b);
+    template<typename R, typename A, typename B, typename C>
+    R invoke_method(const char* name, const A& a, const B& b, const C& c);
 
     virtual int object_init(const Tuple&, const Dict&) { return 0; }
 protected:
@@ -190,6 +196,22 @@ protected:
     PyObject* _py_object;
 
 };
+
+template<typename R, typename A>
+R Object::invoke_method(const char* name, const A& a)
+{
+    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+}
+template<typename R, typename A, typename B>
+R Object::invoke_method(const char* name, const A& a, const B& b)
+{
+    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+}
+template<typename R, typename A, typename B, typename C>
+R Object::invoke_method(const char* name, const A& a, const B& b, const C& c)
+{
+    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+}
 
 template<typename Type>
 Type* object_cast(Object* object)

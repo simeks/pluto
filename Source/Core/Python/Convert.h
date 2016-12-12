@@ -17,6 +17,13 @@ namespace python_convert
     PyObject* to_python(const T& value);
 
     INLINE PyObject* to_python(PyObject* value) { if (value) return value; else Py_RETURN_NONE; }
+
+    template<int N>
+    INLINE PyObject* to_python(const char(&value)[N])
+    {
+        return PyUnicode_FromString(value);
+    }
+
 }
 
 

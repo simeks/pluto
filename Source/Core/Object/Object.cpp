@@ -64,10 +64,6 @@ PyObject* Object::object_type()
 {
     return PyUnicode_FromString(get_class()->name());
 }
-PyObject* Object::invoke_method(const char* name, const Tuple& args)
-{
-    return invoke_method(name, args.tuple());
-}
 PyObject* Object::invoke_method(const char* name, PyObject* args)
 {
     PyObject* method = PyObject_GetAttrString(_py_object, name);

@@ -129,6 +129,11 @@ namespace python_convert
         return Dict();
     }
 
+    template<>
+    CORE_API void from_python(PyObject* )
+    {
+    }
+
 
     INT_TO_PYTHON(int8_t);
     INT_TO_PYTHON(int16_t);
@@ -153,7 +158,6 @@ namespace python_convert
     {
         return PyUnicode_FromString(value);
     }
-
     template<>
     CORE_API PyObject* to_python(const std::string& value)
     {
