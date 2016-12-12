@@ -91,9 +91,7 @@ void PlutoKernel::print(const std::string& text)
 }
 void PlutoKernel::print_html(const std::string& text)
 {
-    Tuple t(1);
-    t.set(0, PyUnicode_FromString(text.c_str()));
-    _htmlout->write(t);
+    _htmlout->write(text.c_str());
 }
 void PlutoKernel::error(const std::string& text)
 {

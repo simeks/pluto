@@ -42,4 +42,10 @@ private:
 };
 
 
+template <class T, typename std::enable_if<std::is_base_of<PythonModule, T>::value, PythonModule>::type* = nullptr>
+T* pyobject_extract_instance(PyObject* self)
+{
+    return (T*)PyCapsule_GetPointer(self, nullptr);
+}
+
 #endif // __CORE_PYTHON_MODULE_H__

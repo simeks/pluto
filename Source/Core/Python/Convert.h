@@ -9,12 +9,14 @@ namespace python_convert
 {
     template<typename T>
     T from_python(PyObject* obj);
-    INLINE PyObject* from_python(PyObject* value) { return value; }
+
+    template<>
+    INLINE PyObject* from_python(PyObject* value) { if (value) return value; else Py_RETURN_NONE; }
 
     template<typename T>
     PyObject* to_python(const T& value);
 
-    INLINE PyObject* to_python(PyObject* value) { return value; }
+    INLINE PyObject* to_python(PyObject* value) { if (value) return value; else Py_RETURN_NONE; }
 }
 
 

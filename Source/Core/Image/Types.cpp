@@ -160,3 +160,4 @@ size_t image::component_size(int type)
     }
     return 0;
 }
+

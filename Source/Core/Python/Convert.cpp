@@ -3,6 +3,7 @@
 #include "Dict.h"
 #include "Tuple.h"
 
+#include "Image/Types.h"
 
 #define INT_FROM_PYTHON(T) \
     template<> \
@@ -41,7 +42,7 @@
     { \
         if (PySequence_Check(obj) && PySequence_Size(obj)) \
         { \
-            PyObject *x = PySequence_GetItem(obj, 0), *y = PySequence_GetItem(obj, 2), *z = PySequence_GetItem(obj, 3); \
+            PyObject *x = PySequence_GetItem(obj, 0), *y = PySequence_GetItem(obj, 1), *z = PySequence_GetItem(obj, 2); \
             return Vec3<T>(from_python<T>(x), from_python<T>(y), from_python<T>(z)); \
         } \
         PyErr_SetString(PyExc_ValueError, "Failed to convert value to Vec3i"); \
@@ -174,4 +175,17 @@ namespace python_convert
         Py_XINCREF(o);
         return 0;
     }
+
+    template<>
+    CORE_API image::PixelType from_python(PyObject* obj)
+    {
+        return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj));
+    }
+
+    template<>
+    CORE_API PyObject* to_python(const image::PixelType& value)
+    {
+        return PyUnicode_FromString(image::pixel_type_to_string(value));
+    }
+
 }

@@ -5,203 +5,18 @@
 #include "Python/PythonCommon.h"
 
 
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, ndims)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        return PyLong_FromLong(object->ndims());
-    }
-    Py_INCREF(Py_None);
-    return Py_None;
-}
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(ImageObject, set_origin, Vec3d);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(ImageObject, set_spacing, Vec3d);
 
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, size)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* size_tuple = PyTuple_New(3);
-        for (int i = 0; i < 3; ++i)
-            PyTuple_SetItem(size_tuple, i, PyLong_FromLong(object->size()[i]));
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, size);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, origin);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, spacing);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, ndims);
 
-        return size_tuple;
-    }
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, origin)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* tuple = PyTuple_New(3);
-        for (int i = 0; i < 3; ++i)
-            PyTuple_SetItem(tuple, i, PyFloat_FromDouble(object->origin()[i]));
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, pixel_type);
 
-        return tuple;
-    }
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, spacing)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* tuple = PyTuple_New(3);
-        for (int i = 0; i < 3; ++i)
-            PyTuple_SetItem(tuple, i, PyFloat_FromDouble(object->spacing()[i]));
-
-        return tuple;
-    }
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, set_origin)(PyObject* self, PyObject* args)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* origin_tuple = nullptr;
-        if (PyArg_ParseTuple(args, "O:set_origin", &origin_tuple))
-        {
-            if (PyTuple_Check(origin_tuple))
-            {
-                Vec3d origin;
-                int ndims = (int)PyTuple_Size(origin_tuple);
-                for (int i = 0; i < ndims; ++i)
-                {
-                    PyObject* s = PyTuple_GetItem(origin_tuple, i);
-                    if (PyFloat_Check(s))
-                    {
-                        origin[i] = PyFloat_AsDouble(s);
-                    }
-                    else if (PyLong_Check(s))
-                    {
-                        origin[i] = PyLong_AsLong(s);
-                    }
-                    else
-                    {
-                        PyErr_SetString(PyExc_ValueError, "Invalid value in tuple.");
-                        return nullptr;
-                    }
-                }
-                object->set_origin(origin);
-            }
-            else
-            {
-                PyErr_SetString(PyExc_TypeError, "Expected tuple.");
-            }
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    Py_RETURN_NONE;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, set_spacing)(PyObject* self, PyObject* args)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* spacing_tuple = nullptr;
-        if (PyArg_ParseTuple(args, "O:set_spacing", &spacing_tuple))
-        {
-            if (PyTuple_Check(spacing_tuple))
-            {
-                Vec3d spacing;
-                int ndims = (int)PyTuple_Size(spacing_tuple);
-                for (int i = 0; i < ndims; ++i)
-                {
-                    PyObject* s = PyTuple_GetItem(spacing_tuple, i);
-                    if (PyFloat_Check(s))
-                    {
-                        spacing[i] = PyFloat_AsDouble(s);
-                    }
-                    else if (PyLong_Check(s))
-                    {
-                        spacing[i] = PyLong_AsLong(s);
-                    }
-                    else
-                    {
-                        PyErr_SetString(PyExc_ValueError, "Invalid value in tuple.");
-                        return nullptr;
-                    }
-                }
-                object->set_spacing(spacing);
-            }
-            else
-            {
-                PyErr_SetString(PyExc_TypeError, "Expected tuple.");
-            }
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    Py_RETURN_NONE;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, pixel_type)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* str = nullptr;
-        str = PyUnicode_FromString(image::pixel_type_to_string(object->pixel_type()));
-
-        if (str != nullptr)
-            return str;
-    }
-    Py_RETURN_NONE;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, array)(PyObject* self)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* npy_arr = (PyObject*)object->image().numpy_array().object();
-        if (npy_arr)
-        {
-            Py_INCREF(npy_arr);
-            return npy_arr;
-        }
-    }
-    Py_RETURN_NONE;
-}
-static PyObject* OBJECT_PYTHON_METHOD_NAME(ImageObject, set_array)(PyObject* self, PyObject* args)
-{
-    ImageObject* object = object_cast<ImageObject>(py_object::object(self));
-    if (object)
-    {
-        PyObject* arr = nullptr;
-        PyObject* hint_str = nullptr;
-        if (PyArg_ParseTuple(args, "OU:set_array", &arr, &hint_str))
-        {
-            int hint = image::PixelType_Unknown;
-            if (hint_str)
-            {
-                hint = image::string_to_pixel_type(PyUnicode_AsUTF8(hint_str));
-            }
-
-            if (!object->set_image(arr, hint))
-            {
-                return nullptr;
-            }
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-    Py_RETURN_NONE;
-}
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, array);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(ImageObject, set_array, PyObject*, image::PixelType);
 
 OBJECT_INIT_TYPE_FN(ImageObject)
 {
@@ -344,4 +159,12 @@ bool ImageObject::set_image(PyObject* npy_array, int pixel_type_hint)
     _image.set(ndims, size, pixel_type_hint, arr);
 
     return true;
+}
+PyObject* ImageObject::array() const
+{
+    return (PyObject*)_image.numpy_array().object();
+}
+void ImageObject::set_array(PyObject* arr, image::PixelType pixel_type_hint)
+{
+    set_image(arr, pixel_type_hint);
 }

@@ -2,20 +2,8 @@
 #define __CORE_OBJECT_H__
 
 #include "Class.h"
-#include <Core/Python/Convert.h>
+#include <Core/Python/PythonFunction.h>
 
-template<typename TClass, typename M, typename R, typename A>
-static PyObject* _py_method_wrapper_noargs(PyObject* self, PyObject* , PyObject*)
-{
-    TClass* tself = (TClass*)py_object::object(self);
-    return tself->M();
-}
-template<typename TClass, typename M, typename R, typename A>
-static PyObject* _py_method_wrapper_varargs(PyObject* self, PyObject* args, PyObject* )
-{
-    TClass* tself = (TClass*)py_object::object(self);
-    return tself->M(Tuple(args));
-}
 
 #define OBJECT_INIT_TYPE_FN_NAME(TClass) TClass##_init_type
 
@@ -24,31 +12,10 @@ static PyObject* _py_method_wrapper_varargs(PyObject* self, PyObject* args, PyOb
 
 #define OBJECT_PYTHON_METHOD_NAME(TClass, Name) _py_wrapper_##TClass##_##Name
 
-#define OBJECT_PYTHON_NOARGS_METHOD_IMPL(TClass, Name) \
-    static PyObject* OBJECT_PYTHON_METHOD_NAME(TClass, Name)(PyObject* self, PyObject* , PyObject* ) \
-    { \
-        TClass* tself = (TClass*)py_object::object(self); \
-        return tself->Name(); \
-    }
-
-#define OBJECT_PYTHON_VARARGS_METHOD_IMPL(TClass, Name) \
-    static PyObject* OBJECT_PYTHON_METHOD_NAME(TClass, Name)(PyObject* self, PyObject* args, PyObject* ) \
-    { \
-        TClass* tself = (TClass*)py_object::object(self); \
-        return tself->Name(Tuple(args)); \
-    }
-
-#define OBJECT_PYTHON_KEYWORDS_METHOD_IMPL(TClass, Name) \
-    static PyObject* OBJECT_PYTHON_METHOD_NAME(TClass, Name)(PyObject* self, PyObject* args, PyObject* kw) \
-    { \
-        TClass* tself = (TClass*)py_object::object(self); \
-        return tself->Name(Tuple(args), Dict(kw)); \
-    }
-
 #define OBJECT_PYTHON_NO_METHODS() type;
 
 #define OBJECT_PYTHON_ADD_METHOD(TClass, Name, Flags, Doc) \
-    type->add_method(#Name, (PyCFunction)OBJECT_PYTHON_METHOD_NAME(TClass, Name), Flags, Doc);
+    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), Flags, Doc);
 
 #define OBJECT_PYTHON_ADD_METHOD_NOARGS(TClass, Name, Flags, Doc) \
     type->add_method(#Name, (PyCFunction)_py_method_wrapper_noargs<TClass, Name, int, int>((TClass, Name), Flags, Doc);
@@ -239,6 +206,12 @@ namespace py_object
 
     void set_object(PyObject* self, Object* obj);
     Object* object(PyObject* self);
+}
+
+template <class T, typename std::enable_if<std::is_base_of<Object, T>::value, Object>::type* = nullptr>
+T* pyobject_extract_instance(PyObject* self)
+{
+    return (T*)py_object::object(self);
 }
 
 #endif // __CORE_OBJECT_H__

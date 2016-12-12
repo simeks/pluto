@@ -6,8 +6,8 @@
 #include "PythonCommon.h"
 
 
-OBJECT_PYTHON_VARARGS_METHOD_IMPL(PyStdStream, write);
-OBJECT_PYTHON_NOARGS_METHOD_IMPL(PyStdStream, flush);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PyStdStream, write, const char*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(PyStdStream, flush);
 
 OBJECT_INIT_TYPE_FN(PyStdStream)
 {
@@ -26,20 +26,15 @@ PyStdStream::~PyStdStream()
 {
 }
 
-PyObject* PyStdStream::write(const Tuple& args)
+void PyStdStream::write(const char* text)
 {
-    if (args.size() >= 1) 
+    if (text) 
     {
-        PyObject* obj = args.get(0);
-        if (PyUnicode_Check(obj)) 
+        if (_fn)
         {
-            if (_fn)
-            {
-                _fn(_data, PyUnicode_AsUTF8(obj));
-            }
+            _fn(_data, text);
         }
     }
-    Py_RETURN_NONE;
 }
 PyObject* PyStdStream::flush()
 {

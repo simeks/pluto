@@ -4,7 +4,7 @@
 
 #include "Python/PythonCommon.h"
 
-OBJECT_PYTHON_NOARGS_METHOD_IMPL(Object, object_type);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(Object, object_type);
 
 OBJECT_INIT_TYPE_FN(Object)
 {

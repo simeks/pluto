@@ -6,8 +6,8 @@
 #include "Python/PythonFunction.h"
 #include "Python/StdStream.h"
 
-PYTHON_FUNCTION_IMPL_CLASS_ARGS0_RETURN(PlutoModule, version);
-PYTHON_FUNCTION_IMPL_CLASS_ARGS1(PlutoModule, print_html, std::string);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, version);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, print_html, std::string);
 
 
 PlutoModule::PlutoModule(PlutoModuleCallback* callback) : PythonModule("pluto"), _callback(callback)
@@ -25,11 +25,10 @@ void PlutoModule::create()
 
     add_type("Object", Object::python_type());
     add_type("StdStream", PyStdStream::python_type());
-    add_type("Image", ImageObject::python_type());
 }
 const char* PlutoModule::version()
 {
-    return "PrePrePre";
+    return "0";
 }
 void PlutoModule::print_html(const std::string& txt)
 {

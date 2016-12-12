@@ -13,7 +13,7 @@ public:
     PyStdStream();
     ~PyStdStream();
 
-    PyObject* write(const Tuple& args);
+    void write(const char* text);
     PyObject* flush();
 
     void set_callback(Callback* fn, void* data);
