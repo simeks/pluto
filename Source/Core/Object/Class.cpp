@@ -3,7 +3,7 @@
 #include "Class.h"
 
 
-Class::Class(const char* name, uint32_t size, CreateObjectFn creator)
+Class::Class(const char* name, size_t size, CreateObjectFn creator)
     : Type(name, size),
     _creator(creator),
     _super(nullptr)
@@ -31,4 +31,3 @@ Object* Class::create_object() const
 {
     return _creator();
 }
-

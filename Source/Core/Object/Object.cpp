@@ -8,22 +8,16 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(Object, object_type);
 
 OBJECT_INIT_TYPE_FN(Object)
 {
-    OBJECT_PYTHON_ADD_METHOD(Object, object_type, METH_NOARGS, "");
+    OBJECT_PYTHON_ADD_METHOD(Object, object_type, "");
 }
 
-IMPLEMENT_OBJECT(Object, "Object");
+IMPLEMENT_OBJECT(Object, "Object", CORE_API);
 
 Object::Object() : _py_object(nullptr)
 {
 }
 Object::~Object()
 {
-}
-Object* Object::clone() const
-{
-    Object* clone = get_class()->create_object();
-    copy_object_to(clone);
-    return clone;
 }
 bool Object::is_a(Class* type) const
 {
@@ -52,12 +46,10 @@ Object& Object::operator=(const Object& other)
 }
 void Object::addref()
 {
-    validate();
     Py_XINCREF(_py_object);
 }
 void Object::release()
 {
-    validate();
     Py_XDECREF(_py_object);
 }
 PyObject* Object::object_type()
@@ -81,36 +73,25 @@ PyObject* Object::invoke_method(const char* name, PyObject* args)
     }
     return ret;
 }
+void Object::set_attribute(const char* name, PyObject* attr)
+{
+    if (PyObject_SetAttrString(_py_object, name, attr) != 0)
+        PyErr_Print();
+}
+bool Object::has_attribute(const char* name) const
+{
+    return PyObject_HasAttrString(_py_object, name) == 1;
+}
+PyObject* Object::attribute(const char* name) const
+{
+    return PyObject_GetAttrString(_py_object, name);
+}
+PyObject* Object::python_object()
+{
+    return _py_object;
+}
 void Object::set_python_object(PyObject* obj)
 {
     _py_object = obj;
 }
-void Object::validate()
-{
-    if (!_py_object)
-    {
-        _py_object = python_object();
-    }
-}
 
-typedef struct {
-    PyObject_HEAD
-        Object* obj;
-} PyPlutoObject;
-
-PythonType* py_object::register_python_type(const char* name)
-{
-    PythonType* type = new PythonType(name, sizeof(PyPlutoObject));
-    return type;
-}
-void py_object::set_object(PyObject* self, Object* obj)
-{
-    if (self)
-        ((PyPlutoObject*)self)->obj = obj;
-}
-Object* py_object::object(PyObject* self)
-{
-    if (self)
-        return ((PyPlutoObject*)self)->obj;
-    return nullptr;
-}

@@ -36,10 +36,6 @@ PyObject* Tuple::get(size_t idx) const
 {
     return PyTuple_GetItem(_t, idx);
 }
-Object* Tuple::get_object(size_t idx) const
-{
-    return py_object::object(get(idx));
-}
 bool Tuple::valid() const
 {
     return _t != nullptr;

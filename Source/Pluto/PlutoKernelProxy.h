@@ -7,18 +7,18 @@
 
 #include <Core/Pluto/PlutoKernel.h>
 
-class PythonKernel;
-class PlutoKernelRunner : public QObject
+class PlutoKernelProxy : public QObject
 {
     Q_OBJECT;
 public:
-    PlutoKernelRunner();
-    ~PlutoKernelRunner();
+    PlutoKernelProxy(PlutoKernel* kernel);
+    ~PlutoKernelProxy();
 
     void on_stdout(const char* text, bool html=false);
     void on_stderr(const char* text);
 
 public slots:
+    void prepare();
     void start();
     void stop();
 
@@ -35,12 +35,12 @@ private:
     class CallbackProxy : public PlutoModuleCallback
     {
     public:
-        CallbackProxy(PlutoKernelRunner* owner);
+        CallbackProxy(PlutoKernelProxy* owner);
 
         void print_html(const char* text) OVERRIDE;
 
     private:
-        PlutoKernelRunner* _owner;
+        PlutoKernelProxy* _owner;
     };
 
     PlutoKernel* _kernel;

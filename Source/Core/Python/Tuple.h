@@ -4,7 +4,7 @@
 class Object;
 
 /// Wrapper for python tuples
-class Tuple
+class CORE_API Tuple
 {
 public:
     Tuple();
@@ -15,11 +15,7 @@ public:
     size_t size() const;
 
     PyObject* get(size_t idx) const;
-    Object* get_object(size_t idx) const;
-
-    template<typename T>
-    T* get_object(size_t idx) const;
-
+    
     void set(size_t idx, PyObject* obj);
     void set(size_t idx, Object* obj);
 
@@ -32,11 +28,6 @@ private:
 
 };
 
-template<typename T>
-T* Tuple::get_object(size_t idx) const
-{
-    return object_cast<T>(get_object(idx));
-}
 
 
 #endif // __PYTHON_TUPLE_H__

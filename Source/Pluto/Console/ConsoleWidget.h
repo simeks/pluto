@@ -7,13 +7,14 @@
 
 #include "ConsoleHistory.h"
 
-class PlutoKernelRunner;
+class ConsoleModule;
+class PlutoKernelProxy;
 class ConsoleWidget : public QTextEdit
 {
     Q_OBJECT
 
 public:
-    explicit ConsoleWidget(QWidget *parent = nullptr);
+    explicit ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent = nullptr);
     ~ConsoleWidget();
 
     /// Appends text before the prompt
@@ -40,14 +41,18 @@ private:
     QString _prompt;
     int _prompt_position;
 
-    PlutoKernelRunner* _kernel_runner;
+    PlutoKernelProxy* _kernel_runner;
 
     ConsoleHistory _history;
+
+    ConsoleModule* _console_module;
 
 public slots:
     void kernel_ready();
     void kernel_output(const QString& text, bool html);
     void kernel_error_output(const QString& text);
+
+    void set_style_sheet(const QString& sheet);
 
 signals:
     /// Executed when a command is executed

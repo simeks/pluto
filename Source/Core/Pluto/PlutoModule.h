@@ -3,23 +3,21 @@
 
 #include <Core/Python/PythonModule.h>
 
-class PlutoModuleCallback;
 class PyStdStream;
 class PlutoModule : public PythonModule
 {
 public:
-    PlutoModule(PlutoModuleCallback* callback);
+    PlutoModule();
     virtual ~PlutoModule();
 
-    virtual void create() OVERRIDE;
+    virtual void init_module() OVERRIDE;
 
-    const char* version();
     const char* get_user_dir();
 
     void print_html(const std::string& txt);
-
+    
 private:
-    PlutoModuleCallback* _callback;
+    static std::string s_version;
 };
 
 #endif // __CORE_PLUTO_MODULE_H__

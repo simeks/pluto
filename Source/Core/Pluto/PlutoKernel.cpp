@@ -9,59 +9,21 @@
 #include "Python/PythonCommon.h"
 #include "Python/StdStream.h"
 
+#include <Flow/FlowModule.h>
+
 #include <fstream>
 
-PlutoKernel::PlutoKernel(PlutoModuleCallback* callback)
+PlutoKernel::PlutoKernel()
     : _main_module(nullptr), _pluto_module(nullptr)
 {
-    _pluto_module = new PlutoModule(callback);
+    _pluto_module = new PlutoModule();
     _image_module = new ImageModule();
 
-    _stdout = new PyStdStream();
-    _htmlout = new PyStdStream();
-    _stderr = new PyStdStream();
+    _stdout = object_new<PyStdStream>();
+    _htmlout = object_new<PyStdStream>();
+    _stderr = object_new<PyStdStream>();
 }
 PlutoKernel::~PlutoKernel()
-{
-    delete _image_module;
-    _image_module = nullptr;
-    delete _pluto_module;
-    _pluto_module = nullptr;
-    delete _main_module;
-    _main_module = nullptr;
-}
-
-void PlutoKernel::start()
-{
-    Py_Initialize();
-    PyEval_InitThreads();
-
-    numpy::initialize();
-
-    PythonType::ready_all();
-
-    _main_module = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
-
-    _pluto_module->create();
-    install_module(_pluto_module);
-
-    _image_module->create();
-    install_module(_image_module);
-
-    PyObject* sys = PyImport_ImportModule("sys");
-
-    _stdout->addref();
-    if (PyModule_AddObject(sys, "stdout", _stdout->python_object()) < 0)
-        PyErr_Print();
-    _stderr->addref();
-    if (PyModule_AddObject(sys, "stderr", _stderr->python_object()) < 0)
-        PyErr_Print();
-
-    print_banner();
-
-    perform_startup();
-}
-void PlutoKernel::stop()
 {
     if (_stdout)
         _stdout->release();
@@ -70,6 +32,39 @@ void PlutoKernel::stop()
     if (_stderr)
         _stderr->release();
 
+    delete _image_module;
+    _image_module = nullptr;
+    delete _pluto_module;
+    _pluto_module = nullptr;
+    delete _main_module;
+    _main_module = nullptr;
+}
+void PlutoKernel::prepare()
+{
+    PyEval_InitThreads();
+
+    PythonModule sys(PyImport_ImportModule("sys"));
+    sys.add_object("stdout", _stdout);
+    sys.add_object("stderr", _stderr);
+
+    numpy::initialize();
+
+    _main_module = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
+
+    _pluto_module->init_module();
+    install_module(_pluto_module);
+
+    _pluto_module->add_object("htmlout", _htmlout);
+
+    _image_module->init_module();
+    install_module(_image_module);
+}
+void PlutoKernel::start()
+{
+    perform_startup();
+}
+void PlutoKernel::stop()
+{
     Py_Finalize();
 }
 
@@ -166,6 +161,8 @@ void PlutoKernel::set_stderr_callback(OutputCallback* fn, void* data)
 }
 void PlutoKernel::perform_startup()
 {
+    print_banner();
+
     // Run startup script (if any)
     FilePath path(_pluto_module->get_user_dir());
     path.join("startup.py");

@@ -58,3 +58,7 @@ bool ConsoleHistory::end()
 {
     return _index == _history.size();
 }
+const std::vector<QString>& ConsoleHistory::history() const
+{
+    return _history;
+}

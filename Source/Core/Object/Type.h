@@ -17,16 +17,16 @@ namespace object_types
 class CORE_API Type
 {
 public:
-    Type(const char* name, uint32_t size);
+    Type(const char* name, size_t size);
 
     const char* name() const;
-    uint32_t size() const;
+    size_t size() const;
 
     friend void object_types::register_type(Type* type);
     friend void object_types::clear_types();
 private:
     const char* _name;
-    uint32_t _size;
+    size_t _size;
 
     Type* _list_next;
 };

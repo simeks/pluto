@@ -5,11 +5,6 @@ def build(bld):
 
 	if bld.configuration == 'debug':
 		qt_lib = 'QT5_DEBUG'
- 	
-	if bld.platform == 'win64':
-		flags = '/SUBSYSTEM:CONSOLE' if bld.configuration == 'debug' else '/SUBSYSTEM:WINDOWS'
-	else:
-		flags = ''
 
 	bld.program(
 		features='pyembed',
@@ -17,6 +12,5 @@ def build(bld):
 		source=bld.path.ant_glob('Core/**/(*.cpp)') + ['Testing/Framework.cpp'], 
 		includes='. ../Source',
 		use='Core',
-		linkflags=flags,
 	)
 

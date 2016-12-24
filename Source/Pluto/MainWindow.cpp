@@ -1,7 +1,8 @@
 #include <Core/Common.h>
 
-#include "MainWindow.h"
 #include "Console/ConsoleWidget.h"
+#include "MainWindow.h"
+#include "PlutoApplication.h"
 
 #include <QCoreApplication>
 #include <QSettings>
@@ -72,7 +73,7 @@ void MainWindow::setup_ui()
 
     QMetaObject::connectSlotsByName(this);
 
-    _console_widget = new ConsoleWidget(this);
+    _console_widget = new ConsoleWidget(PlutoApplication::instance().kernel(), this);
     setCentralWidget(_console_widget);
     _console_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }

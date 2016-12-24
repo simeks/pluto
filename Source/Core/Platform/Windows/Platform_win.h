@@ -19,9 +19,9 @@
 #define ATTR_PRINTF(...)  
 
 // Renaming functions for cross-platform compability
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-#define __thread __declspec( thread )
+//#define snprintf _snprintf
+// #define vsnprintf _vsnprintf
+//#define __thread __declspec( thread )
 
 #define API_EXPORT __declspec( dllexport )
 #define API_IMPORT __declspec( dllimport )

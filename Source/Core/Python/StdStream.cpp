@@ -2,7 +2,6 @@
 
 #include "StdStream.h"
 
-#include "PythonType.h"
 #include "PythonCommon.h"
 
 
@@ -11,11 +10,11 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(PyStdStream, flush);
 
 OBJECT_INIT_TYPE_FN(PyStdStream)
 {
-    OBJECT_PYTHON_ADD_METHOD(PyStdStream, write, METH_VARARGS, "");
-    OBJECT_PYTHON_ADD_METHOD(PyStdStream, flush, METH_NOARGS, "");
+    OBJECT_PYTHON_ADD_METHOD(PyStdStream, write, "");
+    OBJECT_PYTHON_ADD_METHOD(PyStdStream, flush, "");
 }
 
-IMPLEMENT_OBJECT(PyStdStream, "StdStream");
+IMPLEMENT_OBJECT(PyStdStream, "StdStream", CORE_API);
 
 PyStdStream::PyStdStream()
     : _fn(nullptr),

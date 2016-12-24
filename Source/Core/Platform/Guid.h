@@ -1,6 +1,7 @@
 #ifndef __CORE_PLATFORM_GUID_H__
 #define __CORE_PLATFORM_GUID_H__
 
+
 /// Represents a globally unique identifier
 struct Guid
 {

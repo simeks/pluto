@@ -1,28 +1,31 @@
 #include <Core/Common.h>
+#include <Core/Pluto/PlutoCore.h>
 
 #include "ConsoleWidget.h"
+#include "ConsoleModule.h"
 
 #include <QKeyEvent>
+#include <QStyle>
 #include <QTextEdit>
 #include <QTextDocumentFragment>
 
-#include "PlutoKernelRunner.h"
+#include "PlutoKernelProxy.h"
 
 //static const char* console_stylesheet =
-//"QPlainTextEdit, QTextEdit { background-color: white; color: black; selection-background-color: blue; }\n"
-//".error { color: red; white-space: pre-wrap; }\n"
-//".output { color: black; white-space: pre-wrap; }\n";
+//"QPlainTextEdit, QTextEdit { background-color: white; color: black; selection-background-color: blue; }"
+//".error { color: red; white-space: pre-wrap; }"
+//".output { color: black; white-space: pre-wrap; }";
 
 static const char* console_stylesheet =
-"QPlainTextEdit, QTextEdit { background-color: #1E1E1E; color: #DADADA; selection-background-color: #264F78; }\n"
-".error { color: #FC3E36; white-space: pre-wrap; }\n"
-".output { color: #DADADA; white-space: pre-wrap; }\n";
+"QPlainTextEdit, QTextEdit { background-color: #1E1E1E; color: #DADADA; selection-background-color: #264F78; }"
+".error { color: #FC3E36; white-space: pre-wrap; }"
+".output { color: #DADADA; white-space: pre-wrap; }";
 
-ConsoleWidget::ConsoleWidget(QWidget *parent) :
+ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     QTextEdit(parent),
     _prompt(">>> ")
 {
-    _kernel_runner = new PlutoKernelRunner();
+    _kernel_runner = kernel;
     connect(this, SIGNAL(invoke_command(const QString&)), _kernel_runner, SLOT(invoke(const QString&)));
     connect(this, SIGNAL(interrupt_kernel()), _kernel_runner, SLOT(interrupt()), Qt::DirectConnection);
     connect(_kernel_runner, SIGNAL(ready()), this, SLOT(kernel_ready()));
@@ -38,13 +41,14 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
     setStyleSheet(console_stylesheet);
     document()->setDefaultStyleSheet(console_stylesheet);
 
-    QMetaObject::invokeMethod(_kernel_runner, "start", Qt::AutoConnection);
+    _console_module = new ConsoleModule(this);
+    _console_module->init_module();
+    PlutoCore::instance().install_python_module(_console_module);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
-    QMetaObject::invokeMethod(_kernel_runner, "stop", Qt::AutoConnection);
-    _kernel_runner = nullptr;
+    delete _console_module;
 }
 void ConsoleWidget::append_text(const QString& text)
 {
@@ -118,7 +122,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         case Qt::Key_Right:
             break;
         case Qt::Key_Up:
-            if (cursor_in_prompt(textCursor()))
             {
                 if (_history.end())
                     _history.set_prefix(read_prompt());
@@ -137,7 +140,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
             }
             break;
         case Qt::Key_Down:
-            if (cursor_in_prompt(textCursor()))
             {
                 QString cmd = _history.find_next();
                 if (!cmd.isEmpty())
@@ -254,5 +256,10 @@ void ConsoleWidget::kernel_error_output(const QString& text)
     QString formatted = QString("<span class='error'>%1</span>").arg(text);
     formatted.replace("\n", "<br/>");
     append_html(formatted);
+}
+void ConsoleWidget::set_style_sheet(const QString& sheet)
+{
+    setStyleSheet(sheet);
+    document()->setDefaultStyleSheet(sheet);
 }
 

@@ -4,6 +4,7 @@
 #include "Tuple.h"
 
 #include "Image/Types.h"
+#include "Object/Object.h"
 
 #define INT_FROM_PYTHON(T) \
     template<> \

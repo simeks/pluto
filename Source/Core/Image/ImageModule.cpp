@@ -10,9 +10,9 @@ ImageModule::ImageModule() : PythonModule("image")
 ImageModule::~ImageModule()
 {
 }
-void ImageModule::create()
+void ImageModule::init_module()
 {
-    PythonModule::create();
+    PythonModule::init_module();
 
-    add_type("Image", ImageObject::python_type());
+    add_type("Image", ImageObject::static_class());
 }

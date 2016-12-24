@@ -9,7 +9,7 @@ public:
     ImageModule();
     virtual ~ImageModule();
 
-    virtual void create() OVERRIDE;
+    virtual void init_module() OVERRIDE;
 
 };
 

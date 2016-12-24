@@ -1,6 +1,11 @@
 #ifndef __CORE_PYTHON_WRAPPER_H__
 #define __CORE_PYTHON_WRAPPER_H__
 
+// Qt keyword conflicting with Python
+#ifdef slots
+#undef slots
+#endif
+
 #pragma warning(push)
 #pragma warning(disable:4510) // warning C4510: '<unnamed-tag>' : default constructor could not be generated
 #pragma warning(disable:4512) // warning C4512: '<unnamed-tag>' : assignment operator could not be generated
@@ -16,5 +21,8 @@
 
 #pragma warning(pop)
 
+#ifdef Q_SLOTS
+#define slots Q_SLOTS
+#endif
 
 #endif // __CORE_PYTHON_WRAPPER_H__

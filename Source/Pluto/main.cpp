@@ -1,17 +1,39 @@
 #include <Core/Common.h>
-
-#include <QApplication>
+#include <QSplashScreen>
 
 #include "MainWindow.h"
+#include "PlutoApplication.h"
 
 
+#if defined(PLUTO_BUILD_DEBUG) || !defined(PLUTO_PLATFORM_WINDOWS)
 int main(int argc, char *argv[])
+#else
+int WinMain(HINSTANCE /*hInInstance*/, HINSTANCE /*hPrevInstance*/, char*, int /*nCmdShow*/)
+#endif
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication app(argc, argv);
+    memory::initialize();
+    int ret = 0;
+    {
+#if defined(PLUTO_BUILD_DEBUG) || !defined(PLUTO_PLATFORM_WINDOWS)
+        PlutoApplication app(argc, argv);
+#else
+        PlutoApplication app(__argc, __argv);
+#endif
 
-    MainWindow w;
-    w.show();
+        QSplashScreen* splash = new QSplashScreen();
+        splash->setPixmap(QPixmap(":/res/splash.png"));
+        splash->show();
 
-    return app.exec();
+        app.init();
+
+        MainWindow w;
+
+        w.show();
+        splash->finish(&w);
+
+        app.start_kernel();
+        ret = app.exec();
+    }
+    memory::shutdown();
+    return ret;
 }

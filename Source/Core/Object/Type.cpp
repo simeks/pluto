@@ -27,7 +27,7 @@ namespace object_types
 }
 
 
-Type::Type(const char* name, uint32_t size)
+Type::Type(const char* name, size_t size)
     : _name(name),
     _size(size),
     _list_next(nullptr)
@@ -40,7 +40,7 @@ const char* Type::name() const
     return _name;
 }
 
-uint32_t Type::size() const
+size_t Type::size() const
 {
     return _size;
 }

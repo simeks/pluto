@@ -20,6 +20,8 @@ public:
     /// Are we at the end of the history log?
     bool end();
 
+    const std::vector<QString>& history() const;
+
 private:
     std::vector<QString> _history;
     int _index;

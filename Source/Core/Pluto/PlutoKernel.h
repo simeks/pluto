@@ -9,6 +9,7 @@ public:
     virtual void print_html(const char* text) = 0;
 };
 
+class FlowModule;
 class ImageModule;
 class PlutoModule;
 class PythonModule;
@@ -18,9 +19,10 @@ class CORE_API PlutoKernel
 public:
     typedef void (OutputCallback)(void*, const char* msg);
 
-    PlutoKernel(PlutoModuleCallback* callback);
+    PlutoKernel();
     ~PlutoKernel();
 
+    void prepare();
     void start();
     void stop();
 

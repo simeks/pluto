@@ -5,6 +5,8 @@
 
 #include <Core/Image/Vec3.h>
 
+class Object;
+
 namespace python_convert
 {
     template<typename T>
@@ -24,6 +26,14 @@ namespace python_convert
         return PyUnicode_FromString(value);
     }
 
+    template<typename T>
+    PyObject* to_python(const std::vector<T>& value)
+    {
+        PyObject* l = PyList_New(value.size());
+        for (size_t i = 0; i < value.size(); ++i)
+            PyList_SetItem(l, i, to_python(value[i]));
+        return l;
+    }
 }
 
 

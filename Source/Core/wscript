@@ -2,12 +2,19 @@ from waflib.Configure import conf
 
 
 def build(bld):	
-	use = 'NUMPY'
+	qt_use = 'QT5'
+	if bld.configuration == 'debug':
+		qt_use = 'QT5_DEBUG'
 
+	use = 'NUMPY ' + qt_use
+	
 	bld.shlib(
-		features='pyembed',
+		features='qt5 pyembed',
 		target='Core',
 		source=bld.find_files('**/(*.cpp|*.cu)'), 
+		moc=[
+			'Qt/WindowManager.h'
+		],
 		includes='. ..',
 		defines='PLUTO_CORE_EXPORTS',
 		use=use,

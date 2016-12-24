@@ -1,5 +1,7 @@
 #include "Common.h"
 
+#include <Object/Object.h>
+
 #include "PythonCommon.h"
 #include "PythonFunction.h"
 #include "PythonModule.h"
@@ -36,12 +38,25 @@ void PythonModule::add_object(const char* name, PyObject* object)
             PyErr_Print();
     }
 }
-void PythonModule::add_type(const char* name, PythonType* type)
+void PythonModule::add_object(const char* name, Object* object)
 {
     assert(_module);
-    add_object(name, (PyObject*)type->type_object());
+    if (object)
+    {
+        if (PyModule_AddObject(_module, name, object->python_object()) < 0)
+            PyErr_Print();
+    }
 }
-void PythonModule::create()
+void PythonModule::add_type(const char* name, PythonClass* type)
+{
+    assert(_module);
+    add_object(name, (PyObject*)type->python_type());
+}
+PyObject* PythonModule::object(const char* name) const
+{
+    return PyObject_GetAttrString(_module, name);
+}
+void PythonModule::init_module()
 {
     assert(_module == nullptr);
     _module = PyModule_Create(&_module_def);

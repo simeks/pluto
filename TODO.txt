@@ -1,0 +1,4 @@
+- Filter input in ConsoleWidget, no copy-paste of HTML or drag n drop of images.
+- PythonType ready for modules, where are they registered currently? Core?
+- (Python)Module unload/reload
+- Object __deepcopy__

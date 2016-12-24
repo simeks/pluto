@@ -9,7 +9,7 @@ class CORE_API Class : public Type
 public:
     typedef Object* (*CreateObjectFn)();
 
-    Class(const char* name, uint32_t size, CreateObjectFn creator);
+    Class(const char* name, size_t size, CreateObjectFn creator);
 
     Object* create_object() const;
 

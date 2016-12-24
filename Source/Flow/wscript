@@ -1,0 +1,31 @@
+from waflib.Configure import conf
+
+
+def build(bld):
+	use = 'NUMPY'
+
+	qt_use = 'QT5'
+	if bld.configuration == 'debug':
+		qt_use = 'QT5_DEBUG'
+
+	use = use + " " + qt_use
+
+	bld.shlib(
+		features='qt5 pyembed',
+		target='Flow',
+		source=bld.find_files('**/(*.cpp)'), 
+		moc=[
+			'Qt/QtFlowGraphScene.h', 
+			'Qt/QtFlowGraphView.h', 
+			'Qt/QtFlowLink.h', 
+			'Qt/QtFlowNode.h', 
+			'Qt/QtFlowPin.h', 
+			'Qt/QtFlowUI.h',
+			'Qt/QtFlowWindow.h',
+			'Qt/QtNodePropertyWidget.h',
+			],
+		includes='. ..',
+		defines='PLUTO_FLOW_EXPORTS',
+		use='Core ' + use,
+	)
+

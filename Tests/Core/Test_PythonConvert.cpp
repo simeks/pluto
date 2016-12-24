@@ -3,7 +3,6 @@
 #include <Core/Image/ImageObject.h>
 #include <Core/Object/Object.h>
 #include <Core/Python/Convert.h>
-#include <Core/Python/PythonType.h>
 
 using namespace testing;
 
@@ -37,7 +36,7 @@ TEST_CASE(from_python)
 TEST_CASE(from_python_object)
 {
     Py_Initialize();
-    PythonType::ready_all();
+    PythonClass::ready_all();
     numpy::initialize();
 
     Object* obj = new Object();
@@ -47,7 +46,7 @@ TEST_CASE(from_python_object)
     PyErr_Print();
     ASSERT_EXPR(PyErr_Occurred() == nullptr);
 
-    ImageObject* img = new ImageObject();
+    ImageObject* img = object_new<ImageObject>();
     ASSERT_EQUAL(python_convert::from_python<Object*>(img->python_object()), img);
     ASSERT_EXPR(PyErr_Occurred() == nullptr);
     ASSERT_EQUAL(python_convert::from_python<ImageObject*>(img->python_object()), img);

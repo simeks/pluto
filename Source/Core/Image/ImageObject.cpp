@@ -20,19 +20,19 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(ImageObject, set_array, PyObject*, image::Pi
 
 OBJECT_INIT_TYPE_FN(ImageObject)
 {
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, ndims, METH_NOARGS, "Returns the number of dimensions.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, size, METH_NOARGS, "Returns the size of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, pixel_type, METH_NOARGS, "Returns the pixel type of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, origin, METH_NOARGS, "Returns the origin of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, spacing, METH_NOARGS, "Returns the spacing of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_origin, METH_VARARGS, "Sets the origin of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_spacing, METH_VARARGS, "Sets the spacing of the image.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, array, METH_NOARGS, "Returns the image data array.");
-    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_array, METH_VARARGS, "Sets the image data from a numpy array.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, ndims, "Returns the number of dimensions.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, size, "Returns the size of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, pixel_type, "Returns the pixel type of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, origin, "Returns the origin of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, spacing, "Returns the spacing of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_origin, "Sets the origin of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_spacing, "Sets the spacing of the image.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, array, "Returns the image data array.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, set_array, "Sets the image data from a numpy array.");
 }
 
 
-IMPLEMENT_OBJECT(ImageObject, "Image");
+IMPLEMENT_OBJECT(ImageObject, "Image", CORE_API);
 
 ImageObject::ImageObject()
 {

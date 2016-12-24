@@ -62,7 +62,7 @@
         return python_convert::to_python(tself->Fn()); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(TClass, Fn, A) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; \
@@ -71,7 +71,7 @@
         return python_convert::to_python(tself->Fn(a)); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(TClass, Fn, A, B) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; \
@@ -80,7 +80,7 @@
         return python_convert::to_python(tself->Fn(a, b)); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS3_RETURN(TClass, Fn, A, B, C) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; C c; \

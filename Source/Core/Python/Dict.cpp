@@ -26,10 +26,6 @@ PyObject* Dict::get(const std::string& key) const
 {
     return PyDict_GetItemString(_d, key.c_str());
 }
-Object* Dict::get_object(const std::string& key) const
-{
-    return py_object::object(get(key));
-}
 
 void Dict::set(const std::string& key, PyObject* item)
 {

@@ -13,13 +13,14 @@ def build(bld):
 		flags = ''
 
 	bld.program(
-		features='qt5',
+		features='qt5 pyembed',
 		target='Pluto',
-		source=bld.find_files('**/(*.cpp)'), 
+		source=bld.find_files('**/(*.cpp)') + ['resources.qrc'], 
 		moc=[
-			'MainWindow.h',
 			'Console/ConsoleWidget.h',
-			'Console/PlutoKernelRunner.h'
+			'MainWindow.h',
+			'PlutoApplication.h',
+			'PlutoKernelProxy.h'
 			],
 		includes='. ..',
 		use='Core ' + qt_lib,
