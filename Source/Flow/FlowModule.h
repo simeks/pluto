@@ -38,31 +38,6 @@ private:
     std::vector<FlowWindow*> _flow_windows;
 };
 
-class FlowPythonModule : public PythonModule
-{
-public:
-    FlowPythonModule(QtFlowUI* ui);
-    ~FlowPythonModule();
-
-    void init_module() OVERRIDE;
-
-    FlowWindow* open(const char* file);
-    FlowWindow* window();
-
-    FlowGraph* load_graph(const char* file);
-    void save_graph(const char* file, FlowGraph* graph);
-
-    void install_node_template(FlowNode* node);
-    FlowNode* node_template(const char* node_class) const;
-    FlowNode* create_node(const char* node_class) const;
-
-    PyObject* node_templates() const;
-
-
-private:
-    QtFlowUI* _ui;
-
-};
 
 
 #endif // __FLOW_MODULE_H__
