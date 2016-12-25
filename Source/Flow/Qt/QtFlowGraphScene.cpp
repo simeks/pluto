@@ -22,7 +22,13 @@ QtFlowGraphScene::QtFlowGraphScene(FlowGraph* graph, QObject *parent)
 }
 QtFlowGraphScene::~QtFlowGraphScene()
 {
-    clear_scene();
+    if (_flow_graph)
+        _flow_graph->release();
+
+    _nodes.clear();
+    _links.clear();
+
+    clear();
 }
 
 void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
@@ -101,17 +107,14 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
             ++it;
     }
 }
-void QtFlowGraphScene::clear_scene()
+void QtFlowGraphScene::new_graph()
 {
+    clear_scene();
+
     if (_flow_graph)
         _flow_graph->release();
 
-    _nodes.clear();
-    _links.clear();
-
-    clear();
-
-    emit scene_cleared();
+    _flow_graph = object_new<FlowGraph>();
 }
 FlowGraph* QtFlowGraphScene::graph() const
 {
@@ -145,4 +148,11 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         addItem(link);
         _links.push_back(link);
     }
+}
+void QtFlowGraphScene::clear_scene()
+{
+    _nodes.clear();
+    _links.clear();
+
+    clear();
 }

@@ -18,6 +18,9 @@ public:
 
     FlowGraph* graph();
     
+    void load_graph(const QString& file);
+    void save_graph(const QString& file);
+
 private:
     void setup_ui();
 
@@ -26,8 +29,15 @@ private slots:
     void _set_graph(FlowGraph* graph);
     void _clear_graph();
 
+    void on_new();
+    void on_open();
+    void on_save();
+    void on_save_as();
+
+
 private:
     QtFlowGraphView* _graph_view;
+    QString _current_file;
 
 signals:
     void node_template_added(FlowNode* node);

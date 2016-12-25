@@ -3,6 +3,7 @@
 
 #include "FlowGraph.h"
 #include "FlowNode.h"
+#include "FlowModule.h"
 #include "FlowPin.h"
 
 OBJECT_INIT_TYPE_FN(FlowGraph)
@@ -137,8 +138,14 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         if (!n.is_object())
             return nullptr;
 
-        FlowNode* out_node = object_new<FlowNode>();
         std::string node_class = n["node_class"].as_string();
+        FlowNode* tpl = FlowModule::instance().node_template(node_class.c_str());
+        if (!tpl)
+        {
+            // TODO: Error handling
+            continue;
+        }
+        FlowNode* out_node = object_clone(tpl);
 
         out_node->set_node_id(guid::from_string(n["id"].as_string()));
         out_node->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
@@ -164,19 +171,24 @@ FlowGraph* flow_graph::load(const JsonObject& root)
     {
         for (int i = 0; i < links.size(); ++i)
         {
-            Guid in_node_id = guid::from_string(links[i]["in_node"].as_string());
-            Guid out_node_id = guid::from_string(links[i]["out_node"].as_string());
+            Guid begin_node_id = guid::from_string(links[i]["begin_node"].as_string());
+            Guid end_node_id = guid::from_string(links[i]["end_node"].as_string());
 
-            int in_pin_id = links["in_pin"].as_int();
-            int out_pin_id = links["out_pin"].as_int();
+            int begin_pin_id = links[i]["begin_pin"].as_int();
+            int end_pin_id = links[i]["end_pin"].as_int();
 
-            FlowNode* in_node = out_graph->node(in_node_id);
-            FlowNode* out_node = out_graph->node(out_node_id);
+            FlowNode* begin_node = out_graph->node(begin_node_id);
+            FlowNode* end_node = out_graph->node(end_node_id);
 
-            FlowPin* in_pin = in_node->pin(in_pin_id);
-            FlowPin* out_pin = out_node->pin(out_pin_id);
+            // TODO: Error handling
+            // Nodes not found most likely caused by template not found while parsing nodes
+            if (!begin_node || !end_node)
+                continue;
 
-            out_graph->try_add_link(out_pin, in_pin);
+            FlowPin* begin_pin = begin_node->pin(begin_pin_id);
+            FlowPin* end_pin = end_node->pin(end_pin_id);
+
+            out_graph->try_add_link(begin_pin, end_pin);
         }
     }
 
@@ -184,5 +196,37 @@ FlowGraph* flow_graph::load(const JsonObject& root)
 }
 void flow_graph::save(FlowGraph* graph, JsonObject& root)
 {
-    graph; root;
+    root.set_empty_object();
+
+    JsonObject& nodes = root["nodes"];
+    nodes.set_empty_array();
+    for (auto n : graph->nodes())
+    {
+        JsonObject& node = nodes.append();
+        node.set_empty_object();
+
+        node["id"].set_string(guid::to_string(n.second->node_id()));
+        node["node_class"].set_string(n.second->node_class());
+        node["ui_pos"].set_empty_array();
+
+        Vec2i pos = n.second->ui_pos();
+        node["ui_pos"].append().set_int(pos.x);
+        node["ui_pos"].append().set_int(pos.y);
+
+        // TODO: Properties
+    }
+
+    JsonObject& links = root["links"];
+    links.set_empty_array();
+    for (const FlowGraph::Link& l : graph->links())
+    {
+        JsonObject& link = links.append();
+        link.set_empty_object();
+
+        link["begin_node"].set_string(guid::to_string(l.first->owner()->node_id()));
+        link["end_node"].set_string(guid::to_string(l.second->owner()->node_id()));
+
+        link["begin_pin"].set_int(l.first->pin_id());
+        link["end_pin"].set_int(l.second->pin_id());
+    }
 }

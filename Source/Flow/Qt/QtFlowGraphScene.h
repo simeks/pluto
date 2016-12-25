@@ -30,19 +30,19 @@ public:
     /// Removes all links associated with pin
     void remove_links(QtFlowPin* pin);
 
-    void clear_scene();
+    void new_graph();
 
     FlowGraph* graph() const;
     void set_graph(FlowGraph* graph);
     
 private:
+    void clear_scene();
+
     FlowGraph* _flow_graph;
 
     std::map<Guid, QtBaseNode*> _nodes;
     std::vector<QtFlowLink*> _links;
 
-signals:
-    void scene_cleared();
 };
 
 
