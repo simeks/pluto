@@ -51,7 +51,7 @@
     \
     static Object* create_object(); \
     static PythonClass* static_class(); \
-    virtual PythonClass* get_class() const; \
+    virtual PythonClass* get_class(); \
     virtual Object* clone(); \
     virtual Object* clone(PyObject* pyobj);
 
@@ -77,9 +77,11 @@
         } \
         return type; \
     } \
-    PythonClass* TClass::get_class() const \
+    PythonClass* TClass::get_class() \
     { \
-        return TClass::static_class(); \
+        if (!_class) \
+            _class = TClass::static_class(); \
+        return _class; \
     } \
     Object* TClass::clone() \
     { \
@@ -102,10 +104,10 @@ public:
     Object();
     virtual ~Object();
 
-    bool is_a(Class* type) const;
+    bool is_a(Class* type);
 
     template<typename T>
-    bool is_a() const { return is_a(T::static_class()); }
+    bool is_a() { return is_a(T::static_class()); }
 
     Object(const Object& other);
     Object& operator=(const Object& other);
@@ -137,12 +139,14 @@ public:
 
     virtual int object_init(const Tuple&, const Dict&) { return 0; }
 
+    void set_class(PythonClass* cls);
+
     PyObject* python_object();
     void set_python_object(PyObject* obj);
 
 protected:
+    PythonClass* _class;
     PyObject* _py_object;
-
 };
 
 template<typename R, typename A>

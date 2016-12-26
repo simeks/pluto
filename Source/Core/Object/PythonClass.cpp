@@ -244,11 +244,14 @@ Object* PythonClass::create_object(const Tuple& args)
     {
         return nullptr;
     }
-    return ((PyPlutoObject*)ret)->obj;
+    Object* obj = ((PyPlutoObject*)ret)->obj;
+    obj->set_class(this);
+    return obj;
 }
 Object* PythonClass::create_object(PyObject* pyobj)
 {
     Object* obj = _creator();
+    obj->set_class(this);
     obj->set_python_object(pyobj);
     return obj;
 }
@@ -303,9 +306,9 @@ bool PythonClass::check_type(PyObject* obj)
 {
     return PyObject_IsInstance(obj, (PyObject*)_type) != 0;
 }
-bool PythonClass::owned() const
+bool PythonClass::is_python() const
 {
-    return _owned;
+    return !_owned;
 }
 int PythonClass::ready()
 {

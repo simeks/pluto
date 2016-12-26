@@ -44,8 +44,8 @@ public:
 
     bool check_type(PyObject* obj);
 
-    /// Indicates whetever this class is owned by cpp or inherited from Python
-    bool owned() const;
+    /// Indicates whetever this class is inherited from Python or a C++ class
+    bool is_python() const;
 
     int ready();
     static void ready_all();

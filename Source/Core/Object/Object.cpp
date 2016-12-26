@@ -13,13 +13,13 @@ OBJECT_INIT_TYPE_FN(Object)
 
 IMPLEMENT_OBJECT(Object, "Object", CORE_API);
 
-Object::Object() : _py_object(nullptr)
+Object::Object() : _class(nullptr), _py_object(nullptr)
 {
 }
 Object::~Object()
 {
 }
-bool Object::is_a(Class* type) const
+bool Object::is_a(Class* type)
 {
     if (type == nullptr)
         return true;
@@ -85,6 +85,10 @@ bool Object::has_attribute(const char* name) const
 PyObject* Object::attribute(const char* name) const
 {
     return PyObject_GetAttrString(_py_object, name);
+}
+void Object::set_class(PythonClass* cls)
+{
+    _class = cls;
 }
 PyObject* Object::python_object()
 {
