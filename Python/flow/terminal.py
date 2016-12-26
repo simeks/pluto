@@ -6,14 +6,15 @@ class TerminalNode(flow.Node):
     pins = [
         flow.Pin('Out', flow.Pin.Out)
     ]
+    properties = [
+        flow.Property('value', '<Default>')
+    ]
 
     def __init__(self):
         super(TerminalNode, self).__init__()
         self.node_class = 'flow.Terminal'
         self.title = 'Terminal'
         self.category = 'Flow'
-
-        self.add_pin('Out', flow.Pin.Out)
 
     def run(self, ctx):
         pass

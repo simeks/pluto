@@ -10,6 +10,7 @@
 #include "FlowModule.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
+#include "FlowProperty.h"
 #include "FlowPythonModule.h"
 #include "FlowWindow.h"
 #include "Qt/QtFlowUI.h"
@@ -39,6 +40,7 @@ void FlowPythonModule::init_module()
     add_type("Graph", FlowGraph::static_class());
     add_type("Node", FlowNode::static_class());
     add_type("Pin", FlowPin::static_class());
+    add_type("Property", FlowProperty::static_class());
 
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, open, "");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, window, "");

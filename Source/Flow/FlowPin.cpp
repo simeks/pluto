@@ -41,6 +41,10 @@ FlowNode* FlowPin::owner() const
 {
     return _owner;
 }
+void FlowPin::set_owner(FlowNode* node)
+{
+    _owner = node;
+}
 int FlowPin::pin_id() const
 {
     return _id;

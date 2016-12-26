@@ -5,6 +5,7 @@
 #include "FlowGraph.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
+#include "FlowProperty.h"
 
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowNode, run, FlowContext*);
@@ -19,7 +20,7 @@ OBJECT_INIT_TYPE_FN(FlowNode)
 IMPLEMENT_OBJECT(FlowNode, "FlowNode", FLOW_API);
 
 FlowNode::FlowNode() :
-    _owner_graph(nullptr), 
+    _owner_graph(nullptr),
     _function(nullptr)
 {
 }
@@ -96,6 +97,22 @@ void FlowNode::add_pin(const std::string& name, int pin_type)
     int id = (int)_pins.size();
     _pins.push_back(object_new<FlowPin>(name, (FlowPin::Type)pin_type, this, id));
 }
+void FlowNode::add_pin(FlowPin* pin)
+{
+    int id = (int)_pins.size();
+    pin->set_pin_id(id);
+    pin->set_owner(this);
+    _pins.push_back(pin);
+}
+void FlowNode::add_property(FlowProperty* prop)
+{
+    prop->set_owner(this);
+    _properties.push_back(prop);
+}
+const std::vector<FlowProperty*>& FlowNode::properties() const
+{
+    return _properties;
+}
 const char* FlowNode::node_class() const
 {
     if (has_attribute("node_class"))
@@ -130,36 +147,32 @@ FlowNode::FlowNode(const FlowNode& other)
 
     for (auto& pin : other._pins)
     {
-        add_pin(pin->name(), pin->pin_type());
+        add_pin((FlowPin*)pin->clone());
     }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
     _function = other._function;
 }
-FlowNode& FlowNode::operator=(const FlowNode& other)
+int FlowNode::object_init(const Tuple&, const Dict&)
 {
-    _py_object = other._py_object;
-    Py_XINCREF(_py_object);
-
-    _pins.clear();
-    for (auto& pin : other._pins)
-    {
-        add_pin(pin->name(), pin->pin_type());
-    }
-    _owner_graph = other._owner_graph;
-    _node_id = other._node_id;
-    _function = other._function;
-
-    return *this;
-}
-int FlowNode::object_init(const Tuple& , const Dict&)
-{
-    Dict d = FlowNode::static_class()->dict();
+    Dict d = get_class()->dict();
     if (d.has_key("pins"))
     {
         Sequence pins = Sequence(d.get("pins"));
-        std::cout << "pins " << pins.size() << std::endl;
+        for (size_t i = 0; i < pins.size(); ++i)
+        {
+            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
+            add_pin(object_clone(pin));
+        }
     }
-
+    if (d.has_key("properties"))
+    {
+        Sequence props = Sequence(d.get("properties"));
+        for (size_t i = 0; i < props.size(); ++i)
+        {
+            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
+            add_property(object_clone(prop));
+        }
+    }
     return 0;
 }

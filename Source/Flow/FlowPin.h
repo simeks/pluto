@@ -28,7 +28,8 @@ public:
     const std::string& name() const;
 
     FlowNode* owner() const;
-    
+    void set_owner(FlowNode* node);
+
     int pin_id() const;
     void set_pin_id(int id);
 

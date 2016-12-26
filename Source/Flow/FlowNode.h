@@ -9,6 +9,7 @@
 class FlowContext;
 class FlowGraph;
 class FlowPin;
+class FlowProperty;
 
 typedef void(*FlowNodeFunction)(FlowContext*);
 
@@ -60,14 +61,17 @@ public:
     void set_flow_graph(FlowGraph* graph);
 
     FlowNode(const FlowNode&);
-    FlowNode& operator=(const FlowNode&);
 
     const char* node_class() const;
     const char* title() const;
     const char* category() const;
 
     void add_pin(const std::string& name, int pin_type);
-    void add_property(const std::string& name, int flags, PyObject* value);
+    void add_pin(FlowPin* pin);
+
+    void add_property(FlowProperty* prop);
+
+    const std::vector<FlowProperty*>& properties() const;
 
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
@@ -75,12 +79,16 @@ public:
     int object_init(const Tuple& args, const Dict& kw) OVERRIDE;
 protected:
     std::vector<FlowPin*> _pins;
+    std::vector<FlowProperty*> _properties;
 
     FlowGraph* _owner_graph;
     Guid _node_id;
     Vec2i _ui_pos;
 
     FlowNodeFunction _function;
+
+private:
+    FlowNode& operator=(const FlowNode&);
 };
 
 #endif // __FLOW_NODE_H__
