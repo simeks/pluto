@@ -3,9 +3,8 @@
 #include "Class.h"
 
 
-Class::Class(const char* name, size_t size, CreateObjectFn creator)
+Class::Class(const char* name, size_t size)
     : Type(name, size),
-    _creator(creator),
     _super(nullptr)
 {
 }
@@ -26,8 +25,4 @@ bool Class::is_class(Class* type) const
 void Class::set_super(Class* super)
 {
     _super = super;
-}
-Object* Class::create_object() const
-{
-    return _creator();
 }

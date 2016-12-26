@@ -7,11 +7,7 @@ class Object;
 class CORE_API Class : public Type
 {
 public:
-    typedef Object* (*CreateObjectFn)();
-
-    Class(const char* name, size_t size, CreateObjectFn creator);
-
-    Object* create_object() const;
+    Class(const char* name, size_t size);
 
     Class* super_class() const;
     void set_super(Class* super);
@@ -20,7 +16,6 @@ public:
     bool is_class(Class* c) const;
 
 private:
-    CreateObjectFn _creator;
     Class* _super; // Super class
 };
 

@@ -45,5 +45,17 @@ int FlowPin::pin_id() const
 {
     return _id;
 }
-
+void FlowPin::set_pin_id(int id)
+{
+    _id = id;
+}
+int FlowPin::object_init(const Tuple& args, const Dict&)
+{
+    if (args.size() == 2)
+    {
+        _name = python_convert::from_python<std::string>(args.get(0));
+        _pin_type = (FlowPin::Type)python_convert::from_python<int>(args.get(1));
+    }
+    return 0;
+}
 

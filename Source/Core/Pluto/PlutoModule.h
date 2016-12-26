@@ -15,7 +15,12 @@ public:
     const char* get_user_dir();
 
     void print_html(const std::string& txt);
+
+    PyObject* register_class(PyObject* cls);
+    PyObject* classes() const;
     
+    Object* create_object(const Tuple& args);
+
 private:
     static std::string s_version;
 };

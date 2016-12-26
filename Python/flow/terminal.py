@@ -1,6 +1,12 @@
 import flow
+from pluto import pluto_class
 
+@pluto_class
 class TerminalNode(flow.Node):
+    pins = [
+        flow.Pin('Out', flow.Pin.Out)
+    ]
+
     def __init__(self):
         super(TerminalNode, self).__init__()
         self.node_class = 'flow.Terminal'

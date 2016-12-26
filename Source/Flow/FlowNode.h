@@ -72,6 +72,7 @@ public:
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
 
+    int object_init(const Tuple& args, const Dict& kw) OVERRIDE;
 protected:
     std::vector<FlowPin*> _pins;
 

@@ -21,7 +21,7 @@ static PyObject* py_object_new(PyTypeObject* type, PyObject* args, PyObject*)
         return pyobj;
     }
 
-    Class* cls = nullptr;
+    PythonClass* cls = nullptr;
     PyTypeObject* base_type = type;
     while (base_type != nullptr && cls == nullptr)
     {
@@ -30,17 +30,14 @@ static PyObject* py_object_new(PyTypeObject* type, PyObject* args, PyObject*)
         {
             PyObject* cap = PyDict_GetItemString(dict, "__cpp_class__");
             if (cap)
-                cls = (Class*)PyCapsule_GetPointer(cap, "cpp_class");
+                cls = (PythonClass*)PyCapsule_GetPointer(cap, "cpp_class");
         }
         base_type = base_type->tp_base;
     }
 
     if (cls)
     {
-        Object* obj = cls->create_object();
-        obj->set_python_object(pyobj);
-
-        ((PyPlutoObject*)pyobj)->obj = obj;
+        ((PyPlutoObject*)pyobj)->obj = cls->create_object(pyobj);;
     }
     return pyobj;
 }
@@ -164,7 +161,9 @@ static PyTypeObject py_blank_type_object = {
 PythonClass* PythonClass::_head = nullptr;
 
 PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator) :
-    Class(name, size, creator),
+    Class(name, size),
+    _creator(creator),
+    _owned(true),
     _next(nullptr)
 {
     if (_head)
@@ -178,11 +177,13 @@ PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator) 
         _head = this;
     }
 
-    memcpy(&_type, &py_blank_type_object, sizeof(py_blank_type_object));
-    _type.tp_name = name;
-    _type.tp_basicsize = sizeof(PyPlutoObject);
-    _type.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-    _type.tp_doc = "PythonType";
+    _type = (PyTypeObject*)malloc(sizeof(py_blank_type_object));
+    memcpy(_type, &py_blank_type_object, sizeof(py_blank_type_object));
+    
+    _type->tp_name = name;
+    _type->tp_basicsize = sizeof(PyPlutoObject);
+    _type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+    _type->tp_doc = "PythonType";
 
     PyMethodDef meth_sentinel = { 0, 0, 0, 0 };
     _methods.push_back(meth_sentinel); // Add sentinel
@@ -193,19 +194,63 @@ PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator) 
     PyGetSetDef getset_sentinel = { 0, 0, 0, 0, 0 };
     _getsets.push_back(getset_sentinel); // Add sentinel
 
-    _type.tp_new = py_object_new;
-    _type.tp_init = py_object_init;
-    _type.tp_dealloc = py_object_dealloc;
-    _type.tp_dictoffset = offsetof(PyPlutoObject, dict);
+    _type->tp_new = py_object_new;
+    _type->tp_init = py_object_init;
+    _type->tp_dealloc = py_object_dealloc;
+    _type->tp_dictoffset = offsetof(PyPlutoObject, dict);
 
     add_getset("__dict__", py_object_get_dict, py_object_set_dict, 0, 0);
     add_method("__copy__", (PyCFunction)py_object__copy__, METH_NOARGS, "");
 
     _dict = PyDict_New();
 }
+PythonClass::PythonClass(const char* name, PyTypeObject* type, PythonClass* super) :
+    Class(name, super->size()),
+    _creator(super->_creator),
+    _type(type),
+    _owned(false),
+    _next(nullptr)
+{
+    if (_head)
+    {
+        PythonClass* t = _head;
+        while (t->_next) t = t->_next;
+        t->_next = this;
+    }
+    else
+    {
+        _head = this;
+    }
+    set_super(super);
+
+    _dict = type->tp_dict;
+    Py_XINCREF(_dict);
+
+    PyDict_SetItemString(_dict, "__cpp_class__", PyCapsule_New(this, "cpp_class", nullptr));
+}
 PythonClass::~PythonClass()
 {
-    Py_DECREF(_dict);
+    Py_XDECREF(_dict);
+    
+    if (_owned)
+        free(_type);
+    else
+        Py_DECREF(_type);
+}
+Object* PythonClass::create_object(const Tuple& args)
+{
+    PyObject* ret = PyObject_Call((PyObject*)_type, args.tuple(), 0);
+    if (!ret)
+    {
+        return nullptr;
+    }
+    return ((PyPlutoObject*)ret)->obj;
+}
+Object* PythonClass::create_object(PyObject* pyobj)
+{
+    Object* obj = _creator();
+    obj->set_python_object(pyobj);
+    return obj;
 }
 void PythonClass::add_method(const char *name, PyCFunction meth, int flags, const char *doc)
 {
@@ -236,38 +281,49 @@ void PythonClass::set_super(PythonClass* super)
     if (this != super)
     {
         Class::set_super(super);
-        _type.tp_base = &super->_type;
+        _type->tp_base = super->_type;
     }
 }
-
+Dict PythonClass::dict()
+{
+    return Dict(_dict);
+}
 PyObject* PythonClass::create_python_object(Object* owner)
 {
-    PyObject* ret = PyObject_Call((PyObject*)&_type, PyCapsule_New(owner, "cpp_object", 0), 0);
+    PyObject* ret = PyObject_Call((PyObject*)_type, PyCapsule_New(owner, "cpp_object", 0), 0);
     if (!ret)
         PyErr_Print();
     return ret;
 }
 PyTypeObject* PythonClass::python_type()
 {
-    return &_type;
+    return _type;
 }
 bool PythonClass::check_type(PyObject* obj)
 {
-    return PyObject_IsInstance(obj, (PyObject*)&_type) != 0;
+    return PyObject_IsInstance(obj, (PyObject*)_type) != 0;
+}
+bool PythonClass::owned() const
+{
+    return _owned;
 }
 int PythonClass::ready()
 {
-    _type.tp_methods = _methods.data();
-    _type.tp_members = _members.data();
-    _type.tp_getset = _getsets.data();
-    int r = PyType_Ready(&_type);
+    _type->tp_methods = _methods.data();
+    _type->tp_members = _members.data();
+    _type->tp_getset = _getsets.data();
+    int r = PyType_Ready(_type);
 
-    PyObject* dict = _type.tp_dict;
+    PyObject* dict = _type->tp_dict;
     assert(dict);
 
     PyDict_SetItemString(dict, "__cpp_class__", PyCapsule_New(this, "cpp_class", nullptr));
     PyDict_Merge(dict, _dict, 1);
 
+    Py_INCREF(dict);
+    Py_DECREF(_dict);
+    _dict = dict;
+    
     return r;
 }
 void PythonClass::ready_all()
@@ -283,4 +339,45 @@ void PythonClass::ready_all()
         t = t->_next;
     }
 }
+std::vector<PythonClass*> PythonClass::classes()
+{
+    std::vector<PythonClass*> v;
+    PythonClass* t = _head;
+    while (t)
+    {
+        v.push_back(t);
+        t = t->_next;
+    }
+    return v;
+}
+PythonClass* PythonClass::python_class(PyTypeObject* type)
+{
+    if (!type)
+        return nullptr;
 
+    PythonClass* t = _head;
+    while (t)
+    {
+        if (t->python_type() == type)
+        {
+            return t;
+        }
+        t = t->_next;
+    }
+
+    t = new PythonClass(type->tp_name, type, python_class(type->tp_base));
+    return t;
+}
+PythonClass* PythonClass::python_class(const char* name)
+{
+    PythonClass* t = _head;
+    while (t)
+    {
+        if (strcmp(t->name(), name) == 0)
+        {
+            return t;
+        }
+        t = t->_next;
+    }
+    return nullptr;
+}

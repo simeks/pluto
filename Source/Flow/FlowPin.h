@@ -28,8 +28,11 @@ public:
     const std::string& name() const;
 
     FlowNode* owner() const;
+    
     int pin_id() const;
+    void set_pin_id(int id);
 
+    int object_init(const Tuple&, const Dict&) OVERRIDE;
 private:
     Type _pin_type;
     std::string _name;

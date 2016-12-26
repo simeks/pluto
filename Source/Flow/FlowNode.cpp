@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Python/Sequence.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
@@ -150,4 +151,15 @@ FlowNode& FlowNode::operator=(const FlowNode& other)
     _function = other._function;
 
     return *this;
+}
+int FlowNode::object_init(const Tuple& , const Dict&)
+{
+    Dict d = FlowNode::static_class()->dict();
+    if (d.has_key("pins"))
+    {
+        Sequence pins = Sequence(d.get("pins"));
+        std::cout << "pins " << pins.size() << std::endl;
+    }
+
+    return 0;
 }
