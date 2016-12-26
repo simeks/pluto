@@ -36,3 +36,4 @@ else:
 
 import console
 
+flow.window()

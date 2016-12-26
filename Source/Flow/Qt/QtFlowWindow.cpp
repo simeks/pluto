@@ -6,6 +6,7 @@
 #include "QtFlowWindow.h"
 #include "QtFlowGraphScene.h"
 #include "QtFlowGraphView.h"
+#include "QtNodePropertyWidget.h"
 
 #include <QCoreApplication>
 #include <QFileDialog>
@@ -156,13 +157,23 @@ void QtFlowWindow::setup_ui()
     menu_file->addAction(action_exit);
 
     setWindowTitle("Flow Editor");
-    
+
     _graph_view = new QtFlowGraphView(this);
-    setCentralWidget(_graph_view);
     _graph_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     connect(this, SIGNAL(node_template_added(FlowNode*)), _graph_view, SLOT(node_template_added(FlowNode*)));
     connect(this, SIGNAL(node_template_removed(FlowNode*)), _graph_view, SLOT(node_template_removed(FlowNode*)));
+
+    _node_property_view = new QtNodePropertyWidget(this);
+    connect(_graph_view, SIGNAL(flow_node_selected(QtBaseNode*)), _node_property_view, SLOT(flow_node_selected(QtBaseNode*)));
+
+    QWidget* central_widget = new QWidget(this);
+    QHBoxLayout* layout = new QHBoxLayout(central_widget);
+    layout->setMargin(0);
+    layout->addWidget(_graph_view);
+    layout->addWidget(_node_property_view);
+
+    setCentralWidget(central_widget);
 }
 void QtFlowWindow::on_exit_triggered()
 {

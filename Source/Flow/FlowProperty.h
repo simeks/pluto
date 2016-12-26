@@ -14,8 +14,8 @@ public:
     FlowProperty();
     virtual ~FlowProperty();
 
-    const std::string& name() const;
-    const std::string& default_value() const;
+    const char* name() const;
+    const char* default_value() const;
 
     FlowNode* owner() const;
     void set_owner(FlowNode* node);

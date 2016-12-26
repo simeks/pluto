@@ -54,7 +54,7 @@ public:
     const std::vector<FlowPin*>& pins() const;
 
     FlowPin* pin(int id) const;
-    FlowPin* pin(const std::string& name) const;
+    FlowPin* pin(const char* name) const;
 
     const Guid& node_id() const;
     void set_node_id(const Guid& id);
@@ -66,13 +66,15 @@ public:
     const char* title() const;
     const char* category() const;
 
-    void add_pin(const std::string& name, int pin_type);
+    void add_pin(const char* name, int pin_type);
     void add_pin(FlowPin* pin);
 
     void add_property(FlowProperty* prop);
-
     const std::vector<FlowProperty*>& properties() const;
 
+    const char* property(const char* name) const;
+    void set_property(const char* name, const char* value);
+    
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
 

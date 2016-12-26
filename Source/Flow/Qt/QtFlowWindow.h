@@ -8,6 +8,7 @@
 class FlowGraph;
 class FlowNode;
 class QtFlowGraphView;
+class QtNodePropertyWidget;
 class QtFlowWindow : public QMainWindow
 {
     Q_OBJECT
@@ -37,6 +38,7 @@ private slots:
 
 private:
     QtFlowGraphView* _graph_view;
+    QtNodePropertyWidget* _node_property_view;
     QString _current_file;
 
 signals:

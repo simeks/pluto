@@ -5,6 +5,7 @@
 #include "FlowNode.h"
 #include "FlowModule.h"
 #include "FlowPin.h"
+#include "FlowProperty.h"
 
 OBJECT_INIT_TYPE_FN(FlowGraph)
 {
@@ -151,15 +152,12 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         out_node->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
             
         const JsonObject& properties = n["properties"];
-        if (properties.is_array())
+        if (properties.is_object())
         {
-            for (int j = 0; j < properties.size(); ++j)
+            for (auto p : properties)
             {
-                const JsonObject& p = properties[j];
-                if (p.is_array() && p.size() == 2)
-                {
-                    //out_node->set_property(p[0].as_string(), p[1].as_string());
-                }
+                if (p.second.is_string())
+                    out_node->set_property(p.first.c_str(), p.second.as_string().c_str());
             }
         }
         out_graph->add_node(out_node);
@@ -213,7 +211,12 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         node["ui_pos"].append().set_int(pos.x);
         node["ui_pos"].append().set_int(pos.y);
 
-        // TODO: Properties
+        JsonObject& properties = node["properties"];
+        properties.set_empty_object();
+        for (auto p : n.second->properties())
+        {
+            properties[p->name()].set_string(n.second->property(p->name()));
+        }
     }
 
     JsonObject& links = root["links"];

@@ -9,7 +9,7 @@
 
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowNode, run, FlowContext*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowNode, add_pin, std::string, int);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowNode, add_pin, const char*, int);
 
 OBJECT_INIT_TYPE_FN(FlowNode)
 {
@@ -67,7 +67,7 @@ FlowPin* FlowNode::pin(int id) const
 {
     return _pins[id];
 }
-FlowPin* FlowNode::pin(const std::string& name) const
+FlowPin* FlowNode::pin(const char* name) const
 {
     for (auto& p : _pins)
     {
@@ -92,7 +92,7 @@ void FlowNode::set_flow_graph(FlowGraph* graph)
     _owner_graph = graph;
 }
 
-void FlowNode::add_pin(const std::string& name, int pin_type)
+void FlowNode::add_pin(const char* name, int pin_type)
 {
     int id = (int)_pins.size();
     _pins.push_back(object_new<FlowPin>(name, (FlowPin::Type)pin_type, this, id));
@@ -108,11 +108,22 @@ void FlowNode::add_property(FlowProperty* prop)
 {
     prop->set_owner(this);
     _properties.push_back(prop);
+
+    set_attribute(prop->name(), prop->default_value());
 }
 const std::vector<FlowProperty*>& FlowNode::properties() const
 {
     return _properties;
 }
+const char* FlowNode::property(const char* name) const
+{
+    return attribute<const char*>(name);
+}
+void FlowNode::set_property(const char* name, const char* value)
+{
+    set_attribute(name, value);
+}
+
 const char* FlowNode::node_class() const
 {
     if (has_attribute("node_class"))
@@ -148,6 +159,10 @@ FlowNode::FlowNode(const FlowNode& other)
     for (auto& pin : other._pins)
     {
         add_pin((FlowPin*)pin->clone());
+    }
+    for (auto& prop : other._properties)
+    {
+        add_property((FlowProperty*)prop->clone());
     }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
