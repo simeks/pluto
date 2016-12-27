@@ -55,6 +55,7 @@ public:
     void copy_from(uint8_t* src) const;
 
     NumpyArray cast(int type) const;
+    NumpyArray cast(PyArray_Descr* desc) const;
 
     NumpyArray(const NumpyArray& other);
     NumpyArray& operator=(const NumpyArray& other);

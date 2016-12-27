@@ -130,6 +130,10 @@ NumpyArray NumpyArray::cast(int type) const
 {
     return NumpyArray((PyArrayObject*)PyArray_Cast(_arr, type));
 }
+NumpyArray NumpyArray::cast(PyArray_Descr* desc) const
+{
+    return NumpyArray((PyArrayObject*)PyArray_CastToType(_arr, desc, 0));
+}
 NumpyArray::NumpyArray(const NumpyArray& other)
 {
     _arr = other._arr;

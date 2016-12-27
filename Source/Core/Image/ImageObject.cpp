@@ -162,7 +162,9 @@ bool ImageObject::set_image(PyObject* npy_array, int pixel_type_hint)
 }
 PyObject* ImageObject::array() const
 {
-    return (PyObject*)_image.numpy_array().object();
+    PyObject* arr = (PyObject*)_image.numpy_array().object();
+    Py_XINCREF(arr);
+    return arr;
 }
 void ImageObject::set_array(PyObject* arr, image::PixelType pixel_type_hint)
 {
