@@ -170,7 +170,7 @@ namespace python_convert
     {
         PyObject* o = value.tuple();
         Py_XINCREF(o);
-        return 0;
+        return o;
     }
 
     template<>
@@ -178,7 +178,7 @@ namespace python_convert
     {
         PyObject* o = value.dict();
         Py_XINCREF(o);
-        return 0;
+        return o;
     }
 
     template<>
