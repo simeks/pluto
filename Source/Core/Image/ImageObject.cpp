@@ -16,6 +16,7 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, ndims);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, pixel_type);
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(ImageObject, array);
+PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_RETURN(ImageObject, __array__);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(ImageObject, set_array, PyObject*, image::PixelType);
 
 OBJECT_INIT_TYPE_FN(ImageObject)
@@ -28,6 +29,7 @@ OBJECT_INIT_TYPE_FN(ImageObject)
     OBJECT_PYTHON_ADD_METHOD(ImageObject, set_origin, "Sets the origin of the image.");
     OBJECT_PYTHON_ADD_METHOD(ImageObject, set_spacing, "Sets the spacing of the image.");
     OBJECT_PYTHON_ADD_METHOD(ImageObject, array, "Returns the image data array.");
+    OBJECT_PYTHON_ADD_METHOD(ImageObject, __array__, "Returns the image data array.");
     OBJECT_PYTHON_ADD_METHOD(ImageObject, set_array, "Sets the image data from a numpy array.");
 }
 
@@ -161,6 +163,12 @@ bool ImageObject::set_image(PyObject* npy_array, int pixel_type_hint)
     return true;
 }
 PyObject* ImageObject::array() const
+{
+    PyObject* arr = (PyObject*)_image.numpy_array().object();
+    Py_XINCREF(arr);
+    return arr;
+}
+PyObject* ImageObject::__array__(const Tuple&) const
 {
     PyObject* arr = (PyObject*)_image.numpy_array().object();
     Py_XINCREF(arr);

@@ -32,6 +32,8 @@ public:
 
     /// Returns the numpy array
     PyObject* array() const;
+    PyObject* __array__(const Tuple& t) const;
+
     /// Sets the image data to the data in the specified array. 
     /// Remark: This may change the dimensions and the pixel format of the image but origin and spacing will remain the same. 
     void set_array(PyObject* arr, image::PixelType pixel_type_hint);
