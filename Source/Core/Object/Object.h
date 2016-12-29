@@ -49,18 +49,18 @@
     typedef TSuperClass Super; \
     typedef TClass ThisClass; \
     \
-    static Object* create_object(); \
+    static Object* create_object(PyObject*, PythonClass*); \
     static PythonClass* static_class(); \
     virtual PythonClass* get_class(); \
-    virtual Object* clone(); \
-    virtual Object* clone(PyObject* pyobj);
+    virtual Object* clone();
+
 
 #define IMPLEMENT_OBJECT(TClass, Name, API) \
     OBJECT_CONVERTER_FROM_PYTHON(TClass, API); \
     OBJECT_CONVERTER_TO_PYTHON(TClass, API); \
-    Object* TClass::create_object() \
+    Object* TClass::create_object(PyObject* pyobj, PythonClass* cls) \
     { \
-        return new TClass(); \
+        return new TClass(pyobj, cls); \
     } \
     static PythonClass* _##TClass##_type = TClass::static_class(); \
     PythonClass* TClass::static_class() \
@@ -68,29 +68,30 @@
         static PythonClass* type = nullptr; \
         if (!type) \
         { \
-            type = new PythonClass(Name, sizeof(TClass), TClass::create_object); \
+            type = new PythonClass(Name, sizeof(TClass), TClass::create_object, OBJECT_INIT_TYPE_FN_NAME(TClass)); \
             if (type != TClass::Super::static_class()) \
             { \
                 type->set_super(TClass::Super::static_class()); \
             } \
-            OBJECT_INIT_TYPE_FN_NAME(TClass)(type); \
         } \
         return type; \
     } \
     PythonClass* TClass::get_class() \
     { \
-        if (!_class) \
-            _class = TClass::static_class(); \
-        return _class; \
+        if (_class) return _class; \
+        return TClass::static_class(); \
     } \
     Object* TClass::clone() \
     { \
-        return object_clone<TClass>(this); \
-    } \
-    Object* TClass::clone(PyObject* pyobj)   \
-    { \
-        return object_clone<TClass>(this, pyobj); \
-    } 
+        return new TClass(*this); \
+    }
+
+
+#define DECLARE_OBJECT_CONSTRUCTOR(TClass) \
+    TClass(PyObject*, PythonClass* cls = TClass::static_class());
+
+#define IMPLEMENT_OBJECT_CONSTRUCTOR(TClass, TSuperClass) \
+    TClass::TClass(PyObject* pyobj, PythonClass* cls) : TSuperClass(pyobj, cls) {}
 
 class Dict;
 class PythonType;
@@ -101,16 +102,18 @@ class CORE_API Object
     DECLARE_OBJECT(Object, Object);
 
 public:
-    Object();
+    Object(PyObject* pyobj, PythonClass* cls);
+    Object(const Object& other);
+
     virtual ~Object();
+
+    virtual void object_init() {}
+    virtual void object_python_init(const Tuple&, const Dict&) {}
 
     bool is_a(Class* type);
 
     template<typename T>
     bool is_a() { return is_a(T::static_class()); }
-
-    Object(const Object& other);
-    Object& operator=(const Object& other);
 
     void addref();
     void release();
@@ -137,16 +140,14 @@ public:
     template<typename T>
     T attribute(const char* name) const;
 
-    virtual int object_init(const Tuple&, const Dict&) { return 0; }
-
-    void set_class(PythonClass* cls);
-
     PyObject* python_object();
-    void set_python_object(PyObject* obj);
+    
+    void set_class(PythonClass* cls);
 
 protected:
     PythonClass* _class;
     PyObject* _py_object;
+
 };
 
 template<typename R, typename A>
@@ -185,55 +186,45 @@ Type* object_cast(Object* object)
 
     return (Type*)object;
 }
-
 template<typename Type>
 Type* object_new()
 {
-    Type* o = new Type();
-    o->set_python_object(Type::static_class()->create_python_object(o));
+    Type* o = (Type*)Type::static_class()->create_object();
+    o->object_init();
     return o;
 }
 template<typename Type, typename Arg0>
 Type* object_new(Arg0 arg0)
 {
-    Type* o = new Type(arg0);
-    o->set_python_object(Type::static_class()->create_python_object(o));
+    Type* o = (Type*)Type::static_class()->create_object();
+    o->object_init(arg0);
     return o;
 }
 template<typename Type, typename Arg0, typename Arg1>
 Type* object_new(Arg0 arg0, Arg1 arg1)
 {
-    Type* o = new Type(arg0, arg1);
-    o->set_python_object(Type::static_class()->create_python_object(o));
+    Type* o = (Type*)Type::static_class()->create_object();
+    o->object_init(arg0, arg1);
     return o;
 }
 template<typename Type, typename Arg0, typename Arg1, typename Arg2>
 Type* object_new(Arg0 arg0, Arg1 arg1, Arg2 arg2)
 {
-    Type* o = new Type(arg0, arg1, arg2);
-    o->set_python_object(Type::static_class()->create_python_object(o));
+    Type* o = (Type*)Type::static_class()->create_object();
+    o->object_init(arg0, arg1, arg2);
     return o;
 }
 template<typename Type, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 Type* object_new(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3)
 {
-    Type* o = new Type(arg0, arg1, arg2, arg3);
-    o->set_python_object(Type::static_class()->create_python_object(o));
+    Type* o = (Type*)Type::static_class()->create_object();
+    o->object_init(arg0, arg1, arg2, arg3);
     return o;
 }
 template<typename Type>
 Type* object_clone(Type* obj)
 {
-    Type* o = new Type(*obj);
-    o->set_python_object(python_object::copy(obj->python_object(), o));
-    return o;
-}
-template<typename Type>
-Type* object_clone(Type* obj, PyObject* pyobj)
-{
-    Type* o = new Type(*obj);
-    o->set_python_object(pyobj);
-    return o;
+    return (Type*)obj->clone();
 }
 
 

@@ -29,8 +29,8 @@ from image import Image
 
 try:
     import flow
-except ImportError:
-    print('Failed to import flow')
+except ImportError as e:
+    print('Failed to import flow:',e)
 else:
     print('Import module: flow')
 

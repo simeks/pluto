@@ -1,6 +1,7 @@
 #include <Core/Common.h>
 #include <QSplashScreen>
 
+#include "Console/ConsoleModule.h"
 #include "MainWindow.h"
 #include "PlutoApplication.h"
 
@@ -14,6 +15,8 @@ int WinMain(HINSTANCE /*hInInstance*/, HINSTANCE /*hPrevInstance*/, char*, int /
     memory::initialize();
     int ret = 0;
     {
+        ConsoleModule::create();
+
 #if defined(PLUTO_BUILD_DEBUG) || !defined(PLUTO_PLATFORM_WINDOWS)
         PlutoApplication app(argc, argv);
 #else

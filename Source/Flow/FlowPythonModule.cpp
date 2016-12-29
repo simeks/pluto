@@ -26,16 +26,15 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, node_template, cons
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, create_node, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowPythonModule, node_templates);
 
-FlowPythonModule::FlowPythonModule(QtFlowUI* ui) : PythonModule("flow_api"), _ui(ui)
+
+FlowPythonModule::FlowPythonModule(QtFlowUI* ui) : _ui(ui)
 {
 }
 FlowPythonModule::~FlowPythonModule()
 {
 }
-void FlowPythonModule::init_module()
+void FlowPythonModule::post_init()
 {
-    PythonModule::init_module();
-
     add_type("Context", FlowContext::static_class());
     add_type("Graph", FlowGraph::static_class());
     add_type("Node", FlowNode::static_class());
@@ -76,11 +75,11 @@ FlowGraph* FlowPythonModule::load(const char* file)
     JsonObject obj;
     JsonReader reader;
     if (!reader.read_file(file, obj))
-        PYTHON_ERROR_R(IOError, reader.error_message().c_str(), nullptr);
+        PYTHON_ERROR_R(IOError, nullptr, reader.error_message().c_str());
 
     FlowGraph* graph = flow_graph::load(obj);
     if (!graph)
-        PYTHON_ERROR_R(IOError, "Failed to parse graph file", nullptr);
+        PYTHON_ERROR_R(IOError, nullptr, "Failed to parse graph file");
 
     return graph;
 }
@@ -103,14 +102,13 @@ void FlowPythonModule::install_node_template(FlowNode* node)
     if (node->node_class() == nullptr)
         PYTHON_ERROR(AttributeError, "'node_class' not set");
 
-    node->addref();
     FlowModule::instance().install_node_template(node);
 }
 FlowNode* FlowPythonModule::node_template(const char* node_class) const
 {
     FlowNode* r = FlowModule::instance().node_template(node_class);
     if (!r)
-        PYTHON_ERROR_R(KeyError, "no node of given class found", nullptr);
+        PYTHON_ERROR_R(KeyError, nullptr, "no node of given class found");
 
     r->addref();
     return r;
@@ -133,4 +131,7 @@ PyObject* FlowPythonModule::node_templates() const
     }
     return l;
 }
-
+const char* FlowPythonModule::name()
+{
+    return "flow_api";
+}

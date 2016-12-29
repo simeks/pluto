@@ -4,15 +4,17 @@
 #include "ImageModule.h"
 
 
-ImageModule::ImageModule() : PythonModule("image")
+ImageModule::ImageModule()
 {
 }
 ImageModule::~ImageModule()
 {
 }
-void ImageModule::init_module()
+void ImageModule::post_init()
 {
-    PythonModule::init_module();
-
     add_type("Image", ImageObject::static_class());
+}
+const char* ImageModule::name()
+{
+    return "image";
 }

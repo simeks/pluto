@@ -11,12 +11,12 @@ public:
     explicit Dict(PyObject* d);
     ~Dict();
 
-    bool has_key(const std::string& key) const;
+    bool has_key(const char* key) const;
 
-    PyObject* get(const std::string& key) const;
+    PyObject* get(const char* key) const;
     
-    void set(const std::string& key, PyObject* item);
-    void set(const std::string& key, Object* item);
+    void set(const char* key, PyObject* item);
+    void set(const char* key, Object* item);
 
     bool valid() const;
 

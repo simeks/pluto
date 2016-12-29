@@ -119,7 +119,8 @@ void ModuleManager::unload_all()
             delete it.second.module_interface;
         }
 
-        process::unload_module(it.second.handle);
+        // Let the OS unload modules
+        // process::unload_module(it.second.handle); 
     }
     _modules.clear();
 }
@@ -147,6 +148,14 @@ void ModuleManager::find_modules(const char* wildcard, std::vector<std::string>&
 
     }
 }
+void ModuleManager::loaded_modules(std::vector<ModuleInterface*>& modules) const
+{
+    for (auto& m : _modules)
+    {
+        modules.push_back(m.second.module_interface);
+    }
+}
+
 bool ModuleManager::find_module_path(const std::string& module_name, std::string& module_path)
 {
     for (auto& dir : _module_directories)

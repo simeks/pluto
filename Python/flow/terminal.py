@@ -7,8 +7,8 @@ class TerminalNode(flow.Node):
         flow.Pin('Out', flow.Pin.Out)
     ]
     properties = [
-        flow.Property('name', '<Default>'),
-        flow.Property('value', '<Default>')
+        flow.Property('name', ''),
+        flow.Property('value', '')
     ]
 
     def __init__(self):

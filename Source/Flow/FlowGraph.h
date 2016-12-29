@@ -15,7 +15,7 @@ public:
     /// Links pointing from first pin to second pin
     typedef std::pair<FlowPin*, FlowPin*> Link;
 
-    FlowGraph();
+    DECLARE_OBJECT_CONSTRUCTOR(FlowGraph);
     ~FlowGraph();
 
     void add_node(FlowNode* node);

@@ -13,10 +13,8 @@ OBJECT_INIT_TYPE_FN(FlowGraph)
 }
 
 IMPLEMENT_OBJECT(FlowGraph, "FlowGraph", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(FlowGraph, Object);
 
-FlowGraph::FlowGraph()
-{
-}
 FlowGraph::~FlowGraph()
 {
 }

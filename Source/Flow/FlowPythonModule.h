@@ -7,13 +7,13 @@ class FlowContext;
 class FlowNode;
 class FlowWindow;
 class QtFlowUI;
-class FlowPythonModule : public PythonModule
+class FlowPythonModule : public PythonModuleHelper<FlowPythonModule>
 {
 public:
     FlowPythonModule(QtFlowUI* ui);
     ~FlowPythonModule();
 
-    void init_module() OVERRIDE;
+    void post_init() OVERRIDE;
 
     FlowWindow* open(const char* file);
     FlowWindow* window();
@@ -27,6 +27,7 @@ public:
 
     PyObject* node_templates() const;
 
+    static const char* name();
 
 private:
     QtFlowUI* _ui;

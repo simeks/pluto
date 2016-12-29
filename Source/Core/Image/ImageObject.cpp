@@ -35,17 +35,41 @@ OBJECT_INIT_TYPE_FN(ImageObject)
 
 
 IMPLEMENT_OBJECT(ImageObject, "Image", CORE_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(ImageObject, Object);
 
-ImageObject::ImageObject()
-{
-}
-ImageObject::ImageObject(const Image& img) :
-    _image(img)
-{
-}
 ImageObject::~ImageObject()
 {
 }
+void ImageObject::object_init()
+{
+
+}
+void ImageObject::object_init(const Image& image)
+{
+    _image = image;
+}
+void ImageObject::object_python_init(const Tuple& args, const Dict& )
+{
+    PyObject* arr = nullptr;
+    PyObject* hint_str = nullptr;
+    if (PyArg_ParseTuple(args.tuple(), "|OU:__init__", &arr, &hint_str))
+    {
+        if (numpy::check_type(arr))
+        {
+            int hint = image::PixelType_Unknown;
+            if (hint_str)
+            {
+                hint = image::string_to_pixel_type(PyUnicode_AsUTF8(hint_str));
+            }
+            else
+            {
+                PYTHON_ERROR(AttributeError, "Pixel type expected.");
+            }
+            set_image(arr, hint);
+        }
+    }
+}
+
 void ImageObject::set_image(const Image& img)
 {
     _image = img;
@@ -89,47 +113,6 @@ const Image& ImageObject::image() const
 {
     return _image;
 }
-
-ImageObject::ImageObject(const ImageObject& other)
-{
-    _image = other._image;
-}
-ImageObject& ImageObject::operator=(const ImageObject& other)
-{
-    _image = other._image;
-    return *this;
-}
-int ImageObject::object_init(const Tuple& args, const Dict&)
-{
-    PyObject* arr = nullptr;
-    PyObject* hint_str = nullptr;
-    if (PyArg_ParseTuple(args.tuple(), "|OU:__init__", &arr, &hint_str))
-    {
-        if (numpy::check_type(arr))
-        {
-            int hint = image::PixelType_Unknown;
-            if (hint_str)
-            {
-                hint = image::string_to_pixel_type(PyUnicode_AsUTF8(hint_str));
-            }
-            else
-            {
-                PyErr_SetString(PyExc_TypeError, "Pixel type expected.");
-                return -1;
-            }
-
-            if (!set_image(arr, hint))
-            {
-                return -1;
-            }
-        }
-    }
-    else
-    {
-        return -1;
-    }
-    return 0;
-}
 bool ImageObject::set_image(PyObject* npy_array, int pixel_type_hint)
 {
     NumpyArray arr((PyArrayObject*)npy_array);
@@ -142,8 +125,7 @@ bool ImageObject::set_image(PyObject* npy_array, int pixel_type_hint)
         --ndims;
         if (arr.dims()[ndims] != nc)
         {
-            PyErr_SetString(PyExc_ValueError, "Mismatch in number of components per element between array and hinted element type.");
-            return false;
+            PYTHON_ERROR_R(ValueError, false, "Mismatch in number of components per element between array and hinted element type.");
         }
     }
 

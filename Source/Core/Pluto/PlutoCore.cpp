@@ -11,23 +11,39 @@ PlutoCore* PlutoCore::s_instance = nullptr;
 
 PlutoCore::PlutoCore(int, char**)
 {
-    Py_Initialize();
-    PythonClass::ready_all();
+    ModuleManager::create();
 
     _kernel = new PlutoKernel();
     _window_manager = new WindowManager();
 }
 PlutoCore::~PlutoCore()
 {
+    delete _window_manager;
+    delete _kernel;
+
     ModuleManager::destroy();
+
+    Py_Finalize();
 }
-void PlutoCore::initialize()
+void PlutoCore::init()
 {
-    ModuleManager::create();
+    _kernel->prepare();
+
+    std::vector<ModuleInterface*> modules;
+    ModuleManager::instance().loaded_modules(modules);
+    for (auto m : modules)
+    {
+        m->init();
+    }
 }
-void PlutoCore::install_python_module(PythonModule* module)
+void PlutoCore::shutdown()
 {
-    _kernel->install_module(module);
+    std::vector<ModuleInterface*> modules;
+    ModuleManager::instance().loaded_modules(modules);
+    for (auto m : modules)
+    {
+        m->shutdown();
+    }
 }
 PlutoKernel* PlutoCore::kernel() const
 {

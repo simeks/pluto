@@ -17,21 +17,21 @@ Dict::~Dict()
     Py_XDECREF(_d);
 }
 
-bool Dict::has_key(const std::string& key) const
+bool Dict::has_key(const char* key) const
 {
-    return PyMapping_HasKeyString(_d, key.c_str()) != 0;
+    return PyMapping_HasKeyString(_d, key) != 0;
 }
 
-PyObject* Dict::get(const std::string& key) const
+PyObject* Dict::get(const char* key) const
 {
-    return PyDict_GetItemString(_d, key.c_str());
+    return PyDict_GetItemString(_d, key);
 }
 
-void Dict::set(const std::string& key, PyObject* item)
+void Dict::set(const char* key, PyObject* item)
 {
-    PyDict_SetItemString(_d, key.c_str(), item);
+    PyDict_SetItemString(_d, key, item);
 }
-void Dict::set(const std::string& key, Object* item)
+void Dict::set(const char* key, Object* item)
 {
     set(key, item->python_object());
 }

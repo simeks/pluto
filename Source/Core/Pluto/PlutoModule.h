@@ -4,13 +4,13 @@
 #include <Core/Python/PythonModule.h>
 
 class PyStdStream;
-class PlutoModule : public PythonModule
+class PlutoModule : public PythonModuleHelper<PlutoModule>
 {
 public:
     PlutoModule();
     virtual ~PlutoModule();
 
-    virtual void init_module() OVERRIDE;
+    virtual void post_init() OVERRIDE;
 
     const char* get_user_dir();
 
@@ -21,6 +21,7 @@ public:
     
     Object* create_object(const Tuple& args);
 
+    static const char* name();
 private:
     static std::string s_version;
 };

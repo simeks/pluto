@@ -15,16 +15,17 @@ OBJECT_INIT_TYPE_FN(PyStdStream)
 }
 
 IMPLEMENT_OBJECT(PyStdStream, "StdStream", CORE_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(PyStdStream, Object);
 
-PyStdStream::PyStdStream()
-    : _fn(nullptr),
-    _data(nullptr)
-{
-}
 PyStdStream::~PyStdStream()
 {
 }
 
+void PyStdStream::object_init()
+{
+    _fn = nullptr;
+    _data = nullptr;
+}
 void PyStdStream::write(const char* text)
 {
     if (text) 

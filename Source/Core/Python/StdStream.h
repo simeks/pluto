@@ -10,8 +10,10 @@ class PyStdStream : public Object
 public:
     typedef void (Callback)(void* data, const char* msg);
     
-    PyStdStream();
+    DECLARE_OBJECT_CONSTRUCTOR(PyStdStream);
     ~PyStdStream();
+
+    void object_init();
 
     void write(const char* text);
     PyObject* flush();

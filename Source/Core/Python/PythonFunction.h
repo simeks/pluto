@@ -6,13 +6,20 @@
 
 #define PYTHON_FUNCTION_NAME_CLASS(TClass, Name) _py_wrapper_##TClass##_##Name
 
+#define PYTHON_FUNCTION_CHECK_ARGS(Fn, N) \
+    if (PyTuple_Check(args) && PyTuple_Size(args) != N) { \
+        PYTHON_ERROR_R(TypeError, nullptr, "TypeError: %s() takes %d positional argument but %d were given", #Fn, N, PyTuple_Size(args)); \
+    }
+
+
 #define PYTHON_FUNCTION_CATCH_ERROR() \
     if (PyErr_Occurred()) \
         return 0;
 
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(TClass, Fn) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 0); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
         tself->Fn(); \
@@ -23,6 +30,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(TClass, Fn, A) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 1); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; \
         python_helpers::parse_args(args, a); \
@@ -34,6 +42,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(TClass, Fn, A, B) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 2); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; \
         python_helpers::parse_args(args, a, b); \
@@ -45,6 +54,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS3(TClass, Fn, A, B, C) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 3); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; C c; \
         python_helpers::parse_args(args, a, b, c); \
@@ -55,8 +65,9 @@
     }
 
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(TClass, Fn) \
-    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* , PyObject* ) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 0); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
         return python_convert::to_python(tself->Fn()); \
@@ -64,6 +75,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(TClass, Fn, A) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 1); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; \
         python_helpers::parse_args(args, a); \
@@ -73,6 +85,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(TClass, Fn, A, B) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 2); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; \
         python_helpers::parse_args(args, a, b); \
@@ -82,6 +95,7 @@
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS3_RETURN(TClass, Fn, A, B, C) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
+        PYTHON_FUNCTION_CHECK_ARGS(Fn, 3); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         A a; B b; C c; \
         python_helpers::parse_args(args, a, b, c); \

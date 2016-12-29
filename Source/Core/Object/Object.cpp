@@ -13,8 +13,18 @@ OBJECT_INIT_TYPE_FN(Object)
 
 IMPLEMENT_OBJECT(Object, "Object", CORE_API);
 
-Object::Object() : _class(nullptr), _py_object(nullptr)
+Object::Object(PyObject* pyobj, PythonClass* cls) : _class(cls), _py_object(pyobj)
 {
+    if (!_py_object)
+    {
+        _py_object = _class->create_python_object(this);
+    }
+}
+Object::Object(const Object& other)
+{
+    // Copy pyobj
+    _class = other._class;
+    _py_object = python_object::copy(other._py_object, this);
 }
 Object::~Object()
 {
@@ -32,18 +42,6 @@ bool Object::is_a(Class* type)
     return false;
 }
 
-Object::Object(const Object& other)
-{
-    _py_object = other._py_object;
-    Py_XINCREF(_py_object);
-}
-Object& Object::operator=(const Object& other)
-{
-    _py_object = other._py_object;
-    Py_XINCREF(_py_object);
-
-    return *this;
-}
 void Object::addref()
 {
     Py_XINCREF(_py_object);
@@ -86,16 +84,13 @@ PyObject* Object::attribute(const char* name) const
 {
     return PyObject_GetAttrString(_py_object, name);
 }
-void Object::set_class(PythonClass* cls)
-{
-    _class = cls;
-}
 PyObject* Object::python_object()
 {
     return _py_object;
 }
-void Object::set_python_object(PyObject* obj)
+void Object::set_class(PythonClass* cls)
 {
-    _py_object = obj;
+    _class = cls;
 }
+
 

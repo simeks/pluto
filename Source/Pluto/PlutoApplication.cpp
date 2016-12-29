@@ -10,18 +10,21 @@ PlutoApplication::PlutoApplication(int argc, char** argv) :
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     PlutoCore::create(argc, argv);
-    _kernel = new PlutoKernelProxy(PlutoCore::instance().kernel());
 }
 PlutoApplication::~PlutoApplication()
 {
+    _kernel->stop();
     delete _kernel;
+
+    PlutoCore::instance().shutdown();
     PlutoCore::destroy();
 }
 void PlutoApplication::init()
 {
-    _kernel->prepare();
-    PlutoCore::instance().initialize();
     ModuleManager::instance().load_module("Flow");
+
+    PlutoCore::instance().init();
+    _kernel = new PlutoKernelProxy(PlutoCore::instance().kernel());
 }
 PlutoKernelProxy* PlutoApplication::kernel() const
 {

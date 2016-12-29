@@ -25,12 +25,12 @@ namespace
 
 PlutoKernelProxy::PlutoKernelProxy(PlutoKernel* kernel) : _kernel(kernel)
 {
+    this->moveToThread(&_thread);
+    _thread.start();
+
     _kernel->set_stdout_callback(kernel_stdout, this);
     _kernel->set_stderr_callback(kernel_stderr, this);
     _kernel->set_htmlout_callback(kernel_htmlout, this);
-
-    this->moveToThread(&_thread);
-    _thread.start();
 }
 PlutoKernelProxy::~PlutoKernelProxy()
 {
@@ -42,10 +42,6 @@ PlutoKernelProxy::~PlutoKernelProxy()
         _thread.wait();
     }
 }
-void PlutoKernelProxy::prepare()
-{
-    _kernel->prepare();
-}
 void PlutoKernelProxy::start()
 {
     _kernel->start();
@@ -55,7 +51,6 @@ void PlutoKernelProxy::start()
 void PlutoKernelProxy::stop()
 {
     _kernel->stop();
-    delete _kernel;
 }
 void PlutoKernelProxy::on_stdout(const char* text, bool html)
 {

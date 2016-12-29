@@ -18,7 +18,6 @@ public:
     void on_stderr(const char* text);
 
 public slots:
-    void prepare();
     void start();
     void stop();
 

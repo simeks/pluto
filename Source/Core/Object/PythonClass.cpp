@@ -37,7 +37,7 @@ static PyObject* py_object_new(PyTypeObject* type, PyObject* args, PyObject*)
 
     if (cls)
     {
-        ((PyPlutoObject*)pyobj)->obj = cls->create_object(pyobj);;
+        ((PyPlutoObject*)pyobj)->obj = cls->create_object(pyobj);
     }
     return pyobj;
 }
@@ -45,7 +45,9 @@ static int py_object_init(PyObject* self, PyObject* arg, PyObject* kw)
 {
     if (!PyCapsule_CheckExact(arg))
     {
-        return ((PyPlutoObject*)self)->obj->object_init(Tuple(arg), Dict(kw));
+        ((PyPlutoObject*)self)->obj->object_python_init(Tuple(arg), Dict(kw));
+        if (PyErr_Occurred())
+            return -1;
     }
     return 0;
 }
@@ -74,20 +76,10 @@ static int py_object_set_dict(PyObject* self, PyObject* dict, void*)
     o->dict = dict;
     return 0;
 }
-static PyObject* py_object__copy__(PyObject* self, PyObject*, PyObject*)
+static PyObject* py_object__copy__(PyPlutoObject* self, PyObject*, PyObject*)
 {
-    PyTypeObject* type = self->ob_type;
-    PyObject* copy = type->tp_alloc(type, 0);
-
-    ((PyPlutoObject*)copy)->obj = ((PyPlutoObject*)self)->obj->clone(copy);
-
-    PyObject* src_dict = py_object_get_dict(self, nullptr);
-    PyObject* dst_dict = py_object_get_dict(copy, nullptr);
-    PyDict_Update(dst_dict, src_dict);
-    Py_DECREF(src_dict);
-    Py_DECREF(dst_dict);
-
-    return (PyObject*)copy;
+    Object* copy = object_clone(self->obj);
+    return copy->python_object();
 }
 
 
@@ -105,7 +97,7 @@ PyObject* python_object::copy(PyObject* pyobj, Object* owner)
     if (owner)
         owner_capsule = PyCapsule_New(owner, "cpp_object", nullptr);
 
-    PyObject* copy = py_object_new(type, owner_capsule, nullptr);
+    PyObject* copy = type->tp_new(type, owner_capsule, nullptr);
     PyObject* src_dict = py_object_get_dict(pyobj, nullptr);
     PyObject* dst_dict = py_object_get_dict(copy, nullptr);
     PyDict_Update(dst_dict, src_dict);
@@ -160,9 +152,10 @@ static PyTypeObject py_blank_type_object = {
 
 PythonClass* PythonClass::_head = nullptr;
 
-PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator) :
+PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn) :
     Class(name, size),
     _creator(creator),
+    _initfn(initfn),
     _owned(true),
     _next(nullptr)
 {
@@ -207,6 +200,7 @@ PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator) 
 PythonClass::PythonClass(const char* name, PyTypeObject* type, PythonClass* super) :
     Class(name, super->size()),
     _creator(super->_creator),
+    _initfn(nullptr),
     _type(type),
     _owned(false),
     _next(nullptr)
@@ -237,6 +231,10 @@ PythonClass::~PythonClass()
     else
         Py_DECREF(_type);
 }
+Object* PythonClass::create_object()
+{
+    return _creator(nullptr, this);
+}
 Object* PythonClass::create_object(const Tuple& args)
 {
     PyObject* ret = PyObject_Call((PyObject*)_type, args.tuple(), 0);
@@ -250,10 +248,7 @@ Object* PythonClass::create_object(const Tuple& args)
 }
 Object* PythonClass::create_object(PyObject* pyobj)
 {
-    Object* obj = _creator();
-    obj->set_class(this);
-    obj->set_python_object(pyobj);
-    return obj;
+    return _creator(pyobj, this);
 }
 void PythonClass::add_method(const char *name, PyCFunction meth, int flags, const char *doc)
 {
@@ -274,9 +269,8 @@ void PythonClass::add_getset(const char* name, getter get, setter set, const cha
     PyGetSetDef def = { const_cast<char*>(name), get, set, const_cast<char*>(doc), closure };
     _getsets.insert(_getsets.end() - 1, def); // Insert before sentinel
 }
-void PythonClass::add_attr(const char* name, PyObject* obj, int flags)
+void PythonClass::add_attr(const char* name, PyObject* obj)
 {
-    flags;
     PyDict_SetItemString(_dict, name, obj);
 }
 void PythonClass::set_super(PythonClass* super)
@@ -312,6 +306,12 @@ bool PythonClass::is_python() const
 }
 int PythonClass::ready()
 {
+    if (_type->tp_flags & Py_TPFLAGS_READY) // Already initialzied
+        return 0;
+
+    if (_initfn)
+        _initfn(this);
+
     _type->tp_methods = _methods.data();
     _type->tp_members = _members.data();
     _type->tp_getset = _getsets.data();
@@ -341,6 +341,18 @@ void PythonClass::ready_all()
         }
         t = t->_next;
     }
+}
+void PythonClass::destroy_all()
+{
+    PythonClass* t = _head;
+    while (t)
+    {
+        PythonClass* next = t->_next;
+        delete t;
+
+        t = next;
+    }
+    _head = nullptr;
 }
 std::vector<PythonClass*> PythonClass::classes()
 {

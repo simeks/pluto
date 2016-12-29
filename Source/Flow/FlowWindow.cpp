@@ -23,15 +23,19 @@ OBJECT_INIT_TYPE_FN(FlowWindow)
 }
 
 IMPLEMENT_OBJECT(FlowWindow, "FlowWindow", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(FlowWindow, Object);
 
-FlowWindow::FlowWindow() : _window(nullptr)
-{
-}
-FlowWindow::FlowWindow(QtFlowWindow* window) : _window(window)
-{
-}
+
 FlowWindow::~FlowWindow()
 {
+}
+void FlowWindow::object_init()
+{
+    _window = nullptr;
+}
+void FlowWindow::object_init(QtFlowWindow* window)
+{
+    _window = window;
 }
 void FlowWindow::show()
 {
@@ -60,13 +64,4 @@ void FlowWindow::set_graph(FlowGraph* graph)
 void FlowWindow::clear()
 {
     emit _window->clear_graph();
-}
-FlowWindow::FlowWindow(const FlowWindow& other)
-{
-    _window = other._window;
-}
-FlowWindow& FlowWindow::operator=(const FlowWindow& other)
-{
-    _window = other._window;
-    return *this;
 }

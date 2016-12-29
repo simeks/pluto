@@ -14,14 +14,10 @@
 #include <fstream>
 
 PlutoKernel::PlutoKernel()
-    : _main_module(nullptr), _pluto_module(nullptr)
+    : _main_module(nullptr)
 {
-    _pluto_module = new PlutoModule();
-    _image_module = new ImageModule();
-
-    _stdout = object_new<PyStdStream>();
-    _htmlout = object_new<PyStdStream>();
-    _stderr = object_new<PyStdStream>();
+    PlutoModule::create();
+    ImageModule::create();
 }
 PlutoKernel::~PlutoKernel()
 {
@@ -31,33 +27,32 @@ PlutoKernel::~PlutoKernel()
         _htmlout->release();
     if (_stderr)
         _stderr->release();
-
-    delete _image_module;
-    _image_module = nullptr;
-    delete _pluto_module;
-    _pluto_module = nullptr;
+    
     delete _main_module;
     _main_module = nullptr;
 }
 void PlutoKernel::prepare()
 {
+    Py_Initialize();
     PyEval_InitThreads();
+    PythonClass::ready_all();
+
+    _stdout = object_new<PyStdStream>();
+    _htmlout = object_new<PyStdStream>();
+    _stderr = object_new<PyStdStream>();
 
     PythonModule sys(PyImport_ImportModule("sys"));
+    _stdout->addref();
     sys.add_object("stdout", _stdout);
+    _stderr->addref();
     sys.add_object("stderr", _stderr);
 
     numpy::initialize();
 
     _main_module = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
 
-    _pluto_module->init_module();
-    install_module(_pluto_module);
-
-    _pluto_module->add_object("htmlout", _htmlout);
-
-    _image_module->init_module();
-    install_module(_image_module);
+    _htmlout->addref();
+    PlutoModule::instance().add_object("htmlout", _htmlout);
 }
 void PlutoKernel::start()
 {
@@ -65,7 +60,6 @@ void PlutoKernel::start()
 }
 void PlutoKernel::stop()
 {
-    Py_Finalize();
 }
 
 void PlutoKernel::run_code(const std::string& source)
@@ -128,10 +122,6 @@ void PlutoKernel::interrupt()
 {
     PyErr_SetInterrupt();
 }
-void PlutoKernel::install_module(PythonModule* module)
-{
-    PyDict_SetItemString(PyImport_GetModuleDict(), module->name(), module->module());
-}
 void PlutoKernel::import_module(const std::string& module)
 {
     print("Importing module '" + module + "'.");
@@ -164,7 +154,7 @@ void PlutoKernel::perform_startup()
     print_banner();
 
     // Run startup script (if any)
-    FilePath path(_pluto_module->get_user_dir());
+    FilePath path(PlutoModule::instance().get_user_dir());
     path.join("startup.py");
     run_file(path.get());
 }

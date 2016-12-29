@@ -39,7 +39,7 @@ TEST_CASE(from_python_object)
     PythonClass::ready_all();
     numpy::initialize();
 
-    Object* obj = new Object();
+    Object* obj = object_new<Object>();
     ASSERT_EQUAL(python_convert::from_python<Object*>(obj->python_object()), obj);
     ASSERT_EXPR(PyErr_Occurred() == nullptr);
     ASSERT_NOT_EQUAL(python_convert::from_python<ImageObject*>(obj->python_object()), obj);

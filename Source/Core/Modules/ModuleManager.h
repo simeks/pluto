@@ -17,6 +17,8 @@ public:
 
     void find_modules(const char* wildcard, std::vector<std::string>& modules) const;
 
+    void loaded_modules(std::vector<ModuleInterface*>& modules) const;
+
     static ModuleManager& instance();
     static void create();
     static void destroy();

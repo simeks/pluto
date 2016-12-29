@@ -16,8 +16,10 @@ public:
     FlowModule();
     ~FlowModule();
 
-    void install();
-    void uninstall();
+    void install() OVERRIDE;
+    void uninstall() OVERRIDE;
+
+    void init() OVERRIDE;
 
     void install_node_template(FlowNode* node);
     void install_node_template(const FlowNodeDef& def);
@@ -31,7 +33,6 @@ public:
 private:
     static FlowModule* s_instance;
     
-    FlowPythonModule* _py_module;
     QtFlowUI* _ui;
 
     std::vector<FlowNode*> _node_templates;

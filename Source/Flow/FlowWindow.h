@@ -12,9 +12,11 @@ class FLOW_API FlowWindow : public Object
     DECLARE_OBJECT(FlowWindow, Object);
 
 public:
-    FlowWindow();
-    FlowWindow(QtFlowWindow* window);
+    DECLARE_OBJECT_CONSTRUCTOR(FlowWindow);
     ~FlowWindow();
+
+    void object_init();
+    void object_init(QtFlowWindow* window);
 
     void show();
     void close();
@@ -25,9 +27,6 @@ public:
     FlowGraph* graph();
     void set_graph(FlowGraph* graph);
     void clear();
-
-    FlowWindow(const FlowWindow& other);
-    FlowWindow& operator=(const FlowWindow& other);
 
 private:
     QtFlowWindow* _window;

@@ -3,19 +3,25 @@
 
 #include <Core/Python/PythonModule.h>
 
+
 class ConsoleWidget;
-class ConsoleModule : public PythonModule
+class ConsoleModule : public PythonModuleHelper<ConsoleModule>
 {
 public:
-    ConsoleModule(ConsoleWidget* widget);
+    ConsoleModule();
     virtual ~ConsoleModule();
 
-    virtual void init_module() OVERRIDE;
+    void set_widget(ConsoleWidget* widget);
+
+    void post_init() OVERRIDE;
 
     void focus() const;
     void set_style_sheet(const char* stylesheet);
 
+    static const char* name();
 private:
+    static ConsoleModule* s_instance;
+
     ConsoleWidget* _widget;
 };
 

@@ -10,9 +10,8 @@ public:
     PlutoCore(int argc, char** argv);
     ~PlutoCore();
 
-    void initialize();
-
-    void install_python_module(PythonModule* module);
+    void init();
+    void shutdown();
 
     PlutoKernel* kernel() const;
 

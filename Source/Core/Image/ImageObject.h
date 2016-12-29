@@ -8,15 +8,16 @@ class CORE_API ImageObject : public Object
 {
     DECLARE_OBJECT(ImageObject, Object);
 public:
-    ImageObject();
-    ImageObject(const Image& img);
-    virtual ~ImageObject();
+    DECLARE_OBJECT_CONSTRUCTOR(ImageObject);
+    ~ImageObject();
 
-    void allocate(int type, const std::vector<uint32_t>& size);
+    void object_init();
+    void object_init(const Image& image);
+    void object_python_init(const Tuple& args, const Dict& kw);
+
     void set_image(const Image& img);
     bool set_image(PyObject* npy_array, int pixel_type_hint);
-    void release_image();
-
+    
     void set_origin(const Vec3d&);
     void set_spacing(const Vec3d&);
 
@@ -38,13 +39,7 @@ public:
     /// Remark: This may change the dimensions and the pixel format of the image but origin and spacing will remain the same. 
     void set_array(PyObject* arr, image::PixelType pixel_type_hint);
 
-    ImageObject(const ImageObject&);
-    ImageObject& operator=(const ImageObject&);
-
 private:
-    int object_init(const Tuple& args, const Dict&) OVERRIDE;
-
-
     Image _image;
 };
 

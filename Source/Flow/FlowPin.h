@@ -18,11 +18,15 @@ public:
         Unknown
     };
 
-    FlowPin();
-    FlowPin(const std::string& name,
-            Type pin_type,
-            FlowNode* owner, int id);
+    DECLARE_OBJECT_CONSTRUCTOR(FlowPin);
     virtual ~FlowPin();
+    
+    void object_init();
+    void object_init(const std::string& name,
+                     Type pin_type,
+                     FlowNode* owner, 
+                     int id);
+    void object_python_init(const Tuple& args, const Dict&);
 
     Type pin_type() const;
     const std::string& name() const;
@@ -33,7 +37,6 @@ public:
     int pin_id() const;
     void set_pin_id(int id);
 
-    int object_init(const Tuple&, const Dict&) OVERRIDE;
 private:
     Type _pin_type;
     std::string _name;

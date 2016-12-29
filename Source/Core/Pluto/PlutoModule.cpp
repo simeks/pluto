@@ -14,16 +14,14 @@ PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_RETURN(PlutoModule, create_object);
 
 std::string PlutoModule::s_version = "0.0";
 
-PlutoModule::PlutoModule() : PythonModule("pluto_api")
+PlutoModule::PlutoModule()
 {
 }
 PlutoModule::~PlutoModule()
 {
 }
-void PlutoModule::init_module()
+void PlutoModule::post_init()
 {
-    PythonModule::init_module();
-
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, get_user_dir, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "");
@@ -47,7 +45,7 @@ void PlutoModule::print_html(const std::string& txt)
 PyObject* PlutoModule::register_class(PyObject* cls)
 {
     if (PyType_Check(cls) == 0)
-        PYTHON_ERROR_R(TypeError, "expected class", nullptr);
+        PYTHON_ERROR_R(TypeError, nullptr, "expected class");
 
     Py_INCREF(cls);
     PythonClass::python_class((PyTypeObject*)cls);
@@ -67,16 +65,16 @@ PyObject* PlutoModule::classes() const
 Object* PlutoModule::create_object(const Tuple& args)
 {
     if (args.size() < 1)
-        PYTHON_ERROR_R(AttributeError, "expected at least one argument", nullptr);
+        PYTHON_ERROR_R(AttributeError, nullptr, "expected at least one argument");
 
     const char* class_name = python_convert::from_python<const char*>(args.get(0));
     if (!class_name)
-        PYTHON_ERROR_R(AttributeError, "expected first argument to be string", nullptr);
+        PYTHON_ERROR_R(AttributeError, nullptr, "expected first argument to be string");
 
 
     PythonClass* cls = PythonClass::python_class(class_name);
     if (!cls)
-        PYTHON_ERROR_R(ValueError, "no class found", nullptr);
+        PYTHON_ERROR_R(ValueError, nullptr, "no class found");
 
     Tuple obj_args(args.size() - 1);
     for (int i = 1; i < args.size(); ++i)
@@ -84,4 +82,7 @@ Object* PlutoModule::create_object(const Tuple& args)
 
     return cls->create_object(obj_args);
 }
-
+const char* PlutoModule::name()
+{
+    return "pluto_api";
+}

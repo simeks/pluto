@@ -45,9 +45,13 @@ public:
         int flags;
     };
 
-    FlowNode();
-    explicit FlowNode(const FlowNodeDef& def);
+    DECLARE_OBJECT_CONSTRUCTOR(FlowNode);
     ~FlowNode();
+
+    void object_init();
+    void object_init(const FlowNodeDef& def);
+    void object_python_init(const Tuple& args, const Dict& kw);
+
 
     void run(FlowContext* ctx);
 
@@ -59,8 +63,6 @@ public:
     const Guid& node_id() const;
     void set_node_id(const Guid& id);
     void set_flow_graph(FlowGraph* graph);
-
-    FlowNode(const FlowNode&);
 
     const char* node_class() const;
     const char* title() const;
@@ -78,7 +80,7 @@ public:
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
 
-    int object_init(const Tuple& args, const Dict& kw) OVERRIDE;
+    FlowNode(const FlowNode&);
 protected:
     std::vector<FlowPin*> _pins;
     std::vector<FlowProperty*> _properties;
@@ -89,8 +91,6 @@ protected:
 
     FlowNodeFunction _function;
 
-private:
-    FlowNode& operator=(const FlowNode&);
 };
 
 #endif // __FLOW_NODE_H__

@@ -45,8 +45,6 @@ private:
 
     ConsoleHistory _history;
 
-    ConsoleModule* _console_module;
-
 public slots:
     void kernel_ready();
     void kernel_output(const QString& text, bool html);

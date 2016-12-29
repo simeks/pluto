@@ -25,33 +25,24 @@ PLUTO_IMPLEMENT_MODULE(FlowModule);
 
 FlowModule* FlowModule::s_instance = nullptr;
 
-FlowModule::FlowModule() : _py_module(nullptr), _ui(nullptr)
+FlowModule::FlowModule() : _ui(nullptr)
 {
     if (s_instance == nullptr)
         s_instance = this;
 }
 FlowModule::~FlowModule()
 {
+    delete _ui;
+    _ui = nullptr;
+
     if (s_instance == this)
         s_instance = nullptr;
 }
 
 void FlowModule::install()
 {
-    PythonClass::ready_all();
-
     _ui = new QtFlowUI();
-    _py_module = new FlowPythonModule(_ui);
-    _py_module->init_module();
-    PlutoCore::instance().install_python_module(_py_module);
-
-    FlowPinDef pins[] = {
-        {"In", FlowPin::In, ""},
-        {0, 0, 0}
-    };
-    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "", pins, debug_output, "" };
-
-    install_node_template(nd);
+    FlowPythonModule::create(_ui);
 }
 void FlowModule::uninstall()
 {
@@ -60,15 +51,20 @@ void FlowModule::uninstall()
         n->release();
     }
     _node_templates.clear();
+}
+void FlowModule::init()
+{
+    FlowPinDef pins[] = {
+        { "In", FlowPin::In, "" },
+        { 0, 0, 0 }
+    };
+    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "", pins, debug_output, "" };
 
-    delete _py_module;
-    _py_module = nullptr;
-
-    delete _ui;
-    _ui = nullptr;
+    install_node_template(nd);
 }
 void FlowModule::install_node_template(FlowNode* node)
 {
+    node->addref();
     _node_templates.push_back(node);
     emit _ui->node_template_added(node);
 }
@@ -81,6 +77,7 @@ void FlowModule::install_node_template(const FlowNodeDef& def)
     node->set_attribute("doc", def.doc);
 
     install_node_template(node);
+    node->release();
 }
 FlowNode* FlowModule::node_template(const char* node_class) const
 {

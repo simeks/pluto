@@ -11,16 +11,17 @@ class FLOW_API FlowProperty : public Object
     DECLARE_OBJECT(FlowProperty, Object);
 
 public:
-    FlowProperty();
-    virtual ~FlowProperty();
+    DECLARE_OBJECT_CONSTRUCTOR(FlowProperty);
+    ~FlowProperty();
+
+    void object_init();
+    void object_python_init(const Tuple&, const Dict&);
 
     const char* name() const;
     const char* default_value() const;
 
     FlowNode* owner() const;
     void set_owner(FlowNode* node);
-
-    int object_init(const Tuple&, const Dict&) OVERRIDE;
 
 private:
     std::string _name;

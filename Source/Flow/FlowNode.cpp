@@ -18,15 +18,16 @@ OBJECT_INIT_TYPE_FN(FlowNode)
 }
 
 IMPLEMENT_OBJECT(FlowNode, "FlowNode", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(FlowNode, Object);
 
-FlowNode::FlowNode() :
-    _owner_graph(nullptr),
-    _function(nullptr)
+void FlowNode::object_init()
 {
+    _owner_graph = nullptr;
+    _function = nullptr;
 }
-FlowNode::FlowNode(const FlowNodeDef& def) :
-    _owner_graph(nullptr)
+void FlowNode::object_init(const FlowNodeDef& def)
 {
+    _owner_graph = nullptr;
     _function = def.fn;
 
     if (def.pins)
@@ -40,9 +41,43 @@ FlowNode::FlowNode(const FlowNodeDef& def) :
         }
     }
 }
+void FlowNode::object_python_init(const Tuple&, const Dict&)
+{
+    _owner_graph = nullptr;
+    _function = nullptr;
+
+    Dict d = get_class()->dict();
+    if (d.has_key("pins"))
+    {
+        Sequence pins = Sequence(d.get("pins"));
+        for (size_t i = 0; i < pins.size(); ++i)
+        {
+            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
+            add_pin(object_clone(pin));
+        }
+    }
+    if (d.has_key("properties"))
+    {
+        Sequence props = Sequence(d.get("properties"));
+        for (size_t i = 0; i < props.size(); ++i)
+        {
+            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
+            add_property(object_clone(prop));
+        }
+    }
+}
 FlowNode::~FlowNode()
 {
+    for (auto p : _pins)
+    {
+        p->release();
+    }
     _pins.clear();
+    for (auto p : _properties)
+    {
+        p->release();
+    }
+    _properties.clear();
 }
 void FlowNode::run(FlowContext* ctx)
 {
@@ -150,12 +185,8 @@ void FlowNode::set_ui_pos(const Vec2i& pos)
 {
     _ui_pos = pos;
 }
-
-FlowNode::FlowNode(const FlowNode& other)
+FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {
-    _py_object = other._py_object;
-    Py_XINCREF(_py_object);
-
     for (auto& pin : other._pins)
     {
         add_pin((FlowPin*)pin->clone());
@@ -167,27 +198,4 @@ FlowNode::FlowNode(const FlowNode& other)
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
     _function = other._function;
-}
-int FlowNode::object_init(const Tuple&, const Dict&)
-{
-    Dict d = get_class()->dict();
-    if (d.has_key("pins"))
-    {
-        Sequence pins = Sequence(d.get("pins"));
-        for (size_t i = 0; i < pins.size(); ++i)
-        {
-            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
-            add_pin(object_clone(pin));
-        }
-    }
-    if (d.has_key("properties"))
-    {
-        Sequence props = Sequence(d.get("properties"));
-        for (size_t i = 0; i < props.size(); ++i)
-        {
-            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
-            add_property(object_clone(prop));
-        }
-    }
-    return 0;
 }

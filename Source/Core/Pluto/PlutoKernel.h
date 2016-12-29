@@ -41,7 +41,6 @@ public:
     /// Interrupts the kernel, aborting any ongoing execution. This may be called from any thread.
     void interrupt();
 
-    void install_module(PythonModule* module);
     void import_module(const std::string& module);
 
     void set_stdout_callback(OutputCallback* fn, void* data);
@@ -52,9 +51,7 @@ private:
     void perform_startup();
 
     PythonModule* _main_module;
-    PlutoModule* _pluto_module;
-    ImageModule* _image_module;
-
+    
     PyStdStream* _stdout;
     PyStdStream* _stderr;
     PyStdStream* _htmlout;

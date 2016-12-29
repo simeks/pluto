@@ -8,15 +8,22 @@ OBJECT_INIT_TYPE_FN(FlowProperty)
 }
 
 IMPLEMENT_OBJECT(FlowProperty, "FlowProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(FlowProperty, Object);
 
-FlowProperty::FlowProperty() : 
-    _name(""),
-    _default_value(""),
-    _owner(nullptr)
-{
-}
 FlowProperty::~FlowProperty()
 {
+}
+void FlowProperty::object_init()
+{
+    _owner = nullptr;
+}
+void FlowProperty::object_python_init(const Tuple& args, const Dict&)
+{
+    _owner = nullptr;
+    if (args.size() > 0)
+        _name = python_convert::from_python<std::string>(args.get(0));
+    if (args.size() > 1)
+        _default_value = python_convert::from_python<std::string>(args.get(1));
 }
 const char* FlowProperty::name() const
 {
@@ -34,12 +41,3 @@ void FlowProperty::set_owner(FlowNode* node)
 {
     _owner = node;
 }
-int FlowProperty::object_init(const Tuple& args, const Dict&)
-{
-    if (args.size() > 0)
-        _name = python_convert::from_python<std::string>(args.get(0));
-    if (args.size() > 1)
-        _default_value = python_convert::from_python<std::string>(args.get(1));
-    return 0;
-}
-

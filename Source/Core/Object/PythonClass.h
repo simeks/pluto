@@ -20,19 +20,21 @@ namespace python_object
 class CORE_API PythonClass : public Class
 {
 public:
-    typedef Object* (*CreateObjectFn)();
+    typedef Object* (*CreateObjectFn)(PyObject*, PythonClass*);
+    typedef void (*InitClassFn)(PythonClass*);
 
-    PythonClass(const char* name, size_t size, CreateObjectFn creator);
+    PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn);
     PythonClass(const char* name, PyTypeObject* type, PythonClass* super);
     ~PythonClass();
 
+    Object* create_object();
     Object* create_object(const Tuple& args);
     Object* create_object(PyObject* pyobj);
     
     void add_method(const char* name, PyCFunction meth, int flags, const char* doc = NULL);
     void add_member(const char* name, int type, int offset, int flags, const char* doc = NULL);
     void add_getset(const char* name, getter get, setter set, const char* doc, void* closure);
-    void add_attr(const char* name, PyObject* obj, int flags = 0);
+    void add_attr(const char* name, PyObject* obj);
 
     void set_super(PythonClass* super);
     
@@ -49,6 +51,8 @@ public:
 
     int ready();
     static void ready_all();
+    static void destroy_all();
+
     static std::vector<PythonClass*> classes();
 
     /// Tries to find the PythonClass assosciated with the specified python type, if no PythonClass is found a new one is created.
@@ -59,6 +63,7 @@ public:
 
 private:
     CreateObjectFn _creator;
+    InitClassFn _initfn;
 
     PyTypeObject* _type;
     bool _owned; // Is the above type object owned by this classed or just a borrowed reference?

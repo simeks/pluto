@@ -41,14 +41,11 @@ ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     setStyleSheet(console_stylesheet);
     document()->setDefaultStyleSheet(console_stylesheet);
 
-    _console_module = new ConsoleModule(this);
-    _console_module->init_module();
-    PlutoCore::instance().install_python_module(_console_module);
+    ConsoleModule::instance().set_widget(this);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
-    delete _console_module;
 }
 void ConsoleWidget::append_text(const QString& text)
 {
