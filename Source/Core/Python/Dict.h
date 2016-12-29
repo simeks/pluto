@@ -17,6 +17,7 @@ public:
     
     void set(const char* key, PyObject* item);
     void set(const char* key, Object* item);
+    void clear();
 
     bool valid() const;
 

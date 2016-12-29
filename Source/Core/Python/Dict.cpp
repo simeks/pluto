@@ -35,6 +35,10 @@ void Dict::set(const char* key, Object* item)
 {
     set(key, item->python_object());
 }
+void Dict::clear()
+{
+    PyDict_Clear(_d);
+}
 bool Dict::valid() const
 {
     return _d != nullptr;
