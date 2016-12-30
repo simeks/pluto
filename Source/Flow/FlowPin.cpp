@@ -29,6 +29,7 @@ void FlowPin::object_init(const std::string& name,
     _pin_type = pin_type;
     _owner = owner;
     _id = id;
+    _link = nullptr;
 }
 void FlowPin::object_python_init(const Tuple& args, const Dict&)
 {
@@ -37,6 +38,7 @@ void FlowPin::object_python_init(const Tuple& args, const Dict&)
         _name = python_convert::from_python<std::string>(args.get(0));
         _pin_type = (FlowPin::Type)python_convert::from_python<int>(args.get(1));
     }
+    _link = nullptr;
 }
 FlowPin::Type FlowPin::pin_type() const
 {
@@ -62,4 +64,47 @@ void FlowPin::set_pin_id(int id)
 {
     _id = id;
 }
+void FlowPin::link_to(FlowPin* other)
+{
+    assert(other != this);
+    assert(other->_pin_type != _pin_type);
+    if (other == this || other->_pin_type != _pin_type)
+        return;
+
+    if (!is_linked_to(other) && !other->is_linked_to(this))
+    {
+        _links.push_back(other);
+        other->_links.push_back(this);
+    }
+}
+void FlowPin::break_link(FlowPin* other)
+{
+    auto it = std::find(_links.begin(), _links.end(), other);
+    if (it != _links.end())
+    {
+        _links.erase(it);
+        it = std::find(other->_links.begin(), other->_links.end(), this);
+        if (it != other->_links.end())
+            other->_links.erase(it);
+    }
+}
+void FlowPin::break_all_links()
+{
+    for (auto l : _links)
+    {
+        auto it = std::find(l->_links.begin(), l->_links.end(), this);
+        if (it != l->_links.end())
+            l->_links.erase(it);
+    }
+    _links.clear();
+}
+const std::vector<FlowPin*>& FlowPin::links() const
+{
+    return _links;
+}
+bool FlowPin::is_linked_to(FlowPin* other) const
+{
+    return std::find(_links.begin(), _links.end(), other) != _links.end();
+}
+
 

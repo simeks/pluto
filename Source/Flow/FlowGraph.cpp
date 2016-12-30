@@ -62,32 +62,24 @@ bool FlowGraph::try_add_link(FlowPin* a, FlowPin* b)
     if (a->pin_type() != FlowPin::Out || b->pin_type() != FlowPin::In)
         return false;
 
-    std::vector<Link> b_links;
-    find_links(b, b_links);
-
-    // Only one connection per input pin
-    if (!b_links.empty())
+    if (a->is_linked_to(b))
         return false;
 
-    _links.push_back(Link(a, b));
+    // Only one connection per input pin
+    if (!b->links.empty())
+        return false;
+
+    a->link_to(b);
+
     return true;
 }
 void FlowGraph::remove_link(FlowPin* a, FlowPin* b)
 {
-    auto it = std::find(_links.begin(), _links.end(), std::pair<FlowPin*, FlowPin*>(a, b));
-    if (it != _links.end())
-        _links.erase(it);
+    a->break_link(b);
 }
 void FlowGraph::remove_links(FlowPin* pin)
 {
-    auto it = _links.begin();
-    while (it != _links.end())
-    {
-        if (it->first == pin || it->second == pin)
-            it = _links.erase(it);
-        else
-            ++it;
-    }
+    pin->break_all_links();
 }
 void FlowGraph::remove_links(FlowNode* node)
 {
@@ -106,19 +98,6 @@ FlowNode* FlowGraph::node(const Guid& id) const
 const std::map<Guid, FlowNode*>& FlowGraph::nodes() const
 {
     return _nodes;
-}
-const std::vector<FlowGraph::Link>& FlowGraph::links() const
-{
-    return _links;
-}
-
-void FlowGraph::find_links(FlowPin* pin, std::vector<Link>& links) const
-{
-    for (auto l : _links)
-    {
-        if (l.first == pin || l.second == pin)
-            links.push_back(l);
-    }
 }
 
 FlowGraph* flow_graph::load(const JsonObject& root)

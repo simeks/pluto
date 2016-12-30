@@ -37,12 +37,22 @@ public:
     int pin_id() const;
     void set_pin_id(int id);
 
+    void link_to(FlowPin* other);
+    void break_link(FlowPin* other);
+    void break_all_links();
+
+    const std::vector<FlowPin*>& links() const;
+    bool is_linked_to(FlowPin* other) const;
+
+
 private:
     Type _pin_type;
     std::string _name;
 
     FlowNode* _owner;
     int _id;
+
+    std::vector<FlowPin*> _links;
 };
 
 #endif // __FLOW_PIN_H__

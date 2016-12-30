@@ -34,16 +34,10 @@ public:
 
     FlowNode* node(const Guid& id) const;
     const std::map<Guid, FlowNode*>& nodes() const;
-    const std::vector<Link>& links() const;
-
+    
 private:
-
-    /// Find links associated with the specified pin
-    void find_links(FlowPin* pin, std::vector<Link>& links) const;
-
     std::map<Guid, FlowNode*> _nodes;
 
-    std::vector<Link> _links;
 };
 
 class JsonObject;
