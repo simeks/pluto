@@ -12,9 +12,6 @@ class FLOW_API FlowGraph : public Object
     DECLARE_OBJECT(FlowGraph, Object);
 
 public:
-    /// Links pointing from first pin to second pin
-    typedef std::pair<FlowPin*, FlowPin*> Link;
-
     DECLARE_OBJECT_CONSTRUCTOR(FlowGraph);
     ~FlowGraph();
 

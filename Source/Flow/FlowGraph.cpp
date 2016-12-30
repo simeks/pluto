@@ -66,7 +66,7 @@ bool FlowGraph::try_add_link(FlowPin* a, FlowPin* b)
         return false;
 
     // Only one connection per input pin
-    if (!b->links.empty())
+    if (!b->links().empty())
         return false;
 
     a->link_to(b);
@@ -173,6 +173,10 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 {
     root.set_empty_object();
 
+    /// Links pointing from first pin to second pin
+    typedef std::pair<FlowPin*, FlowPin*> Link;
+    std::vector<Link> node_links;
+
     JsonObject& nodes = root["nodes"];
     nodes.set_empty_array();
     for (auto n : graph->nodes())
@@ -194,11 +198,22 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         {
             properties[p->name()].set_string(n.second->property(p->name()));
         }
+
+        for (auto outpin : n.second->pins())
+        {
+            if (outpin->pin_type() == FlowPin::Out)
+            {
+                for (auto inpin : outpin->links())
+                {
+                    node_links.push_back(Link(outpin, inpin));
+                }
+            }
+        }
     }
 
     JsonObject& links = root["links"];
     links.set_empty_array();
-    for (const FlowGraph::Link& l : graph->links())
+    for (Link& l : node_links)
     {
         JsonObject& link = links.append();
         link.set_empty_object();

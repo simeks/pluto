@@ -29,7 +29,6 @@ void FlowPin::object_init(const std::string& name,
     _pin_type = pin_type;
     _owner = owner;
     _id = id;
-    _link = nullptr;
 }
 void FlowPin::object_python_init(const Tuple& args, const Dict&)
 {
@@ -38,7 +37,6 @@ void FlowPin::object_python_init(const Tuple& args, const Dict&)
         _name = python_convert::from_python<std::string>(args.get(0));
         _pin_type = (FlowPin::Type)python_convert::from_python<int>(args.get(1));
     }
-    _link = nullptr;
 }
 FlowPin::Type FlowPin::pin_type() const
 {
@@ -68,7 +66,7 @@ void FlowPin::link_to(FlowPin* other)
 {
     assert(other != this);
     assert(other->_pin_type != _pin_type);
-    if (other == this || other->_pin_type != _pin_type)
+    if (other == this || other->_pin_type == _pin_type)
         return;
 
     if (!is_linked_to(other) && !other->is_linked_to(this))

@@ -125,6 +125,9 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     clear_scene();
     _flow_graph = graph;
 
+    /// Links pointing from first pin to second pin
+    typedef std::pair<FlowPin*, FlowPin*> Link;
+    std::vector<Link> links;
     for (auto n : graph->nodes())
     {
         FlowNode* node = n.second;
@@ -134,9 +137,21 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         addItem(ui_node);
 
         _nodes[node->node_id()] = ui_node;
+
+        for (auto outpin : node->pins())
+        {
+            if (outpin->pin_type() == FlowPin::Out)
+            {
+                for (auto inpin : outpin->links())
+                {
+                    links.push_back(Link(outpin, inpin));
+                }
+            }
+        }
     }
 
-    for (const FlowGraph::Link& l : graph->links())
+
+    for (const Link& l : links)
     {
         QtBaseNode* begin_node = _nodes[l.first->owner()->node_id()];
         QtBaseNode* end_node = _nodes[l.second->owner()->node_id()];
