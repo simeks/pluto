@@ -4,3 +4,4 @@
 - Object __deepcopy__
 - Properties not restricted to flow, make it available for all objects?
 - PythonModule cleanup?
+- Argument check (keyword-arguments)

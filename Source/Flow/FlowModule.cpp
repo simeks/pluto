@@ -15,9 +15,21 @@
 
 namespace
 {
-    void debug_output(FlowContext*)
+    void debug_output(FlowContext* ctx)
     {
-        std::cout << "Waawwiwaiwa\n";
+        PYTHON_STDOUT("[DebugOutput] ");
+        PyObject* obj = ctx->read_pin("In");
+        if (!obj)
+            PYTHON_STDOUT("NULL\n");
+        else if (Object::static_class()->check_type(obj))
+        {
+            Object* o = python_convert::from_python<Object*>(obj);
+            PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
+        }
+        else
+        {
+            PYTHON_STDOUT("PyObject: %s", obj->ob_type->tp_name);
+        }
     }
 }
 

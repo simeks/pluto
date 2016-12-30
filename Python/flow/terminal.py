@@ -18,6 +18,11 @@ class TerminalNode(flow.Node):
         self.category = 'Flow'
 
     def run(self, ctx):
-        pass
+        if self.name in ctx.env:
+            print(ctx.env[self.name])
+            ctx.write_pin('Out', ctx.env[self.name])
+        else:
+            print(self.value)
+            ctx.write_pin('Out', self.value)
 
 flow.install_node_template(TerminalNode())
