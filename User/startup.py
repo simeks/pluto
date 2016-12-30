@@ -36,4 +36,7 @@ else:
 
 import console
 
-flow.window()
+
+g = flow.load('test.flow')
+c = flow.Context()
+c.run(g)

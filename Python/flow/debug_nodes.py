@@ -1,2 +1,2 @@
-from flow.node_helper import node_func
+from flow.node_helper import node
 

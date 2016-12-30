@@ -25,7 +25,12 @@ void QtFlowNode::setup()
     name_label->widget()->setAttribute(Qt::WA_TranslucentBackground);
     _layout->addItem(name_label, 0, 0, Qt::AlignLeft | Qt::AlignTop);
 
-    int in_pins = 1, out_pins = (int)_node->pins().size();
+    int n_in_pins = 0;
+    for (auto& pin : _node->pins())
+        if (pin->pin_type() == FlowPin::In)
+            ++n_in_pins;
+
+    int in_pins = 1, out_pins = n_in_pins+1;
     for (auto& pin : _node->pins())
     {
         QtFlowPin* pin_icon = new QtFlowPin(pin, this);
@@ -54,7 +59,7 @@ void QtFlowNode::setup()
 
             pin_layout->addItem(label, 0, 0, Qt::AlignRight | Qt::AlignTop);
             pin_layout->addItem(pin_icon, 0, 1, Qt::AlignRight | Qt::AlignTop);
-            --out_pins;
+            ++out_pins;
         }
     }
 }

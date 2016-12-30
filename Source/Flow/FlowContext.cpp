@@ -36,16 +36,19 @@ void FlowContext::run(FlowGraph* graph)
 {
     _nodes_to_execute.clear();
 
+    std::map<FlowNode*, int> incoming_edges;
+
     // Find all nodes without inputs
     for (auto n : graph->nodes())
     {
-        int incoming_edges = 0;
+        int edges = 0;
         for (auto p : n.second->pins())
         {
             if (p->pin_type() == FlowPin::In && !p->links().empty())
-                ++incoming_edges;
+                ++edges;
         }
-        if (incoming_edges == 0)
+        incoming_edges[n.second] = edges;
+        if (edges == 0)
             _nodes_to_execute.push_back(n.second);
     }
 
@@ -62,13 +65,12 @@ void FlowContext::run(FlowGraph* graph)
         find_dependents(_current_node, next);
         for (auto n : next)
         {
-            int incoming_edges = 0;
             for (auto p : n->pins())
             {
-                if (p->pin_type() == FlowPin::In && !p->links().empty() && p->links()[0]->owner() != _current_node)
-                    ++incoming_edges;
+                if (p->pin_type() == FlowPin::In && !p->links().empty() && p->links()[0]->owner() == _current_node)
+                    --incoming_edges[n];
             }
-            if (incoming_edges == 0)
+            if (incoming_edges[n] == 0)
                 _nodes_to_execute.push_back(n);
         }
         _current_node = nullptr;
