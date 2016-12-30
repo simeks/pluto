@@ -77,8 +77,8 @@ def node(title, category = ''):
 def node_a(A, B):
     """
     Returns:
-    A -- asd
-    B -- asd
+    C -- asd
+    D -- asd
     """
     return A, B
 
