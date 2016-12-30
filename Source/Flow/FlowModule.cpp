@@ -20,16 +20,21 @@ namespace
         PYTHON_STDOUT("[DebugOutput] ");
         PyObject* obj = ctx->read_pin("In");
         if (!obj)
-            PYTHON_STDOUT("NULL\n");
+            PYTHON_STDOUT("NULL");
         else if (Object::static_class()->check_type(obj))
         {
             Object* o = python_convert::from_python<Object*>(obj);
             PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
         }
+        else if (PyUnicode_Check(obj))
+        {
+            PYTHON_STDOUT("\"%s\"", python_convert::from_python<const char*>(obj));
+        }
         else
         {
             PYTHON_STDOUT("PyObject: %s", obj->ob_type->tp_name);
         }
+        PYTHON_STDOUT("\n");
     }
 }
 
