@@ -154,7 +154,7 @@ void PlutoKernel::perform_startup()
     print_banner();
 
     // Run startup script (if any)
-    FilePath path(PlutoModule::instance().get_user_dir());
+    FilePath path(PlutoModule::instance().user_dir());
     path.join("startup.py");
     run_file(path.get());
 }

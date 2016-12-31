@@ -1,12 +1,13 @@
 #include "Common.h"
 
 #include "Image/ImageObject.h"
+#include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
 #include "Python/PythonFunction.h"
 #include "Python/StdStream.h"
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, get_user_dir);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, user_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, print_html, std::string);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(PlutoModule, register_class, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, classes);
@@ -22,7 +23,7 @@ PlutoModule::~PlutoModule()
 }
 void PlutoModule::post_init()
 {
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, get_user_dir, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "");
@@ -32,9 +33,9 @@ void PlutoModule::post_init()
     add_type("StdStream", PyStdStream::static_class());
     add_object("__version__", python_convert::to_python(s_version));
 }
-const char* PlutoModule::get_user_dir()
+const char* PlutoModule::user_dir()
 {
-    return "..\\User"; // TODO:
+    return PlutoCore::instance().user_dir();
 }
 void PlutoModule::print_html(const std::string& txt)
 {

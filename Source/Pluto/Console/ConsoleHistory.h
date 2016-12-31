@@ -7,6 +7,9 @@ public:
     ConsoleHistory();
     ~ConsoleHistory();
 
+    void load(const QString& file);
+    void save(const QString& file);
+
     void push(const QString& command);
 
     void set_prefix(const QString& prefix);

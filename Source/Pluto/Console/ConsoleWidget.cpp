@@ -21,6 +21,8 @@ static const char* console_stylesheet =
 ".error { color: #FC3E36; white-space: pre-wrap; }"
 ".output { color: #DADADA; white-space: pre-wrap; }";
 
+static const char* s_history_file = "console_history.txt";
+
 ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     QTextEdit(parent),
     _prompt(">>> ")
@@ -42,10 +44,15 @@ ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     document()->setDefaultStyleSheet(console_stylesheet);
 
     ConsoleModule::instance().set_widget(this);
+
+    QString history_file = QString("%1/%2").arg(PlutoCore::instance().user_dir(), s_history_file);
+    _history.load(history_file);
 }
 
 ConsoleWidget::~ConsoleWidget()
 {
+    QString history_file = QString("%1/%2").arg(PlutoCore::instance().user_dir(), s_history_file);
+    _history.save(history_file);
 }
 void ConsoleWidget::append_text(const QString& text)
 {
@@ -139,7 +146,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         case Qt::Key_Down:
             {
                 QString cmd = _history.find_next();
-                if (!cmd.isEmpty())
+                //if (!cmd.isEmpty())
                 {
                     QTextCursor cursor = textCursor();
                     cursor.movePosition(QTextCursor::StartOfBlock);

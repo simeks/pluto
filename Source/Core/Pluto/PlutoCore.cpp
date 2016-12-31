@@ -45,6 +45,10 @@ void PlutoCore::shutdown()
         m->shutdown();
     }
 }
+const char* PlutoCore::user_dir() const
+{
+    return "..\\User"; // TODO:
+}
 PlutoKernel* PlutoCore::kernel() const
 {
     return _kernel;

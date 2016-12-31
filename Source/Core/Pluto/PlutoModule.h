@@ -12,7 +12,7 @@ public:
 
     virtual void post_init() OVERRIDE;
 
-    const char* get_user_dir();
+    const char* user_dir();
 
     void print_html(const std::string& txt);
 

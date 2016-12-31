@@ -13,6 +13,8 @@ public:
     void init();
     void shutdown();
 
+    const char* user_dir() const;
+
     PlutoKernel* kernel() const;
 
     WindowManager* window_manager() const;

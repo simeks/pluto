@@ -1,5 +1,7 @@
 #include <Core/Common.h>
+#include <QFile>
 #include <QString>
+#include <QTextStream>
 
 #include "ConsoleHistory.h"
 
@@ -9,6 +11,35 @@ ConsoleHistory::ConsoleHistory()
 }
 ConsoleHistory::~ConsoleHistory()
 {
+}
+void ConsoleHistory::load(const QString& file)
+{
+    QFile f(file);
+    if (f.open(QIODevice::ReadOnly))
+    {
+        QTextStream s(&f);
+        while (!s.atEnd())
+        {
+            QString line = s.readLine();
+            _history.push_back(line);
+        }
+        f.close();
+    }
+    _index = int(_history.size());
+    _prefix = "";
+}
+void ConsoleHistory::save(const QString& file)
+{
+    QFile f(file);
+    if (f.open(QIODevice::WriteOnly))
+    {
+        QTextStream s(&f);
+        for (auto& line : _history)
+        {
+            s << line << '\n';
+        }
+        f.close();
+    }
 }
 void ConsoleHistory::push(const QString& command)
 {
