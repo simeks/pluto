@@ -9,6 +9,7 @@
 #include "QtFlowGraphView.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+#include "Style.h"
 
 #include <QGraphicsItem>
 #include <QMenu>
@@ -36,10 +37,13 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     QtFlowGraphScene* graph_scene = new QtFlowGraphScene(this);
     graph_scene->setSceneRect(-2500, -2500, 5000, 5000);
     set_scene(graph_scene);
-    
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setCacheMode(QGraphicsView::CacheBackground);
+
+    const FlowUIStyle& style = FlowUIStyle::default_style();
+    setBackgroundBrush(style.background_color);
 }
 
 QtFlowGraphView::~QtFlowGraphView()
@@ -73,45 +77,10 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
 
                     selected->setSelected(true);
 
-                    emit flow_node_selected((QtBaseNode*)selected);
+                    emit flow_node_selected((QtFlowNode*)selected);
 
                     _mode = Mode_Move;
 
-                    break;
-                }
-                else if (selected->type() == QtFlowPin::Type)
-                {
-                    _scene->clearSelection();
-                    _scene->clearFocus();
-
-                    _selected_pin = (QtFlowPin*)selected;
-                    if (_temp_link)
-                        delete _temp_link;
-
-                    _temp_link = nullptr;
-                    if (_selected_pin->pin_type() == FlowPin::Out)
-                    {
-                        _temp_pin = new QtFlowPin();
-                        _temp_link = new QtFlowLink(_selected_pin, _temp_pin);
-                    }
-                    else
-                    {
-                        _temp_pin = new QtFlowPin();
-                        _temp_link = new QtFlowLink(_temp_pin, _selected_pin);
-                    }
-                    _temp_pin->setPos(mapToScene(mouse_event->pos()));
-
-                    _scene->addItem(_temp_link);
-
-                    _mode = Mode_DragPin;
-
-                    break;
-                }
-                else if (selected->type() == QtFlowLink::Type)
-                {
-                    _scene->clearSelection();
-                    _scene->clearFocus();
-                    selected->setSelected(true);
                     break;
                 }
 
@@ -131,6 +100,7 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
     {
         QGraphicsView::mousePressEvent(mouse_event);
     }
+    _scene->update();
     _last_mouse_pos = mouse_event->pos();
 }
 void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
@@ -149,40 +119,6 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
         break;
     case Mode_DragPin:
     {
-        if (_highlight_pin)
-        {
-            _highlight_pin->set_highlighted(false);
-            _highlight_pin = nullptr;
-        }
-
-        auto scene_items = items(mouse_event->pos());
-        for (auto& selected : scene_items)
-        {
-            if (selected->type() == QtFlowPin::Type)
-            {
-                QtFlowPin* pin = (QtFlowPin*)selected;
-
-                if (pin != _selected_pin &&
-                    pin->pin_type() != _selected_pin->pin_type())
-                {
-                    // Check if pins match
-                    //FlowPin* in_pin = (_selected_pin->pin_type() == FlowPin::In) ? _selected_pin->pin() : pin->pin();
-                    //FlowPin* out_pin = (_selected_pin->pin_type() == FlowPin::Out) ? _selected_pin->pin() : pin->pin();
-
-                    // Input pin determines supported types
-                    //if (out_pin->type()->is_type(in_pin->type()))
-                    //{
-                    _highlight_pin = pin;
-                    _highlight_pin->set_highlighted(true);
-                    //}
-                }
-            }
-        }
-
-        _temp_pin->setPos(mapToScene(mouse_event->pos()));
-        _temp_pin->update();
-        _temp_link->update();
-
         break;
     }
     case Mode_Scroll:
@@ -193,6 +129,7 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
     default:
         QGraphicsView::mouseMoveEvent(mouse_event);
     };
+    update();
     _last_mouse_pos = mouse_event->pos();
 }
 void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
@@ -200,32 +137,6 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
     switch (_mode)
     {
     case Mode_DragPin:
-        if (_temp_pin && _highlight_pin && _selected_pin)
-        {
-            _temp_link->set_pin(_highlight_pin);
-            _temp_link->set_pin(_selected_pin);
-
-            if (_scene->try_add_link(_temp_link))
-            {
-                _highlight_pin->set_highlighted(false);
-                _highlight_pin = nullptr;
-                _temp_link = nullptr;
-            }
-        }
-
-        if (_temp_link)
-        {
-            delete _temp_link;
-            _temp_link = nullptr;
-        }
-
-        if (_temp_pin)
-        {
-            delete _temp_pin;
-            _temp_pin = nullptr;
-        }
-        _selected_pin = nullptr;
-
         break;
     case Mode_Scroll:
     {
@@ -236,6 +147,7 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
     default:
         QGraphicsView::mouseMoveEvent(mouse_event);
     };
+    _scene->update();
     _last_mouse_pos = mouse_event->pos();
 
     _mode = Mode_Nothing;
@@ -259,9 +171,9 @@ void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
             }
         }
         _scene->clearSelection();
-        _scene->update();
     }
 
+    _scene->update();
     QGraphicsView::keyPressEvent(e);
 }
 void QtFlowGraphView::wheelEvent(QWheelEvent *e)
@@ -271,34 +183,47 @@ void QtFlowGraphView::wheelEvent(QWheelEvent *e)
     QTransform t = transform();
     t.scale(1 + zoom, 1 + zoom);
     setTransform(t);
+
+    _scene->update();
 }
 
-void QtFlowGraphView::drawBackground(QPainter * painter, const QRectF & rect)
+void QtFlowGraphView::drawBackground(QPainter * painter, const QRectF & r)
 {
-    const QRectF nrect = rect.normalized();
-    painter->save();
-    painter->setPen(QPen(Qt::lightGray, 1));
-    int l = int(nrect.left());
-    l -= (l % 10);
+    QGraphicsView::drawBackground(painter, r);
 
-    int r = int(nrect.right());
-    r -= (r % 10);
-    if (r < int(nrect.right()))
-        r += 10;
+    QBrush brush = backgroundBrush();
 
-    int t = int(nrect.top());
-    t -= (t % 10);
+    const FlowUIStyle& style = FlowUIStyle::default_style();
 
-    int b = int(nrect.bottom());
-    b -= (b % 10);
-    if (b < int(nrect.bottom()))
-        b += 10;
+    painter->setPen(QPen(style.grid_color_0, 1.0));
+    draw_background_grid(painter, 15);
 
-    for (int x = l; x <= r; x += 10)
-        for (int y = t; y <= b; y += 10)
-            painter->drawPoint(x, y);
+    painter->setPen(QPen(style.grid_color_1, 1.0));
+    draw_background_grid(painter, 150);
+}
+void QtFlowGraphView::draw_background_grid(QPainter* painter, int grid_step)
+{
+    QPointF tl = mapToScene(rect().topLeft());
+    QPointF br = mapToScene(rect().bottomRight());
 
-    painter->restore();
+    int left = std::floor(tl.x() / grid_step - 0.5);
+    int right = std::floor(br.x() / grid_step + 1.0);
+    int top = std::floor(tl.y() / grid_step - 0.5);
+    int bottom = std::floor(br.y() / grid_step + 1.0);
+
+    // vertical 
+    for (int x = left; x <= right; ++x)
+    {
+        QLineF line(x * grid_step, top * grid_step, x * grid_step, bottom * grid_step);
+        painter->drawLine(line);
+    }
+
+    // horizontal 
+    for (int y = top; y <= bottom; ++y)
+    {
+        QLineF line(left * grid_step, y * grid_step, right * grid_step, y * grid_step);
+        painter->drawLine(line);
+    }
 }
 void QtFlowGraphView::build_node_menu()
 {

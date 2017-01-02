@@ -22,8 +22,6 @@ public:
     const std::vector<QtFlowPin*>& pins() const;
 
 protected:
-    void setup();
-
     virtual void moveEvent(QGraphicsSceneMoveEvent *e) OVERRIDE;
 
     QGraphicsGridLayout* _layout;

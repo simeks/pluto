@@ -2,9 +2,8 @@
 
 #include "FlowNode.h"
 #include "FlowProperty.h"
-#include "QtBaseNode.h"
+#include "QtFlowNode.h"
 #include "QtNodePropertyWidget.h"
-#include "QtTerminalNode.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -28,7 +27,7 @@ void QtNodePropertyWidget::setup_ui()
 {
     setMinimumSize(200, 0);
 }
-void QtNodePropertyWidget::set_selected(QtBaseNode* selected)
+void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
 {
     _selected_node = selected;
     if (_selected_node)
@@ -68,7 +67,7 @@ void QtNodePropertyWidget::set_selected(QtBaseNode* selected)
         }
     }
 }
-void QtNodePropertyWidget::flow_node_selected(QtBaseNode* qt_node)
+void QtNodePropertyWidget::flow_node_selected(QtFlowNode* qt_node)
 {
     if (qt_node)
     {

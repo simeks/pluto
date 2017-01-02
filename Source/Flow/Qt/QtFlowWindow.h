@@ -19,6 +19,7 @@ public:
 
     FlowGraph* graph();
     
+public slots:
     void load_graph(const QString& file);
     void save_graph(const QString& file);
 

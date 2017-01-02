@@ -5,9 +5,9 @@
 
 class FlowNode;
 class QMenu;
-class QtBaseNode;
-class QtFlowLink;
 class QtFlowGraphScene;
+class QtFlowLink;
+class QtFlowNode;
 class QtFlowPin;
 class QtFlowGraphView : public QGraphicsView
 {
@@ -55,12 +55,13 @@ private:
     QtFlowPin* _highlight_pin;
 
     void build_node_menu();
+    void draw_background_grid(QPainter* painter, int grid_step);
 
 private slots:
     void show_context_menu(const QPoint&);
 
 signals:
-    void flow_node_selected(QtBaseNode* node);
+    void flow_node_selected(QtFlowNode* node);
 
 };
 

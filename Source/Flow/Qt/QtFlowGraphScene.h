@@ -6,7 +6,7 @@
 
 class FlowGraph;
 class FlowNode;
-class QtBaseNode;
+class QtFlowNode;
 class QtFlowLink;
 class QtFlowPin;
 class QtFlowGraphScene : public QGraphicsScene
@@ -19,14 +19,14 @@ public:
     ~QtFlowGraphScene();
 
     void create_node(FlowNode* node, const QPointF& pos);
-    void add_node(QtBaseNode* node);
-    void remove_node(QtBaseNode* node);
+    void add_node(QtFlowNode* node);
+    void remove_node(QtFlowNode* node);
 
     bool try_add_link(QtFlowLink* link);
     void remove_link(QtFlowLink* link);
 
     /// Removes all links associated with node
-    void remove_links(QtBaseNode* node);
+    void remove_links(QtFlowNode* node);
     /// Removes all links associated with pin
     void remove_links(QtFlowPin* pin);
 
@@ -40,7 +40,7 @@ private:
 
     FlowGraph* _flow_graph;
 
-    std::map<Guid, QtBaseNode*> _nodes;
+    std::map<Guid, QtFlowNode*> _nodes;
     std::vector<QtFlowLink*> _links;
 
 };

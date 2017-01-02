@@ -33,7 +33,7 @@ QtFlowGraphScene::~QtFlowGraphScene()
 
 void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
 {
-    QtBaseNode* ui_node = nullptr;
+    QtFlowNode* ui_node = nullptr;
     //if (node->is_a(TerminalNode::static_class()))
     //{
     //    ui_node = new QtTerminalNode(node);
@@ -48,13 +48,13 @@ void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
     _flow_graph->add_node(node);
     _nodes[node->node_id()] = ui_node;
 }
-void QtFlowGraphScene::add_node(QtBaseNode* node)
+void QtFlowGraphScene::add_node(QtFlowNode* node)
 {
     addItem(node);
     _flow_graph->add_node(node->node());
     _nodes[node->node_id()] = node;
 }
-void QtFlowGraphScene::remove_node(QtBaseNode* node)
+void QtFlowGraphScene::remove_node(QtFlowNode* node)
 {
     auto it = _nodes.find(node->node_id());
     if (it != _nodes.end())
@@ -66,36 +66,36 @@ void QtFlowGraphScene::remove_node(QtBaseNode* node)
     removeItem(node);
     delete node;
 }
-bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
+bool QtFlowGraphScene::try_add_link(QtFlowLink* /*link*/)
 {
-    QtFlowPin* a = link->start_pin();
-    QtFlowPin* b = link->end_pin();
-    if (!a || !b)
-        return false;
+    //QtFlowPin* a = link->start_pin();
+    //QtFlowPin* b = link->end_pin();
+    //if (!a || !b)
+    //    return false;
 
-    if (_flow_graph->try_add_link(a->pin(), b->pin()))
-    {
-        _links.push_back(link);
-        return true;
-    }
+    //if (_flow_graph->try_add_link(a->pin(), b->pin()))
+    //{
+    //    _links.push_back(link);
+    //    return true;
+    //}
     return false;
 }
-void QtFlowGraphScene::remove_link(QtFlowLink* link)
+void QtFlowGraphScene::remove_link(QtFlowLink* /*link*/)
 {
-    _flow_graph->remove_link(link->start_pin()->pin(), link->end_pin()->pin());
-    _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
-    removeItem(link);
+    //_flow_graph->remove_link(link->start_pin()->pin(), link->end_pin()->pin());
+    //_links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
+    //removeItem(link);
 }
-void QtFlowGraphScene::remove_links(QtBaseNode* node)
+void QtFlowGraphScene::remove_links(QtFlowNode* /*node*/)
 {
-    for (auto p : node->pins())
+    /*for (auto p : node->pins())
     {
         remove_links(p);
-    }
+    }*/
 }
-void QtFlowGraphScene::remove_links(QtFlowPin* pin)
+void QtFlowGraphScene::remove_links(QtFlowPin* /*pin*/)
 {
-    auto it = _links.begin();
+    /*auto it = _links.begin();
     while (it != _links.end())
     {
         if ((*it)->start_pin() == pin || (*it)->end_pin() == pin)
@@ -105,7 +105,7 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
         }
         else
             ++it;
-    }
+    }*/
 }
 void QtFlowGraphScene::new_graph()
 {
@@ -126,8 +126,8 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     _flow_graph = graph;
 
     /// Links pointing from first pin to second pin
-    typedef std::pair<FlowPin*, FlowPin*> Link;
-    std::vector<Link> links;
+    //typedef std::pair<FlowPin*, FlowPin*> Link;
+    //std::vector<Link> links;
     for (auto n : graph->nodes())
     {
         FlowNode* node = n.second;
@@ -138,7 +138,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
 
         _nodes[node->node_id()] = ui_node;
 
-        for (auto outpin : node->pins())
+        /*for (auto outpin : node->pins())
         {
             if (outpin->pin_type() == FlowPin::Out)
             {
@@ -147,14 +147,14 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
                     links.push_back(Link(outpin, inpin));
                 }
             }
-        }
+        }*/
     }
 
-
+/*
     for (const Link& l : links)
     {
-        QtBaseNode* begin_node = _nodes[l.first->owner()->node_id()];
-        QtBaseNode* end_node = _nodes[l.second->owner()->node_id()];
+        QtFlowNode* begin_node = _nodes[l.first->owner()->node_id()];
+        QtFlowNode* end_node = _nodes[l.second->owner()->node_id()];
 
         QtFlowPin* begin_pin = begin_node->pins()[l.first->pin_id()];
         QtFlowPin* end_pin = end_node->pins()[l.second->pin_id()];
@@ -162,7 +162,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         QtFlowLink* link = new QtFlowLink(begin_pin, end_pin);
         addItem(link);
         _links.push_back(link);
-    }
+    }*/
 }
 void QtFlowGraphScene::clear_scene()
 {

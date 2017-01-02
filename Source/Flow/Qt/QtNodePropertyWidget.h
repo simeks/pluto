@@ -4,7 +4,7 @@
 #include <QWidget>
 
 class QLineEdit;
-class QtBaseNode;
+class QtFlowNode;
 class QtTerminalNode;
 class QtNodePropertyWidget : public QWidget
 {
@@ -16,14 +16,14 @@ public:
 
 private:
     void setup_ui();
-    void set_selected(QtBaseNode* selected);
+    void set_selected(QtFlowNode* selected);
 
-    QtBaseNode* _selected_node;
+    QtFlowNode* _selected_node;
 
     QWidget* _property_grid;
     
 public slots:
-    void flow_node_selected(QtBaseNode* node);
+    void flow_node_selected(QtFlowNode* node);
 
 private slots:
     void property_changed(const QString& txt);

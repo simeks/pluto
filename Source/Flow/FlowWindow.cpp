@@ -45,12 +45,14 @@ void FlowWindow::close()
 {
     QMetaObject::invokeMethod(_window, "close");
 }
-FlowGraph* FlowWindow::load(const char* )
+FlowGraph* FlowWindow::load(const char* file)
 {
-    return nullptr;
+    QMetaObject::invokeMethod(_window, "load_graph", Qt::BlockingQueuedConnection, Q_ARG(QString, file));
+    return graph();
 }
-void FlowWindow::save(const char* )
+void FlowWindow::save(const char* file)
 {
+    QMetaObject::invokeMethod(_window, "save_graph", Qt::BlockingQueuedConnection, Q_ARG(QString, file));
 }
 FlowGraph* FlowWindow::graph()
 {
