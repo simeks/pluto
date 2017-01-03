@@ -3,7 +3,8 @@
 #include "FlowNode.h"
 #include "FlowPin.h"
 #include "QtConstantNode.h"
-#include "../Style.h"
+#include "Qt/QtFlowPin.h"
+#include "Qt/Style.h"
 
 #include <QFontMetrics>
 #include <QGraphicsScene>

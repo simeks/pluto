@@ -77,25 +77,36 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
                         _scene->clearSelection();
                         _scene->clearFocus();
 
-                        QtFlowPin* pin = node->pin(pin_id);
                         if (_temp_link)
                             delete _temp_link;
-
                         _temp_link = nullptr;
-                        if (pin->pin_type() == FlowPin::Out)
+
+                        QtFlowPin* pin = node->pin(pin_id);
+                        if (pin->pin_type() == FlowPin::In && pin->is_linked())
                         {
-                            _temp_link = new QtFlowLink(pin, nullptr);
+                            QtFlowLink* link = _scene->find_link(pin);
+                            assert(link);
+
+                            _scene->remove_link(link);
+
+                            link->unset_pin(FlowPin::In);
+                            _temp_link = link;
                         }
                         else
                         {
-                            _temp_link = new QtFlowLink(nullptr, pin);
+                            if (pin->pin_type() == FlowPin::Out)
+                            {
+                                _temp_link = new QtFlowLink(pin, nullptr);
+                            }
+                            else
+                            {
+                                _temp_link = new QtFlowLink(nullptr, pin);
+                            }
                         }
                         _temp_link->move_free_end(mapToScene(mouse_event->pos()));
-                        
                         _scene->addItem(_temp_link);
 
                         _mode = Mode_DragPin;
-
                         break;
                     }
                     else
@@ -149,7 +160,7 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
             if (item->type() == QtFlowNode::Type)
             {
                 QPointF delta = mapToScene(mouse_event->pos()) - mapToScene(_last_mouse_pos);
-                item->setPos(item->pos() + delta);
+                ((QtFlowNode*)item)->move_node(item->pos() + delta);
             }
         }
         break;

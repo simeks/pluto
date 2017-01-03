@@ -1,68 +1,72 @@
-//#include <Core/Common.h>
-//
-//#include "FlowPin.h"
-//#include "QtFlowLink.h"
-//#include "QtFlowNode.h"
-//#include "QtFlowPin.h"
-//
-//#include <QLabel>
-//#include <QPainter>
-//
-//QtFlowPin::QtFlowPin() :
-//    _pin(nullptr),
-//    _owner(nullptr)
-//{
-//}
-//QtFlowPin::QtFlowPin(FlowPin* pin, QtFlowNode* owner) :
-//    _pin(pin),
-//    _owner(owner)
-//{
-//    QLabel* label = new QLabel(">");
-//    if (_pin->pin_type() == FlowPin::In)
-//        label->setContentsMargins(5, 0, 0, 0);
-//    else
-//        label->setContentsMargins(0, 0, 5, 0);
-//
-//    label->setAttribute(Qt::WA_TranslucentBackground);
-//    setWidget(label);
-//}
-//QtFlowPin::~QtFlowPin()
-//{
-//}
-//
-//void QtFlowPin::set_highlighted(bool highlight)
-//{
-//    QLabel* label = (QLabel*)widget();
-//    if (highlight)
-//    {
-//        label->setText("O");
-//    }
-//    else
-//    {
-//        label->setText(">");
-//    }
-//}
-//FlowPin* QtFlowPin::pin() const
-//{
-//    return _pin;
-//}
-//FlowPin::Type QtFlowPin::pin_type() const
-//{
-//    if(_pin)
-//        return _pin->pin_type();
-//    return FlowPin::Unknown;
-//}
-//int QtFlowPin::pin_id() const
-//{
-//    if (_pin)
-//        return _pin->pin_id();
-//    return -1;
-//}
-//QtFlowNode* QtFlowPin::owner() const
-//{
-//    return _owner;
-//}
-//int QtFlowPin::type() const
-//{
-//    return Type;
-//}
+#include <Core/Common.h>
+
+#include "FlowPin.h"
+#include "QtFlowLink.h"
+#include "QtFlowNode.h"
+#include "QtFlowPin.h"
+#include "Style.h"
+
+#include <QPainter>
+
+
+QtFlowPin::QtFlowPin(QtFlowNode* owner, FlowPin* pin, const QPointF& local_pos) :
+    _owner(owner),
+    _pin(pin),
+    _local_pos(local_pos),
+    _highlighted(false)
+{
+}
+QtFlowPin::~QtFlowPin()
+{
+}
+void QtFlowPin::set_highlight(bool h)
+{
+    _highlighted = h;
+    _owner->update();
+}
+void QtFlowPin::set_local_pos(const QPointF& pos)
+{
+    _local_pos = pos;
+}
+QPointF QtFlowPin::local_pos() const
+{
+    return _local_pos;
+}
+QPointF QtFlowPin::pos() const
+{
+    return _owner->mapToScene(_local_pos);
+}
+bool QtFlowPin::is_linked() const
+{
+    return !_pin->links().empty();
+}
+QtFlowNode* QtFlowPin::owner() const
+{
+    return _owner;
+}
+int QtFlowPin::id() const
+{
+    return _pin->pin_id();
+}
+FlowPin* QtFlowPin::pin() const
+{
+    return _pin;
+}
+int QtFlowPin::pin_type() const
+{
+    return _pin->pin_type();
+}
+QColor QtFlowPin::color() const
+{
+    if (_highlighted)
+        return FlowUIStyle::default_style().pin_color_highlight;
+    else
+        return FlowUIStyle::default_style().pin_color;
+}
+QColor QtFlowPin::outline_color() const
+{
+    if (_highlighted)
+        return FlowUIStyle::default_style().pin_outline_color_highlight;
+    else
+        return FlowUIStyle::default_style().pin_outline_color;
+}

@@ -13,71 +13,13 @@
 #include <QGraphicsSceneMoveEvent>
 #include <QPainter>
 
-QtFlowPin::QtFlowPin(QtFlowNode* owner, FlowPin* pin, const QPointF& local_pos) :
-    _owner(owner),
-    _pin(pin),
-    _local_pos(local_pos),
-    _highlighted(false)
-{
-}
-QtFlowPin::~QtFlowPin()
-{
-}
-void QtFlowPin::set_highlight(bool h)
-{
-    _highlighted = h;
-    _owner->update();
-}
-void QtFlowPin::set_local_pos(const QPointF& pos)
-{
-    _local_pos = pos;
-}
-QPointF QtFlowPin::local_pos() const
-{
-    return _local_pos;
-}
-QPointF QtFlowPin::pos() const
-{
-    return _owner->mapToScene(_local_pos);
-}
-QtFlowNode* QtFlowPin::owner() const
-{
-    return _owner;
-}
-int QtFlowPin::id() const
-{
-    return _pin->pin_id();
-}
-FlowPin* QtFlowPin::pin() const
-{
-    return _pin;
-}
-int QtFlowPin::pin_type() const
-{
-    return _pin->pin_type();
-}
-QColor QtFlowPin::color() const
-{
-    if (_highlighted)
-        return FlowUIStyle::default_style().pin_color_highlight;
-    else
-        return FlowUIStyle::default_style().pin_color;
-}
-QColor QtFlowPin::outline_color() const
-{
-    if (_highlighted)
-        return FlowUIStyle::default_style().pin_outline_color_highlight;
-    else
-        return FlowUIStyle::default_style().pin_outline_color;
-}
-
 QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
     setAcceptHoverEvents(true);
-
+    
     const Vec2i& pos = node->ui_pos();
     setPos(pos.x, pos.y);
 
@@ -212,6 +154,11 @@ void QtFlowNode::setup()
 
     update();
 }
+void QtFlowNode::move_node(const QPointF& scene_pos)
+{
+    setPos(scene_pos);
+    _node->set_ui_pos(Vec2i(scene_pos.x(), scene_pos.y()));
+}
 void QtFlowNode::create_pins()
 {
     _pins.resize(_node->pins().size());
@@ -274,15 +221,6 @@ void QtFlowNode::calculate_size()
 int QtFlowNode::type() const
 {
     return Type;
-}
-QVariant QtFlowNode::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-    if (change == ItemPositionChange && _node) 
-    {
-        QPoint p = value.toPoint();
-        _node->set_ui_pos(Vec2i(p.x(), p.y()));
-    }
-    return QGraphicsItem::itemChange(change, value);
 }
 void QtFlowNode::hoverMoveEvent(QGraphicsSceneHoverEvent* evt)
 {

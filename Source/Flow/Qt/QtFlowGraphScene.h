@@ -30,6 +30,13 @@ public:
     /// Removes all links associated with pin
     void remove_links(QtFlowPin* pin);
 
+    /// Finds all links associated to the given pin
+    void find_links(QtFlowPin* pin, std::vector<QtFlowLink*>& links) const;
+
+    /// Returns the first link associated to the given pin, useful for in-pins which are limited to only one link
+    /// Returns null if no link was found
+    QtFlowLink* find_link(QtFlowPin* pin) const;
+
     void new_graph();
 
     FlowGraph* graph() const;

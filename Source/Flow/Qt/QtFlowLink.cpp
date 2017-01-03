@@ -33,6 +33,17 @@ void QtFlowLink::set_pin(QtFlowPin* pin)
         _end = pin;
     }
 }
+void QtFlowLink::unset_pin(int pin_type)
+{
+    if (pin_type == FlowPin::Out)
+    {
+        _start = nullptr;
+    }
+    else
+    {
+        _end = nullptr;
+    }
+}
 void QtFlowLink::move_free_end(const QPointF& pos)
 {
     _free_end = pos;

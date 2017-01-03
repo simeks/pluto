@@ -101,6 +101,23 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
             ++it;
     }
 }
+void QtFlowGraphScene::find_links(QtFlowPin* pin, std::vector<QtFlowLink*>& links) const
+{
+    for (auto l : _links)
+    {
+        if (l->start() == pin || l->end() == pin)
+            links.push_back(l);
+    }
+}
+QtFlowLink* QtFlowGraphScene::find_link(QtFlowPin* pin) const
+{
+    for (auto l : _links)
+    {
+        if (l->start() == pin || l->end() == pin)
+            return l;
+    }
+    return nullptr;
+}
 void QtFlowGraphScene::new_graph()
 {
     clear_scene();

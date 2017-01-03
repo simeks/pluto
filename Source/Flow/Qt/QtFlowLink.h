@@ -13,6 +13,8 @@ public:
     ~QtFlowLink();
 
     void set_pin(QtFlowPin* pin);
+    void unset_pin(int pin_type);
+
     /// pos : in scene coordinates
     void move_free_end(const QPointF& pos);
 
