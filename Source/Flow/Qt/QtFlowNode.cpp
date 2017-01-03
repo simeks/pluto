@@ -7,29 +7,88 @@
 #include "QtFlowPin.h"
 #include "Style.h"
 
+#include <QGraphicsDropShadowEffect>
 #include <QGraphicsGridLayout>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsSceneMoveEvent>
-#include <QLabel>
 #include <QPainter>
 
+QtFlowPin::QtFlowPin(QtFlowNode* owner, FlowPin* pin, const QPointF& local_pos) :
+    _owner(owner),
+    _pin(pin),
+    _local_pos(local_pos),
+    _highlighted(false)
+{
+}
+QtFlowPin::~QtFlowPin()
+{
+}
+void QtFlowPin::set_highlight(bool h)
+{
+    _highlighted = h;
+    _owner->update();
+}
+void QtFlowPin::set_local_pos(const QPointF& pos)
+{
+    _local_pos = pos;
+}
+QPointF QtFlowPin::local_pos() const
+{
+    return _local_pos;
+}
+QPointF QtFlowPin::pos() const
+{
+    return _owner->mapToScene(_local_pos);
+}
+QtFlowNode* QtFlowPin::owner() const
+{
+    return _owner;
+}
+int QtFlowPin::id() const
+{
+    return _pin->pin_id();
+}
+FlowPin* QtFlowPin::pin() const
+{
+    return _pin;
+}
+int QtFlowPin::pin_type() const
+{
+    return _pin->pin_type();
+}
+QColor QtFlowPin::color() const
+{
+    if (_highlighted)
+        return FlowUIStyle::default_style().pin_color_highlight;
+    else
+        return FlowUIStyle::default_style().pin_color;
+}
+QColor QtFlowPin::outline_color() const
+{
+    if (_highlighted)
+        return FlowUIStyle::default_style().pin_outline_color_highlight;
+    else
+        return FlowUIStyle::default_style().pin_outline_color;
+}
 
-QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr)
+QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
+    setAcceptHoverEvents(true);
 
     const Vec2i& pos = node->ui_pos();
     setPos(pos.x, pos.y);
 
     _node = node;
     _node->addref();
-
-    setup();
 }
 QtFlowNode::~QtFlowNode()
 {
+    for (auto p : _pins)
+        delete p;
+    _pins.clear();
     _node->release();
 }
 QRectF QtFlowNode::boundingRect() const
@@ -80,37 +139,53 @@ void QtFlowNode::paint_pins(QPainter* painter)
     int y_offset = metrics.height() + 25;
 
     int in_pin = 0, out_pin = 0;
-    for (auto& pin : _node->pins())
+    for (auto& pin : _pins)
     {
-        /*QtFlowPin* pin_icon = new QtFlowPin(pin, this);
-        pin_icon->setMaximumWidth(15);
-        _pins.push_back(pin_icon);
-*/
-        int label_width = metrics.width(QString::fromStdString(pin->name()));
+        int label_width = metrics.width(QString::fromStdString(pin->pin()->name()));
 
         QPoint text_pos;
-        QPoint pin_pos;
         if (pin->pin_type() == FlowPin::In)
         {
             text_pos = QPoint(10, y_offset + in_pin * (metrics.height() + 10));
-            pin_pos = QPoint(0, y_offset + in_pin * (metrics.height() + 10) - metrics.height()/2 + 2);
             ++in_pin;
         }
         else
         {
             text_pos = QPoint(_rect.width() - label_width - 10, y_offset + out_pin * (metrics.height() + 10));
-            pin_pos = QPoint(_rect.width(), y_offset + out_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
             ++out_pin;
         }
 
         painter->setPen(style.pin_text_color);
-        painter->drawText(text_pos, QString::fromStdString(pin->name()));
+        painter->drawText(text_pos, QString::fromStdString(pin->pin()->name()));
 
-        painter->setBrush(Qt::white);
-        painter->setPen(Qt::gray);
-        painter->drawEllipse(pin_pos, style.pin_radius, style.pin_radius);
-        painter->setBrush(Qt::NoBrush);
+        painter->setBrush(pin->color());
+        painter->setPen(pin->outline_color());
+        painter->drawEllipse(pin->local_pos(), style.pin_radius, style.pin_radius);
     }
+}
+int QtFlowNode::check_pin(const QPointF& pt) const
+{
+    const FlowUIStyle& style = FlowUIStyle::default_style();
+
+    for (int i = 0; i < _pins.size(); ++i)
+    {
+        QPointF p = pt - _pins[i]->local_pos();
+        double distance = std::sqrt(QPointF::dotProduct(p, p));
+
+        if (distance < style.pin_radius * 2.0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+const std::vector<QtFlowPin*>& QtFlowNode::pins() const
+{
+    return _pins;
+}
+QtFlowPin* QtFlowNode::pin(int idx) const
+{
+    return _pins[idx];
 }
 FlowNode* QtFlowNode::node() const
 {
@@ -125,15 +200,50 @@ Guid QtFlowNode::node_id() const
 
 void QtFlowNode::setup()
 {
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    effect->setOffset(3, 3);
+    effect->setBlurRadius(20);
+    effect->setColor(FlowUIStyle::default_style().node_shadow_color);
+
+    setGraphicsEffect(effect);
+
     calculate_size();
+    create_pins();
 
     update();
+}
+void QtFlowNode::create_pins()
+{
+    _pins.resize(_node->pins().size());
+    
+    const FlowUIStyle& style = FlowUIStyle::default_style();
+
+    QFontMetrics metrics(style.node_font);
+    int y_offset = metrics.height() + 25;
+
+    int in_pin = 0, out_pin = 0;
+    for (auto& pin : _node->pins())
+    {
+        QPoint pin_pos;
+        if (pin->pin_type() == FlowPin::In)
+        {
+            pin_pos = QPoint(0, y_offset + in_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
+            ++in_pin;
+        }
+        else
+        {
+            pin_pos = QPoint(_rect.width(), y_offset + out_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
+            ++out_pin;
+        }
+        _pins[pin->pin_id()] = new QtFlowPin(this, pin, pin_pos);
+    }
+
 }
 void QtFlowNode::calculate_size()
 {
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
-    int height = font_metrics.height() + 20; // Title
+    int height = font_metrics.height() + 15; // Title
     
     std::vector<FlowPin*> in_pins, out_pins;
     for (auto& pin : _node->pins())
@@ -173,4 +283,27 @@ QVariant QtFlowNode::itemChange(GraphicsItemChange change, const QVariant &value
         _node->set_ui_pos(Vec2i(p.x(), p.y()));
     }
     return QGraphicsItem::itemChange(change, value);
+}
+void QtFlowNode::hoverMoveEvent(QGraphicsSceneHoverEvent* evt)
+{
+    int pin = check_pin(evt->pos());
+    if (pin != _highlighted_pin)
+    {
+        if (_highlighted_pin != -1)
+            _pins[_highlighted_pin]->set_highlight(false);
+
+        _highlighted_pin = pin;
+        if (_highlighted_pin != -1)
+            _pins[_highlighted_pin]->set_highlight(true);
+        update();
+    }
+
+    QGraphicsItem::hoverMoveEvent(evt);
+}
+void QtFlowNode::hoverLeaveEvent(QGraphicsSceneHoverEvent* evt)
+{
+    if (_highlighted_pin != -1)
+        _pins[_highlighted_pin]->set_highlight(false);
+    _highlighted_pin = -1;
+    QGraphicsItem::hoverLeaveEvent(evt);
 }

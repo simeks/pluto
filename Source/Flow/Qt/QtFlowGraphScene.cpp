@@ -2,10 +2,13 @@
 
 #include "FlowGraph.h"
 #include "FlowNode.h"
+#include "FlowPin.h"
 #include "QtFlowGraphScene.h"
 #include "QtFlowLink.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+
+#include "Nodes/QtConstantNode.h"
 
 #include <QtGui>
 #include <QGraphicsSceneMouseEvent>
@@ -33,15 +36,7 @@ QtFlowGraphScene::~QtFlowGraphScene()
 
 void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
 {
-    QtFlowNode* ui_node = nullptr;
-    //if (node->is_a(TerminalNode::static_class()))
-    //{
-    //    ui_node = new QtTerminalNode(node);
-    //}
-    //else
-    {
-        ui_node = new QtFlowNode(node);
-    }
+    QtFlowNode* ui_node = _create_node(node);
     ui_node->setPos(pos);
     addItem(ui_node);
 
@@ -64,48 +59,47 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
 
     remove_links(node);
     removeItem(node);
-    delete node;
 }
-bool QtFlowGraphScene::try_add_link(QtFlowLink* /*link*/)
+bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
 {
-    //QtFlowPin* a = link->start_pin();
-    //QtFlowPin* b = link->end_pin();
-    //if (!a || !b)
-    //    return false;
+    QtFlowPin* a = link->start();
+    QtFlowPin* b = link->end();
+    if (!a || !b)
+        return false;
 
-    //if (_flow_graph->try_add_link(a->pin(), b->pin()))
-    //{
-    //    _links.push_back(link);
-    //    return true;
-    //}
+    if (_flow_graph->try_add_link(a->pin(), b->pin()))
+    {
+        _links.push_back(link);
+        return true;
+    }
     return false;
 }
-void QtFlowGraphScene::remove_link(QtFlowLink* /*link*/)
+void QtFlowGraphScene::remove_link(QtFlowLink* link)
 {
-    //_flow_graph->remove_link(link->start_pin()->pin(), link->end_pin()->pin());
-    //_links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
-    //removeItem(link);
+    _flow_graph->remove_link(link->start()->pin(), link->end()->pin());
+    _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
+    removeItem(link);
 }
-void QtFlowGraphScene::remove_links(QtFlowNode* /*node*/)
+void QtFlowGraphScene::remove_links(QtFlowNode* node)
 {
-    /*for (auto p : node->pins())
+    for (auto p : node->pins())
     {
         remove_links(p);
-    }*/
+    }
 }
-void QtFlowGraphScene::remove_links(QtFlowPin* /*pin*/)
+void QtFlowGraphScene::remove_links(QtFlowPin* pin)
 {
-    /*auto it = _links.begin();
+    auto it = _links.begin();
     while (it != _links.end())
     {
-        if ((*it)->start_pin() == pin || (*it)->end_pin() == pin)
+        if ((*it)->start() == pin || (*it)->end() == pin)
         {
             removeItem(*it);
             it = _links.erase(it);
         }
         else
             ++it;
-    }*/
+    }
 }
 void QtFlowGraphScene::new_graph()
 {
@@ -126,19 +120,18 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     _flow_graph = graph;
 
     /// Links pointing from first pin to second pin
-    //typedef std::pair<FlowPin*, FlowPin*> Link;
-    //std::vector<Link> links;
+    typedef std::pair<FlowPin*, FlowPin*> Link;
+    std::vector<Link> links;
     for (auto n : graph->nodes())
     {
         FlowNode* node = n.second;
-
-        QtFlowNode* ui_node = new QtFlowNode(node);
+        QtFlowNode* ui_node = _create_node(node);
         ui_node->setPos(node->ui_pos().x, node->ui_pos().y);
         addItem(ui_node);
 
         _nodes[node->node_id()] = ui_node;
 
-        /*for (auto outpin : node->pins())
+        for (auto outpin : node->pins())
         {
             if (outpin->pin_type() == FlowPin::Out)
             {
@@ -147,10 +140,10 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
                     links.push_back(Link(outpin, inpin));
                 }
             }
-        }*/
+        }
     }
 
-/*
+
     for (const Link& l : links)
     {
         QtFlowNode* begin_node = _nodes[l.first->owner()->node_id()];
@@ -162,7 +155,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         QtFlowLink* link = new QtFlowLink(begin_pin, end_pin);
         addItem(link);
         _links.push_back(link);
-    }*/
+    }
 }
 void QtFlowGraphScene::clear_scene()
 {
@@ -170,4 +163,20 @@ void QtFlowGraphScene::clear_scene()
     _links.clear();
 
     clear();
+}
+QtFlowNode* QtFlowGraphScene::_create_node(FlowNode* node)
+{
+    QtFlowNode* n = nullptr;
+
+    QString cls = node->node_class();
+    if (cls == "flow.Constant")
+    {
+        n = new QtConstantNode(node);
+    }
+    else
+    {
+        n = new QtFlowNode(node);
+    }
+    n->setup();
+    return n;
 }

@@ -19,9 +19,14 @@ struct FlowUIStyle
     QColor node_background;
     QColor node_border;
     QColor node_border_selected;
+    QColor node_shadow_color;
     QColor node_title_color;
 
     /// Pins
+    QColor pin_color;
+    QColor pin_outline_color;
+    QColor pin_color_highlight;
+    QColor pin_outline_color_highlight;
     QColor pin_text_color;
     int pin_radius;
 

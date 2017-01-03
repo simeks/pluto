@@ -85,5 +85,6 @@ void QtNodePropertyWidget::property_changed(const QString& txt)
     if (_selected_node)
     {
         _selected_node->node()->set_property(src->objectName().toUtf8().constData(), txt.toUtf8().constData());
+        _selected_node->node_updated();
     }
 }

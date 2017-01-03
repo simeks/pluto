@@ -38,6 +38,9 @@ public:
 private:
     void clear_scene();
 
+    /// Creates the QtFlowNode object corresponding to the specified node class
+    QtFlowNode* _create_node(FlowNode* node);
+
     FlowGraph* _flow_graph;
 
     std::map<Guid, QtFlowNode*> _nodes;

@@ -24,3 +24,4 @@ class TerminalNode(flow.Node):
             ctx.write_pin('Out', self.value)
 
 flow.install_node_template(TerminalNode())
+

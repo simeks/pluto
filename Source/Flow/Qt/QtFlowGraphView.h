@@ -49,13 +49,14 @@ private:
 
     Mode _mode;
 
-    QtFlowPin* _selected_pin;
-    QtFlowPin* _temp_pin;
     QtFlowLink* _temp_link;
     QtFlowPin* _highlight_pin;
 
     void build_node_menu();
     void draw_background_grid(QPainter* painter, int grid_step);
+
+    /// Tries to find a pin at the specified position, returns null if no pin was found
+    QtFlowPin* find_pin(const QPointF& scene_pos);
 
 private slots:
     void show_context_menu(const QPoint&);

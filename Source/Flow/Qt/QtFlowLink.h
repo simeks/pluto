@@ -3,18 +3,21 @@
 
 #include <QGraphicsPathItem>
 
+class QtFlowPin;
 class QtFlowLink : public QGraphicsPathItem
 {
 public:
     enum { Type = UserType + 2 };
 
-    QtFlowLink(const QPoint& start_pos, const QPoint& end_pos, QGraphicsItem* parent = nullptr);
+    QtFlowLink(QtFlowPin* start, QtFlowPin* end, QGraphicsItem* parent = nullptr);
     ~QtFlowLink();
 
-    void set_pin(FlowPin* pin);
-    
-    FlowPin* start_pin() const;
-    FlowPin* end_pin() const;
+    void set_pin(QtFlowPin* pin);
+    /// pos : in scene coordinates
+    void move_free_end(const QPointF& pos);
+
+    QtFlowPin* start() const;
+    QtFlowPin* end() const;
 
     int type() const;
 
@@ -25,11 +28,11 @@ public:
 private:
     void build_path();
 
-    FlowPin* _start_pin;
-    FlowPin* _end_pin;
+    QtFlowPin* _start;
+    QtFlowPin* _end;
 
-    QPoint _start_pos;
-    QPoint _end_pos;
+    QPointF _free_end;
+
 };
 
 #endif // __QT_FLOW_CONNECTION_H__
