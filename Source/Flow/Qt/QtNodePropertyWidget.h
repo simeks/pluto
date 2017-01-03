@@ -5,7 +5,6 @@
 
 class QLineEdit;
 class QtFlowNode;
-class QtTerminalNode;
 class QtNodePropertyWidget : public QWidget
 {
     Q_OBJECT

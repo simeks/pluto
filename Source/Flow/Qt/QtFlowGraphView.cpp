@@ -68,7 +68,7 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
         {
             for (auto& item : scene_items)
             {
-                if (item->type() == QtFlowNode::Type/* || selected->type() == QtTerminalNode::Type*/)
+                if (item->type() == QtFlowNode::Type)
                 {
                     QtFlowNode* node = (QtFlowNode*)item;
                     int pin_id = node->check_pin(node->mapFromScene(mapToScene(mouse_event->pos())));
@@ -146,7 +146,7 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
     case Mode_Move:
         for (auto& item : _scene->selectedItems())
         {
-            if (item->type() == QtFlowNode::Type)// || item->type() == QtTerminalNode::Type)
+            if (item->type() == QtFlowNode::Type)
             {
                 QPointF delta = mapToScene(mouse_event->pos()) - mapToScene(_last_mouse_pos);
                 item->setPos(item->pos() + delta);
@@ -239,7 +239,7 @@ void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
     {
         for (auto& item : _scene->selectedItems())
         {
-            if (item->type() == QtFlowNode::Type)// || item->type() == QtTerminalNode::Type)
+            if (item->type() == QtFlowNode::Type)
             {
                 QtFlowNode* node = (QtFlowNode*)item;
                 _scene->remove_node(node);
