@@ -11,6 +11,7 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowWindow, load, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, save, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowWindow, graph);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, set_graph, FlowGraph*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowWindow, run);
 
 OBJECT_INIT_TYPE_FN(FlowWindow)
 {
@@ -20,6 +21,7 @@ OBJECT_INIT_TYPE_FN(FlowWindow)
     OBJECT_PYTHON_ADD_METHOD(FlowWindow, save, "");
     OBJECT_PYTHON_ADD_METHOD(FlowWindow, graph, "");
     OBJECT_PYTHON_ADD_METHOD(FlowWindow, set_graph, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowWindow, run, "");
 }
 
 IMPLEMENT_OBJECT(FlowWindow, "FlowWindow", FLOW_API);
@@ -67,3 +69,8 @@ void FlowWindow::clear()
 {
     emit _window->clear_graph();
 }
+void FlowWindow::run()
+{
+    _window->run_graph();
+}
+

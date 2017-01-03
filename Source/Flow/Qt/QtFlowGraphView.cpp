@@ -47,6 +47,14 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 QtFlowGraphView::~QtFlowGraphView()
 {
 }
+void QtFlowGraphView::update_visible_nodes()
+{
+    for (auto i : items(viewport()->rect()))
+    {
+        if (i->type() == QtFlowNode::Type)
+            i->update();
+    }
+}
 void QtFlowGraphView::set_scene(QtFlowGraphScene* scene)
 {
     _scene = scene;

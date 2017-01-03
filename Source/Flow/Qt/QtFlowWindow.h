@@ -18,6 +18,8 @@ public:
     ~QtFlowWindow();
 
     FlowGraph* graph();
+
+    void run_graph();
     
 public slots:
     void load_graph(const QString& file);

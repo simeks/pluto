@@ -2,6 +2,7 @@
 #include <Core/Json/Json.h>
 #include <Core/Json/JsonObject.h>
 
+#include "FlowContext.h"
 #include "FlowGraph.h"
 #include "QtFlowWindow.h"
 #include "QtFlowGraphScene.h"
@@ -13,6 +14,7 @@
 #include <QGridLayout>
 #include <QMessageBox>
 #include <QSettings>
+#include <QThread>
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
@@ -65,6 +67,22 @@ FlowGraph* QtFlowWindow::graph()
     if (scene)
         return scene->graph();
     return nullptr;
+}
+void QtFlowWindow::run_graph()
+{
+    if (thread() != QThread::currentThread())
+        QMetaObject::invokeMethod(this, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
+
+    FlowContext* ctx = object_new<FlowContext>();
+    if (graph())
+        ctx->run(graph());
+    ctx->release();
+
+    if (thread() != QThread::currentThread())
+    {
+        QMetaObject::invokeMethod(this, "setDisabled", Q_ARG(bool, false));
+    }
+    _graph_view->update_visible_nodes();
 }
 void QtFlowWindow::load_graph(const QString& file)
 {

@@ -28,6 +28,8 @@ public:
     void set_graph(FlowGraph* graph);
     void clear();
 
+    void run();
+
 private:
     QtFlowWindow* _window;
 
