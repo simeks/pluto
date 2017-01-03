@@ -17,22 +17,23 @@ namespace
 {
     void debug_output(FlowContext* ctx)
     {
-        PYTHON_STDOUT("[DebugOutput] ");
+        PYTHON_STDOUT("[Debug] ");
         PyObject* obj = ctx->read_pin("In");
         if (!obj)
-            PYTHON_STDOUT("NULL");
-        else if (Object::static_class()->check_type(obj))
+        {
+            PYTHON_STDOUT("NULL\n");
+            return;
+        }
+
+        if (Object::static_class()->check_type(obj))
         {
             Object* o = python_convert::from_python<Object*>(obj);
             PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
         }
-        else if (PyUnicode_Check(obj))
-        {
-            PYTHON_STDOUT("\"%s\"", python_convert::from_python<const char*>(obj));
-        }
         else
         {
-            PYTHON_STDOUT("PyObject: %s", obj->ob_type->tp_name);
+            PYTHON_STDOUT("PyObject, type=%s, ", obj->ob_type->tp_name);
+            PYTHON_STDOUT("%s", PyUnicode_AsUTF8(PyObject_Str(obj)));
         }
         PYTHON_STDOUT("\n");
     }
@@ -75,7 +76,7 @@ void FlowModule::init()
         { "In", FlowPin::In, "" },
         { 0, 0, 0 }
     };
-    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "", pins, debug_output, "" };
+    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "Debug", pins, debug_output, "" };
 
     install_node_template(nd);
 }

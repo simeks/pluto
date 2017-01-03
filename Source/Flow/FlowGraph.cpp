@@ -92,8 +92,9 @@ FlowNode* FlowGraph::node(const Guid& id) const
 {
     assert(id.is_valid());
     auto it = _nodes.find(id);
-    assert(it != _nodes.end());
-    return it->second;
+    if(it != _nodes.end())
+        return it->second;
+    return nullptr;
 }
 const std::map<Guid, FlowNode*>& FlowGraph::nodes() const
 {

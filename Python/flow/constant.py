@@ -14,7 +14,7 @@ class ConstantNode(flow.Node):
         super(ConstantNode, self).__init__()
         self.node_class = 'flow.Constant'
         self.title = 'Constant'
-        self.category = ''
+        self.category = 'Flow'
 
     def run(self, ctx):
         ctx.write_pin('Out', self.value)

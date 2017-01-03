@@ -2,7 +2,7 @@
 
 #include "FlowNode.h"
 #include "FlowPin.h"
-#include "QtResultNode.h"
+#include "QtPrintNode.h"
 #include "Qt/QtFlowPin.h"
 #include "Qt/Style.h"
 
@@ -10,14 +10,14 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtResultNode::QtResultNode(FlowNode* node, QGraphicsWidget* parent) :
+QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsWidget* parent) :
     QtFlowNode(node, parent)
 {
 }
-QtResultNode::~QtResultNode()
+QtPrintNode::~QtPrintNode()
 {
 }
-void QtResultNode::node_updated()
+void QtPrintNode::node_updated()
 {
     calculate_size();
     
@@ -28,7 +28,7 @@ void QtResultNode::node_updated()
     update();
     scene()->update();
 }
-void QtResultNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void QtPrintNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -63,7 +63,7 @@ void QtResultNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* opti
     painter->drawEllipse(pin->local_pos(), style.pin_radius, style.pin_radius);
 
 }
-void QtResultNode::create_pins()
+void QtPrintNode::create_pins()
 {
     assert(_node->pins().size() == 1);
 
@@ -75,7 +75,7 @@ void QtResultNode::create_pins()
     _out_pin = new QtFlowPin(this, _node->pins()[0], pin_pos);
     _pins.push_back(_out_pin);
 }
-void QtResultNode::calculate_size()
+void QtPrintNode::calculate_size()
 {
     assert(_node->pins().size() == 1);
 
@@ -85,7 +85,7 @@ void QtResultNode::calculate_size()
     int width = std::max(75, font_metrics.width(value())+50);
     _rect = QRect(0, 0, width, height);
 }
-QString QtResultNode::value() const
+QString QtPrintNode::value() const
 {
     QString value = _node->attribute<const char*>("value");
     if (value.isEmpty())

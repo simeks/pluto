@@ -9,7 +9,7 @@
 #include "QtFlowPin.h"
 
 #include "Nodes/QtConstantNode.h"
-#include "Nodes/QtResultNode.h"
+#include "Nodes/QtPrintNode.h"
 
 #include <QtGui>
 #include <QGraphicsSceneMouseEvent>
@@ -191,9 +191,9 @@ QtFlowNode* QtFlowGraphScene::_create_node(FlowNode* node)
     {
         n = new QtConstantNode(node);
     }
-    else if (cls == "flow.Result")
+    else if (cls == "flow.Print")
     {
-        n = new QtResultNode(node);
+        n = new QtPrintNode(node);
     }
     else
     {

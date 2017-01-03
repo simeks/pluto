@@ -35,8 +35,3 @@ else:
     print('Import module: flow')
 
 import console
-
-
-g = flow.load('test.flow')
-c = flow.Context()
-c.run(g)

@@ -1,13 +1,13 @@
-#ifndef __FLOW_QT_RESULT_NODE_H__
-#define __FLOW_QT_RESULT_NODE_H__
+#ifndef __FLOW_QT_PRINT_NODE_H__
+#define __FLOW_QT_PRINT_NODE_H__
 
 #include "../QtFlowNode.h"
 
-class QtResultNode : public QtFlowNode
+class QtPrintNode : public QtFlowNode
 {
 public:
-    QtResultNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
-    virtual ~QtResultNode();
+    QtPrintNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
+    virtual ~QtPrintNode();
     
     virtual void node_updated() OVERRIDE;
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) OVERRIDE;
@@ -21,4 +21,4 @@ protected:
     QtFlowPin* _out_pin;
 };
 
-#endif // __FLOW_QT_RESULT_NODE_H__
+#endif // __FLOW_QT_PRINT_NODE_H__
