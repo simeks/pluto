@@ -45,8 +45,11 @@ private:
 
     ConsoleHistory _history;
 
+    QString _prompt_temp; // Temp storage of prompt value while prompt is hidden
+
 public slots:
     void kernel_ready();
+    void kernel_busy();
     void kernel_output(const QString& text, bool html);
     void kernel_error_output(const QString& text);
 

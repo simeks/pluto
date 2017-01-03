@@ -1,5 +1,5 @@
-#ifndef __PLUTO_KERNEL_RUNNER_H__
-#define __PLUTO_KERNEL_RUNNER_H__
+#ifndef __CORE_PLUTO_KERNEL_RUNNER_H__
+#define __CORE_PLUTO_KERNEL_RUNNER_H__
 
 #include <QObject>
 #include <QThread>
@@ -7,17 +7,17 @@
 
 #include <Core/Pluto/PlutoKernel.h>
 
-class PlutoKernelProxy : public QObject
+class CORE_API PlutoKernelProxy : public QObject
 {
     Q_OBJECT;
 public:
     PlutoKernelProxy(PlutoKernel* kernel);
     ~PlutoKernelProxy();
 
-    void on_stdout(const char* text, bool html=false);
+    void on_stdout(const char* text, bool html = false);
     void on_stderr(const char* text);
 
-public slots:
+    public slots:
     void start();
     void stop();
 
@@ -27,6 +27,8 @@ public slots:
 
 signals:
     void ready();
+    void busy();
+
     void output(const QString& text, bool html);
     void error_output(const QString& text);
 
@@ -48,4 +50,4 @@ private:
 };
 
 
-#endif // __PLUTO_KERNEL_RUNNER_H__
+#endif // __CORE_PLUTO_KERNEL_RUNNER_H__

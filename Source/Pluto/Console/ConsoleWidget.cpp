@@ -9,7 +9,7 @@
 #include <QTextEdit>
 #include <QTextDocumentFragment>
 
-#include "PlutoKernelProxy.h"
+#include <Core/Pluto/PlutoKernelProxy.h>
 
 //static const char* console_stylesheet =
 //"QPlainTextEdit, QTextEdit { background-color: white; color: black; selection-background-color: blue; }"
@@ -31,6 +31,7 @@ ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     connect(this, SIGNAL(invoke_command(const QString&)), _kernel_runner, SLOT(invoke(const QString&)));
     connect(this, SIGNAL(interrupt_kernel()), _kernel_runner, SLOT(interrupt()), Qt::DirectConnection);
     connect(_kernel_runner, SIGNAL(ready()), this, SLOT(kernel_ready()));
+    connect(_kernel_runner, SIGNAL(busy()), this, SLOT(kernel_busy()));
     connect(_kernel_runner, SIGNAL(output(const QString&, bool)), this, SLOT(kernel_output(const QString&, bool)));
     connect(_kernel_runner, SIGNAL(error_output(const QString&)), this, SLOT(kernel_error_output(const QString&)));
 
@@ -69,8 +70,8 @@ void ConsoleWidget::append_html(const QString& text)
     QTextCursor cursor = textCursor();
     if (!isReadOnly())
         cursor.setPosition(_prompt_position - _prompt.length());
-
-    cursor.movePosition(QTextCursor::End);
+    else
+        cursor.movePosition(QTextCursor::End);
     cursor.insertHtml(text);
     _prompt_position = cursor.position() + _prompt.length();
 }
@@ -108,62 +109,82 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         return;
     }
 
-    if (e->modifiers() == 0)
+    switch (e->key())
     {
-        switch (e->key())
+    case Qt::Key_Return:
+        handle_return();
+        return;
+    case Qt::Key_Backspace:
+        if (textCursor().position() <= _prompt_position)
         {
-        case Qt::Key_Return:
-            handle_return();
             return;
-        case Qt::Key_Backspace:
-            if (textCursor().position() <= _prompt_position)
-            {
-                return;
-            }
-        case Qt::Key_End:
-        case Qt::Key_Home:
-        case Qt::Key_Left:
-        case Qt::Key_Right:
-            break;
-        case Qt::Key_Up:
-            {
-                if (_history.end())
-                    _history.set_prefix(read_prompt());
-
-                QString cmd = _history.find_previous();
-                if (!cmd.isEmpty())
-                {
-                    QTextCursor cursor = textCursor();
-                    cursor.movePosition(QTextCursor::StartOfBlock);
-                    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
-                    cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-                    cursor.insertText(cmd);
-                    setTextCursor(cursor);
-                }
-                return;
-            }
-            break;
-        case Qt::Key_Down:
-            {
-                QString cmd = _history.find_next();
-                //if (!cmd.isEmpty())
-                {
-                    QTextCursor cursor = textCursor();
-                    cursor.movePosition(QTextCursor::StartOfBlock);
-                    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
-                    cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-                    cursor.insertText(cmd);
-                    setTextCursor(cursor);
-                }
-                return;
-            }
-            break;
-        default:
+        }
+    case Qt::Key_End:
+    case Qt::Key_Home:
+        break;
+    case Qt::Key_Left:
+        if (!cursor_in_prompt(textCursor()))
+        {
+            moveCursor(QTextCursor::End);
+            return;
+        }
+        if (textCursor().position() <= _prompt_position)
+        {
+            return;
+        }
+        break;
+    case Qt::Key_Right:
+        if (!cursor_in_prompt(textCursor()))
+        {
+            moveCursor(QTextCursor::End);
+            return;
+        }
+        break;
+    case Qt::Key_Up:
+        {
             if (!cursor_in_prompt(textCursor()))
                 moveCursor(QTextCursor::End);
-            break;
-        };
-    }
+
+            if (_history.end())
+                _history.set_prefix(read_prompt());
+
+            QString cmd = _history.find_previous();
+            if (!cmd.isEmpty())
+            {
+                QTextCursor cursor = textCursor();
+                cursor.movePosition(QTextCursor::StartOfBlock);
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
+                cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+                cursor.insertText(cmd);
+                setTextCursor(cursor);
+            }
+            return;
+        }
+        break;
+    case Qt::Key_Down:
+        {
+            if (!cursor_in_prompt(textCursor()))
+                moveCursor(QTextCursor::End);
+
+            QString cmd = _history.find_next();
+            //if (!cmd.isEmpty())
+            {
+                QTextCursor cursor = textCursor();
+                cursor.movePosition(QTextCursor::StartOfBlock);
+                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
+                cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+                cursor.insertText(cmd);
+                setTextCursor(cursor);
+            }
+            return;
+        }
+        break;
+    default:
+        if (!cursor_in_prompt(textCursor()))
+            moveCursor(QTextCursor::End);
+        break;
+    };
+    
     QTextEdit::keyPressEvent(e);
 }
 void ConsoleWidget::handle_return()
@@ -175,7 +196,7 @@ void ConsoleWidget::handle_return()
         QString cmd = read_prompt();
         if (!cmd.isEmpty())
         {
-            hide_prompt();
+            setReadOnly(true);
             _history.push(cmd);
             emit invoke_command(cmd);
 
@@ -206,22 +227,31 @@ void ConsoleWidget::show_prompt()
     cursor.movePosition(QTextCursor::End);
     if (cursor.position() > 0)
     {
-        if (!toHtml().endsWith("<br/>"))
-        {
-            cursor.insertBlock();
-        }
+        cursor.insertBlock();
     }
 
     cursor.insertHtml(_prompt.toHtmlEscaped());
     cursor.movePosition(QTextCursor::EndOfLine);
     _prompt_position = cursor.position();
+
+    if (!_prompt_temp.isEmpty())
+    {
+        cursor.insertText(_prompt_temp);
+        _prompt_temp = "";
+    }
+
     setTextCursor(cursor);
 
     setReadOnly(false);
 }
 void ConsoleWidget::hide_prompt()
 {
-    setReadOnly(true);
+    _prompt_temp = read_prompt();
+
+    QTextCursor cursor = textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
 }
 bool ConsoleWidget::cursor_in_prompt(const QTextCursor& cursor) const
 {
@@ -239,6 +269,10 @@ void ConsoleWidget::kernel_ready()
 {
     setReadOnly(false);
     show_prompt();
+}
+void ConsoleWidget::kernel_busy()
+{
+    hide_prompt();
 }
 void ConsoleWidget::kernel_output(const QString& text, bool html)
 {

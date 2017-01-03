@@ -1,9 +1,9 @@
 #include <Core/Common.h>
 #include <Core/Modules/ModuleManager.h>
 #include <Core/Pluto/PlutoCore.h>
+#include <Core/Pluto/PlutoKernelProxy.h>
 
 #include "PlutoApplication.h"
-#include "PlutoKernelProxy.h"
 
 PlutoApplication::PlutoApplication(int argc, char** argv) : 
     QApplication(argc, argv)
@@ -24,7 +24,7 @@ void PlutoApplication::init()
     ModuleManager::instance().load_module("Flow");
 
     PlutoCore::instance().init();
-    _kernel = new PlutoKernelProxy(PlutoCore::instance().kernel());
+    _kernel = PlutoCore::instance().kernel_proxy();
 }
 PlutoKernelProxy* PlutoApplication::kernel() const
 {

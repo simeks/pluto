@@ -4,6 +4,7 @@
 #include "Object/PythonClass.h"
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
+#include "PlutoKernelProxy.h"
 #include "Python/PythonWrapper.h"
 #include "Qt/WindowManager.h"
 
@@ -14,6 +15,7 @@ PlutoCore::PlutoCore(int, char**)
     ModuleManager::create();
 
     _kernel = new PlutoKernel();
+    _kernel_proxy = new PlutoKernelProxy(_kernel);
     _window_manager = new WindowManager();
 }
 PlutoCore::~PlutoCore()
@@ -49,10 +51,15 @@ const char* PlutoCore::user_dir() const
 {
     return "..\\User"; // TODO:
 }
-PlutoKernel* PlutoCore::kernel() const
+PlutoKernelProxy* PlutoCore::kernel_proxy() const
 {
-    return _kernel;
+    return _kernel_proxy;
 }
+QThread* PlutoCore::kernel_thread() const
+{
+    return _kernel_proxy->thread();
+}
+
 WindowManager* PlutoCore::window_manager() const
 {
     return _window_manager;

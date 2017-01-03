@@ -13,7 +13,8 @@ def build(bld):
 		target='Core',
 		source=bld.find_files('**/(*.cpp|*.cu)'), 
 		moc=[
-			'Qt/WindowManager.h'
+			'Qt/WindowManager.h',
+			'Pluto/PlutoKernelProxy.h'
 		],
 		includes='. ..',
 		defines='PLUTO_CORE_EXPORTS',

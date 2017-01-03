@@ -2,7 +2,9 @@
 #define __CORE_PLUTO_CORE_H__
 
 class PlutoKernel;
+class PlutoKernelProxy;
 class PythonModule;
+class QThread;
 class WindowManager;
 class CORE_API PlutoCore
 {
@@ -15,7 +17,8 @@ public:
 
     const char* user_dir() const;
 
-    PlutoKernel* kernel() const;
+    PlutoKernelProxy* kernel_proxy() const;
+    QThread* kernel_thread() const;
 
     WindowManager* window_manager() const;
 
@@ -26,6 +29,7 @@ private:
     static PlutoCore* s_instance;
 
     PlutoKernel* _kernel;
+    PlutoKernelProxy* _kernel_proxy;
     WindowManager* _window_manager;
 };
 

@@ -27,10 +27,6 @@ PlutoKernelProxy::PlutoKernelProxy(PlutoKernel* kernel) : _kernel(kernel)
 {
     this->moveToThread(&_thread);
     _thread.start();
-
-    _kernel->set_stdout_callback(kernel_stdout, this);
-    _kernel->set_stderr_callback(kernel_stderr, this);
-    _kernel->set_htmlout_callback(kernel_htmlout, this);
 }
 PlutoKernelProxy::~PlutoKernelProxy()
 {
@@ -44,6 +40,9 @@ PlutoKernelProxy::~PlutoKernelProxy()
 }
 void PlutoKernelProxy::start()
 {
+    _kernel->set_stdout_callback(kernel_stdout, this);
+    _kernel->set_stderr_callback(kernel_stderr, this);
+    _kernel->set_htmlout_callback(kernel_htmlout, this);
     _kernel->start();
 
     emit ready();
