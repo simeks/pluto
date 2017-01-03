@@ -17,7 +17,7 @@ public:
     QtFlowGraphView(QWidget *parent = nullptr);
     ~QtFlowGraphView();
 
-    void update_visible_nodes();
+    void update_nodes();
 
     void set_scene(QtFlowGraphScene* scene);
     QtFlowGraphScene* scene() const;

@@ -82,7 +82,7 @@ void QtConstantNode::calculate_size()
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
     int height = font_metrics.height() + 10; // Title
-    int width = std::max(75, font_metrics.width(value())+50);
+    int width = std::max(25, font_metrics.width(value())+25);
     _rect = QRect(0, 0, width, height);
 }
 QString QtConstantNode::value() const

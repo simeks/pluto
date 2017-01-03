@@ -11,7 +11,8 @@
 #include <QPainter>
 
 QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsWidget* parent) :
-    QtFlowNode(node, parent)
+    QtFlowNode(node, parent),
+    _in_pin(nullptr)
 {
 }
 QtPrintNode::~QtPrintNode()
@@ -21,9 +22,9 @@ void QtPrintNode::node_updated()
 {
     calculate_size();
     
-    QPointF pin_pos = _out_pin->local_pos();
-    pin_pos.setX(_rect.width());
-    _out_pin->set_local_pos(pin_pos);
+    QPointF pin_pos = _in_pin->local_pos();
+    pin_pos.setX(0);
+    _in_pin->set_local_pos(pin_pos);
 
     update();
     scene()->update();
@@ -72,8 +73,8 @@ void QtPrintNode::create_pins()
     QFontMetrics metrics(style.node_font);
     
     QPoint pin_pos = QPoint(0, _rect.height() / 2);
-    _out_pin = new QtFlowPin(this, _node->pins()[0], pin_pos);
-    _pins.push_back(_out_pin);
+    _in_pin = new QtFlowPin(this, _node->pins()[0], pin_pos);
+    _pins.push_back(_in_pin);
 }
 void QtPrintNode::calculate_size()
 {
@@ -82,7 +83,7 @@ void QtPrintNode::calculate_size()
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
     int height = font_metrics.height() + 10; // Title
-    int width = std::max(75, font_metrics.width(value())+50);
+    int width = std::max(25, font_metrics.width(value()) + 25);
     _rect = QRect(0, 0, width, height);
 }
 QString QtPrintNode::value() const

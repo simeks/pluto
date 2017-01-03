@@ -158,7 +158,7 @@ void QtFlowWindow::save_graph(const QString& file)
 }
 void QtFlowWindow::update_view()
 {
-    _graph_view->update_visible_nodes();
+    _graph_view->update_nodes();
 }
 void QtFlowWindow::_set_graph(FlowGraph* graph)
 {

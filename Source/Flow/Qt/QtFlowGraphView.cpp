@@ -47,8 +47,13 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 QtFlowGraphView::~QtFlowGraphView()
 {
 }
-void QtFlowGraphView::update_visible_nodes()
+void QtFlowGraphView::update_nodes()
 {
+    for (auto i : items())
+    {
+        if (i->type() == QtFlowNode::Type)
+            ((QtFlowNode*)i)->node_updated();
+    }
     for (auto i : items(viewport()->rect()))
     {
         if (i->type() == QtFlowNode::Type)
@@ -180,18 +185,18 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
             _highlight_pin = nullptr;
         }
 
+        // Is target_pin compatible?
+
         QtFlowPin* target_pin = find_pin(mapToScene(mouse_event->pos()));
         if (target_pin)
         {
-            // Is target_pin compatible?
-            if ((target_pin->pin_type() == FlowPin::In && _temp_link->start()) ||
-                (target_pin->pin_type() == FlowPin::Out && _temp_link->end()))
+            QtFlowPin* source_pin = (target_pin->pin_type() == FlowPin::In) ? _temp_link->start() : _temp_link->end();
+            if (source_pin && target_pin->owner() != source_pin->owner())
             {
                 _highlight_pin = target_pin;
                 _highlight_pin->set_highlight(true);
             }
         }
-
         _temp_link->move_free_end(mapToScene(mouse_event->pos()));
         _temp_link->update();
         QGraphicsView::mouseMoveEvent(mouse_event);

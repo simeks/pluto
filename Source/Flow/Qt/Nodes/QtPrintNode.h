@@ -18,7 +18,7 @@ protected:
 
     QString value() const;
 
-    QtFlowPin* _out_pin;
+    QtFlowPin* _in_pin;
 };
 
 #endif // __FLOW_QT_PRINT_NODE_H__
