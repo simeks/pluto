@@ -18,7 +18,7 @@ def parse_returns(fn):
     for i in range(begin+1, len(lines)):
         if lines[i] == '':
             break
-        m = re.match('(\S)', lines[i])
+        m = re.match('(\S+)', lines[i])
         if m:
             returns.append(m.group(1))
 
@@ -59,11 +59,15 @@ class FunctionNode(flow.Node):
         returns = self.func(*args)
 
         if returns:
-            if len(returns) != len(self.returns):
-                raise ValueError('Not enough return arguments')
+            if len(self.returns) > 1:
+                if len(returns) != len(self.returns):
+                    raise ValueError('Not enough return arguments')
 
-            for i in range(0, len(returns)):
-                ctx.write_pin(self.returns[i], returns[i])
+                for i in range(0, len(returns)):
+                    ctx.write_pin(self.returns[i], returns[i])
+            else:
+                ctx.write_pin(self.returns[0], returns)
+
 
 
 def node(title, category = ''):
@@ -72,20 +76,3 @@ def node(title, category = ''):
         return fn
     return dec
 
-
-@node('node_a', 'test')
-def node_a(A, B):
-    """
-    Returns:
-    C -- asd
-    D -- asd
-    """
-    return A, B
-
-@node('print_a', 'test')
-def print_a(A):
-    print('A:',A)
-
-@node('print_b', 'test')
-def print_b(B):
-    print('B:',B)

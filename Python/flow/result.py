@@ -6,15 +6,13 @@ class ResultNode(flow.Node):
     pins = [
         flow.Pin('In', flow.Pin.In)
     ]
-    properties = [
-        flow.Property('value', '')
-    ]
 
     def __init__(self):
         super(ResultNode, self).__init__()
         self.node_class = 'flow.Result'
         self.title = 'Result'
         self.category = ''
+        self.value = ''
 
     def run(self, ctx):
         self.value = str(ctx.read_pin('In'))
