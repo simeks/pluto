@@ -105,4 +105,3 @@ bool FlowPin::is_linked_to(FlowPin* other) const
     return std::find(_links.begin(), _links.end(), other) != _links.end();
 }
 
-

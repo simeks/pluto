@@ -44,7 +44,6 @@ public:
     const std::vector<FlowPin*>& links() const;
     bool is_linked_to(FlowPin* other) const;
 
-
 private:
     Type _pin_type;
     std::string _name;

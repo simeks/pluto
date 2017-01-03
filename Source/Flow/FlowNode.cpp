@@ -189,7 +189,7 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {
     for (auto& pin : other._pins)
     {
-        add_pin((FlowPin*)pin->clone());
+        add_pin(pin->name().c_str(), pin->pin_type());
     }
     for (auto& prop : other._properties)
     {

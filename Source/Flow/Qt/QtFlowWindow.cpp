@@ -1,6 +1,8 @@
 #include <Core/Common.h>
 #include <Core/Json/Json.h>
 #include <Core/Json/JsonObject.h>
+#include <Core/Pluto/PlutoCore.h>
+#include <Core/Pluto/PlutoKernelProxy.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
@@ -19,6 +21,33 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 
+
+QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window)
+{
+    qRegisterMetaType<FlowGraph*>("FlowGraph*");
+    this->moveToThread(PlutoCore::instance().kernel_thread());
+}
+QtFlowGraphRunner::~QtFlowGraphRunner()
+{
+}
+void QtFlowGraphRunner::run(FlowGraph* graph)
+{
+    QMetaObject::invokeMethod(_window, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
+
+    PlutoKernelProxy* kernel = PlutoCore::instance().kernel_proxy();
+    emit kernel->busy();
+
+    PYTHON_STDOUT("Running graph...\n");
+
+    FlowContext* ctx = object_new<FlowContext>();
+    ctx->run(graph);
+    ctx->release();
+
+    emit kernel->ready();
+    emit finished();
+
+    QMetaObject::invokeMethod(_window, "setDisabled", Q_ARG(bool, false));
+}
 
 QtFlowWindow::QtFlowWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -42,10 +71,15 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
 
     connect(this, SIGNAL(set_graph(FlowGraph*)), SLOT(_set_graph(FlowGraph*)));
     connect(this, SIGNAL(clear_graph()), SLOT(_clear_graph()));
+
+    _graph_runner = new QtFlowGraphRunner(this);
+    connect(_graph_runner, SIGNAL(finished()), this, SLOT(update_view()));
 }
 
 QtFlowWindow::~QtFlowWindow()
 {
+    delete _graph_runner;
+
     QSettings settings;
 
     settings.beginGroup("flowwindow");
@@ -70,19 +104,24 @@ FlowGraph* QtFlowWindow::graph()
 }
 void QtFlowWindow::run_graph()
 {
-    if (thread() != QThread::currentThread())
+    if (!graph())
+        return;
+    
+    // Use runner if we are on UI thread to avoid UI stalling
+    if (thread() == QThread::currentThread())
+        QMetaObject::invokeMethod(_graph_runner, "run", Q_ARG(FlowGraph*, graph()));
+    else
+    {
         QMetaObject::invokeMethod(this, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
 
-    FlowContext* ctx = object_new<FlowContext>();
-    if (graph())
+        FlowContext* ctx = object_new<FlowContext>();
         ctx->run(graph());
-    ctx->release();
+        ctx->release();
 
-    if (thread() != QThread::currentThread())
-    {
+        update_view();
         QMetaObject::invokeMethod(this, "setDisabled", Q_ARG(bool, false));
     }
-    _graph_view->update_visible_nodes();
+
 }
 void QtFlowWindow::load_graph(const QString& file)
 {
@@ -117,8 +156,10 @@ void QtFlowWindow::save_graph(const QString& file)
     }
     _current_file = file;
 }
-
-
+void QtFlowWindow::update_view()
+{
+    _graph_view->update_visible_nodes();
+}
 void QtFlowWindow::_set_graph(FlowGraph* graph)
 {
     QtFlowGraphScene* scene = _graph_view->scene();
@@ -134,50 +175,79 @@ void QtFlowWindow::_clear_graph()
 
 void QtFlowWindow::setup_ui()
 {
-    QAction* action_new = new QAction(tr("New"), this);
-    action_new->setShortcuts(QKeySequence::New);
-    action_new->setStatusTip("Creates a new graph");
-    connect(action_new, &QAction::triggered, this, &QtFlowWindow::on_new);
-
-    QAction* action_open = new QAction(tr("Open"), this);
-    action_open->setShortcuts(QKeySequence::Open);
-    action_open->setStatusTip("Opens an existing graph");
-    connect(action_open, &QAction::triggered, this, &QtFlowWindow::on_open);
-
-    QAction* action_save = new QAction(tr("Save"), this);
-    action_save->setShortcuts(QKeySequence::Save);
-    action_save->setStatusTip("Saves the current graph");
-    connect(action_save, &QAction::triggered, this, &QtFlowWindow::on_save);
-
-    QAction* action_save_as = new QAction(tr("Save As"), this);
-    action_save_as->setShortcuts(QKeySequence::SaveAs);
-    action_save_as->setStatusTip("Saves the current graph as");
-    connect(action_save_as, &QAction::triggered, this, &QtFlowWindow::on_save_as);
-
-    QAction* action_exit = new QAction(tr("Close"), this);
-    action_exit->setShortcuts(QKeySequence::Quit);
-    action_exit->setStatusTip("Closes this window");
-    connect(action_exit, &QAction::triggered, this, &QtFlowWindow::on_exit_triggered);
-
-    QMenuBar* menu_bar = new QMenuBar(this);
-    setMenuBar(menu_bar);
-
-    QMenu* menu_file = new QMenu("File", menu_bar);
-    menu_bar->addAction(menu_file->menuAction());
-
-
-    menu_file->addAction(action_new);
-    menu_file->addAction(action_open);
-    menu_file->addSeparator();
-    menu_file->addAction(action_save);
-    menu_file->addAction(action_save_as);
-    menu_file->addSeparator();
-    menu_file->addAction(action_exit);
-
     setWindowTitle("Flow Editor");
 
     _graph_view = new QtFlowGraphView(this);
     _graph_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QMenuBar* menu_bar = new QMenuBar(this);
+    setMenuBar(menu_bar);
+
+    {
+        QMenu* menu_file = new QMenu("File", menu_bar);
+        menu_bar->addAction(menu_file->menuAction());
+
+        QAction* action_new = new QAction(tr("New"), this);
+        action_new->setShortcuts(QKeySequence::New);
+        action_new->setStatusTip("Creates a new graph");
+        connect(action_new, &QAction::triggered, this, &QtFlowWindow::on_new);
+
+        QAction* action_open = new QAction(tr("Open"), this);
+        action_open->setShortcuts(QKeySequence::Open);
+        action_open->setStatusTip("Opens an existing graph");
+        connect(action_open, &QAction::triggered, this, &QtFlowWindow::on_open);
+
+        QAction* action_save = new QAction(tr("Save"), this);
+        action_save->setShortcuts(QKeySequence::Save);
+        action_save->setStatusTip("Saves the current graph");
+        connect(action_save, &QAction::triggered, this, &QtFlowWindow::on_save);
+
+        QAction* action_save_as = new QAction(tr("Save As"), this);
+        action_save_as->setShortcuts(QKeySequence::SaveAs);
+        action_save_as->setStatusTip("Saves the current graph as");
+        connect(action_save_as, &QAction::triggered, this, &QtFlowWindow::on_save_as);
+
+        QAction* action_exit = new QAction(tr("Close"), this);
+        action_exit->setShortcuts(QKeySequence::Quit);
+        action_exit->setStatusTip("Closes this window");
+        connect(action_exit, &QAction::triggered, this, &QtFlowWindow::on_exit_triggered);
+
+        menu_file->addAction(action_new);
+        menu_file->addAction(action_open);
+        menu_file->addSeparator();
+        menu_file->addAction(action_save);
+        menu_file->addAction(action_save_as);
+        menu_file->addSeparator();
+        menu_file->addAction(action_exit);
+    }
+
+    {
+        QMenu* menu_edit = new QMenu("Edit", menu_bar);
+        menu_bar->addAction(menu_edit->menuAction());
+
+        QAction* action_copy = new QAction(tr("Copy"), this);
+        action_copy->setShortcuts(QKeySequence::Copy);
+        connect(action_copy, &QAction::triggered, _graph_view, &QtFlowGraphView::node_copy);
+
+        QAction* action_paste = new QAction(tr("Paste"), this);
+        action_paste->setShortcuts(QKeySequence::Paste);
+        connect(action_paste, &QAction::triggered, _graph_view, &QtFlowGraphView::node_paste);
+
+        menu_edit->addAction(action_copy);
+        menu_edit->addAction(action_paste);
+    }
+
+    {
+        QMenu* menu_run = new QMenu("Run", menu_bar);
+        menu_bar->addAction(menu_run->menuAction());
+
+        QAction* action_run = new QAction(tr("Run Graph"), this);
+        action_run->setShortcut(QKeySequence::fromString("F5"));
+        action_run->setStatusTip("Runs the current graph");
+        connect(action_run, &QAction::triggered, this, &QtFlowWindow::on_run);
+
+        menu_run->addAction(action_run);
+    }
 
     connect(this, SIGNAL(node_template_added(FlowNode*)), _graph_view, SLOT(node_template_added(FlowNode*)));
     connect(this, SIGNAL(node_template_removed(FlowNode*)), _graph_view, SLOT(node_template_removed(FlowNode*)));
@@ -232,4 +302,8 @@ void QtFlowWindow::on_save_as()
             save_graph(file_name);
         }
     }
+}
+void QtFlowWindow::on_run()
+{
+    run_graph();
 }

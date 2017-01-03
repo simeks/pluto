@@ -25,6 +25,8 @@ public:
 public slots:
     void node_template_added(FlowNode* node);
     void node_template_removed(FlowNode* node);
+    void node_copy();
+    void node_paste();
 
 protected:
     void mousePressEvent(QMouseEvent* mouse_event);
@@ -53,6 +55,8 @@ private:
 
     QtFlowLink* _temp_link;
     QtFlowPin* _highlight_pin;
+
+    std::vector<QtFlowNode*> _node_clipboard;
 
     void build_node_menu();
     void draw_background_grid(QPainter* painter, int grid_step);

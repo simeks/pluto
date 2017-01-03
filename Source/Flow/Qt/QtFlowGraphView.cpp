@@ -441,3 +441,31 @@ void QtFlowGraphView::node_template_removed(FlowNode* )
     // Rebuild node menu
     build_node_menu();
 }
+void QtFlowGraphView::node_copy()
+{
+    _node_clipboard.clear();
+    for (auto i : _scene->selectedItems())
+    {
+        if (i->type() == QtFlowNode::Type)
+        {
+            _node_clipboard.push_back((QtFlowNode*)i);
+        }
+    }
+}
+void QtFlowGraphView::node_paste()
+{
+    if (!_node_clipboard.empty() && underMouse())
+    {
+        QPointF mouse_pos = mapToScene(mapFromGlobal(QCursor::pos()));
+        QPointF origin = _node_clipboard[0]->scenePos();
+        for (auto i : _node_clipboard)
+        {
+            QPointF offset = i->scenePos() - origin;
+            FlowNode* copy = object_clone(i->node());
+            copy->set_node_id(guid::create_guid());
+            _scene->create_node(copy, mouse_pos + offset);
+            copy->release();
+        }
+
+    }
+}
