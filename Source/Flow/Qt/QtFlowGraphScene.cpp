@@ -10,6 +10,7 @@
 
 #include "Nodes/QtConstantNode.h"
 #include "Nodes/QtPrintNode.h"
+#include "Nodes/QtVariableNode.h"
 
 #include <QtGui>
 #include <QGraphicsSceneMouseEvent>
@@ -194,6 +195,10 @@ QtFlowNode* QtFlowGraphScene::_create_node(FlowNode* node)
     else if (cls == "flow.Print")
     {
         n = new QtPrintNode(node);
+    }
+    else if (cls == "flow.Variable")
+    {
+        n = new QtVariableNode(node);
     }
     else
     {

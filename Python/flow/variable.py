@@ -2,26 +2,26 @@ import flow
 from pluto import pluto_class
 
 @pluto_class
-class TerminalNode(flow.Node):
+class VariableNode(flow.Node):
     pins = [
         flow.Pin('Out', flow.Pin.Out)
     ]
     properties = [
         flow.Property('name', ''),
-        flow.Property('value', '')
+        flow.Property('default', '')
     ]
 
     def __init__(self):
-        super(TerminalNode, self).__init__()
-        self.node_class = 'flow.Terminal'
-        self.title = 'Terminal'
+        super(VariableNode, self).__init__()
+        self.node_class = 'flow.Variable'
+        self.title = 'Variable'
         self.category = 'Flow'
 
     def run(self, ctx):
         if self.name in ctx.env:
             ctx.write_pin('Out', ctx.env[self.name])
         else:
-            ctx.write_pin('Out', self.value)
+            ctx.write_pin('Out', self.default)
 
-flow.install_node_template(TerminalNode())
+flow.install_node_template(VariableNode())
 
