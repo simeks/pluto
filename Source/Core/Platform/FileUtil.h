@@ -18,19 +18,19 @@ namespace file_util
     /// @brief Builds a full os-path from the given parameters 
     ///	@param base		Base path (E.g. "C:/Game/") 
     ///	@param relative	Relative path (E.g. "content/")
-    void build_os_path(std::string& out, const std::string& base, const std::string& relative);
+    CORE_API void build_os_path(std::string& out, const std::string& base, const std::string& relative);
 
     /// @brief Fixes all the slashes in a path 
-    void fix_slashes(char* path, char sep = PATH_SEPARATOR);
+    CORE_API void fix_slashes(char* path, char sep = PATH_SEPARATOR);
 
     /// @brief Fixes all the slashes in a path 
-    void fix_slashes(std::string& path, char sep = PATH_SEPARATOR);
+    CORE_API void fix_slashes(std::string& path, char sep = PATH_SEPARATOR);
 
     /// @brief Finds all files matching the specified patterns and puts them in the vector.
-    void find_files(const char* path, std::vector<std::string>& files);
+    CORE_API void find_files(const char* path, std::vector<std::string>& files);
 
     /// @brief Finds all directories matching the specified patterns and puts them in the vector.
-    void find_directories(const char* path, std::vector<std::string>& directories);
+    CORE_API void find_directories(const char* path, std::vector<std::string>& directories);
 
 }; // namespace file_util
 

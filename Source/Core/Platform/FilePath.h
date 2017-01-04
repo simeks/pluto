@@ -4,7 +4,7 @@
 #define __FOUNDATION_FILEPATH_H__
 
 
-class FilePath
+class CORE_API FilePath
 {
 public:
     FilePath();
