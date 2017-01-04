@@ -52,14 +52,14 @@ void ImageObject::object_python_init(const Tuple& args, const Dict& )
 {
     PyObject* arr = nullptr;
     PyObject* hint_str = nullptr;
-    if (PyArg_ParseTuple(args.tuple(), "|OU:__init__", &arr, &hint_str))
+    if (PyArg_ParseTuple(args.tuple(), "|OO:__init__", &arr, &hint_str))
     {
         if (numpy::check_type(arr))
         {
             int hint = image::PixelType_Unknown;
             if (hint_str)
             {
-                hint = image::string_to_pixel_type(PyUnicode_AsUTF8(hint_str));
+                hint = python_convert::from_python<image::PixelType>(hint_str);
             }
             else
             {

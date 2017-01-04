@@ -181,16 +181,4 @@ namespace python_convert
         return o;
     }
 
-    template<>
-    CORE_API image::PixelType from_python(PyObject* obj)
-    {
-        return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj));
-    }
-
-    template<>
-    CORE_API PyObject* to_python(const image::PixelType& value)
-    {
-        return PyUnicode_FromString(image::pixel_type_to_string(value));
-    }
-
 }

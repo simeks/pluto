@@ -35,3 +35,14 @@ else:
     print('Import module: flow')
 
 import console
+
+try:
+    import medkit
+except ImportError as e:
+    print('Failed to import medkit:',e)
+else:
+    print('Import module: medkit')
+imread = medkit.read
+imwrite = medkit.write
+
+w = flow.open('test.flow')
