@@ -27,9 +27,9 @@ void PythonModule::add_function(const char *name, PyCFunction fn, int flags, con
 {
     PythonFunction* pyfn = new PythonFunction(this, name, fn, flags, doc);
     _functions.push_back(pyfn);
-    add_object(name, pyfn->object());
+    set_object(name, pyfn->object());
 }
-void PythonModule::add_object(const char* name, PyObject* object)
+void PythonModule::set_object(const char* name, PyObject* object)
 {
     if (object)
     {
@@ -38,7 +38,7 @@ void PythonModule::add_object(const char* name, PyObject* object)
             PyErr_Print();
     }
 }
-void PythonModule::add_object(const char* name, Object* object)
+void PythonModule::set_object(const char* name, Object* object)
 {
     if (object)
     {
@@ -48,7 +48,7 @@ void PythonModule::add_object(const char* name, Object* object)
 }
 void PythonModule::add_type(const char* name, PythonClass* type)
 {
-    add_object(name, (PyObject*)type->python_type());
+    set_object(name, (PyObject*)type->python_type());
 }
 PyObject* PythonModule::object(const char* name) const
 {

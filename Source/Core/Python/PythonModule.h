@@ -22,8 +22,8 @@ public:
     void add_function(const char *name, PyCFunction fn, int flags, const char *doc = NULL);
     
     /// Can only be called after module has been created
-    void add_object(const char* name, PyObject* object);
-    void add_object(const char* name, Object* object);
+    void set_object(const char* name, PyObject* object);
+    void set_object(const char* name, Object* object);
 
     /// Can only be called after module has been created
     void add_type(const char* name, PythonClass* type);

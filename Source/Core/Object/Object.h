@@ -137,6 +137,9 @@ public:
     template<typename T>
     void set_attribute(const char* name, const T& attr);
 
+    template<int N>
+    void set_attribute(const char* name, const char(&value)[N]);
+
     template<typename T>
     T attribute(const char* name) const;
 
@@ -172,6 +175,12 @@ void Object::set_attribute(const char* name, const T& attr)
 {
     set_attribute(name, python_convert::to_python<T>(attr));
 }
+template<int N>
+void Object::set_attribute(const char* name, const char(&value)[N])
+{
+    set_attribute(name, PyUnicode_FromString(value));
+}
+
 template<typename T>
 T Object::attribute(const char* name) const
 {

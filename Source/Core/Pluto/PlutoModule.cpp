@@ -31,7 +31,7 @@ void PlutoModule::post_init()
 
     add_type("Object", Object::static_class());
     add_type("StdStream", PyStdStream::static_class());
-    add_object("__version__", python_convert::to_python(s_version));
+    set_object("__version__", python_convert::to_python(s_version));
 }
 const char* PlutoModule::user_dir()
 {

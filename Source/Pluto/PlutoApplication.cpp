@@ -14,7 +14,6 @@ PlutoApplication::PlutoApplication(int argc, char** argv) :
 PlutoApplication::~PlutoApplication()
 {
     _kernel->stop();
-    delete _kernel;
 
     PlutoCore::instance().shutdown();
     PlutoCore::destroy();

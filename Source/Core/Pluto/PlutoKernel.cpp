@@ -21,6 +21,10 @@ PlutoKernel::PlutoKernel()
 }
 PlutoKernel::~PlutoKernel()
 {
+    PythonModule sys(PyImport_ImportModule("sys"));
+    sys.set_object("stdout", Py_None);
+    sys.set_object("stderr", Py_None);
+
     if (_stdout)
         _stdout->release();
     if (_htmlout)
@@ -42,16 +46,16 @@ void PlutoKernel::prepare()
 
     PythonModule sys(PyImport_ImportModule("sys"));
     _stdout->addref();
-    sys.add_object("stdout", _stdout);
+    sys.set_object("stdout", _stdout);
     _stderr->addref();
-    sys.add_object("stderr", _stderr);
+    sys.set_object("stderr", _stderr);
 
     numpy::initialize();
 
     _main_module = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
 
     _htmlout->addref();
-    PlutoModule::instance().add_object("htmlout", _htmlout);
+    PlutoModule::instance().set_object("htmlout", _htmlout);
 }
 void PlutoKernel::start()
 {
@@ -131,7 +135,7 @@ void PlutoKernel::import_module(const std::string& module)
         PyErr_Print();
         return;
     }
-    _main_module->add_object(module.c_str(), m);
+    _main_module->set_object(module.c_str(), m);
 }
 
 void PlutoKernel::set_stdout_callback(OutputCallback* fn, void* data)

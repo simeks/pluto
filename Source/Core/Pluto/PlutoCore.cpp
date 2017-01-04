@@ -21,6 +21,7 @@ PlutoCore::PlutoCore(int, char**)
 PlutoCore::~PlutoCore()
 {
     delete _window_manager;
+    delete _kernel_proxy;
     delete _kernel;
 
     ModuleManager::destroy();
