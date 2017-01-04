@@ -23,6 +23,9 @@ public:
 
     PyObject* tuple() const;
 
+    Tuple(const Tuple& other);
+    Tuple& operator=(const Tuple& other);
+
 private:
     PyObject* _t;
 

@@ -44,4 +44,15 @@ PyObject* Tuple::tuple() const
 {
     return _t;
 }
+Tuple::Tuple(const Tuple& other)
+{
+    _t = other._t;
+    Py_XINCREF(_t);
+}
+Tuple& Tuple::operator=(const Tuple& other)
+{
+    _t = other._t;
+    Py_XINCREF(_t);
+    return *this;
+}
 

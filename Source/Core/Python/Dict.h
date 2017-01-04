@@ -19,11 +19,16 @@ public:
     void set(const char* key, Object* item);
     void clear();
 
+    int next(size_t* pos, PyObject** key, PyObject** value) const;
+
     bool valid() const;
 
     Dict copy() const;
 
     PyObject* dict() const;
+
+    Dict(const Dict& other);
+    Dict& operator=(const Dict& other);
 
 private:
     PyObject* _d;

@@ -169,7 +169,7 @@ namespace python_convert
     CORE_API PyObject* to_python(const Tuple& value)
     {
         PyObject* o = value.tuple();
-        Py_XINCREF(o);
+        Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
         return o;
     }
 
@@ -177,7 +177,7 @@ namespace python_convert
     CORE_API PyObject* to_python(const Dict& value)
     {
         PyObject* o = value.dict();
-        Py_XINCREF(o);
+        Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
         return o;
     }
 
