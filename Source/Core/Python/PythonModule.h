@@ -6,6 +6,9 @@
 #define MODULE_ADD_PYTHON_FUNCTION(TClass, Name, Doc) \
     add_function(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS, Doc);
 
+#define MODULE_ADD_PYTHON_KEYWORD_FUNCTION(TClass, Name, Doc) \
+    add_function(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, Doc);
+
 class PythonFunction;
 class PythonClass;
 class CORE_API PythonModule

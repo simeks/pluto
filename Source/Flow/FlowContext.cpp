@@ -23,6 +23,7 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(FlowContext, Object);
 
 FlowContext::~FlowContext()
 {
+    clean_up();
 }
 void FlowContext::object_init(FlowGraph* graph)
 {
@@ -109,6 +110,17 @@ void FlowContext::clean_up()
     {
         Py_XDECREF(o.second);
     }
+    for (auto i : _inputs)
+    {
+        Py_XDECREF(i.second);
+        i.second = nullptr;
+    }
+    for (auto i : _outputs)
+    {
+        Py_XDECREF(i.second);
+        i.second = nullptr;
+    }
+
     _state.clear();
     _env_dict.clear();
     _nodes_to_execute.clear();
@@ -168,14 +180,24 @@ void FlowContext::env_set(const char* key, const char* value)
 {
     _env_dict.set(key, PyUnicode_FromString(value));
 }
-PyObject* FlowContext::graph_input(const char* name) const
+
+const std::map<std::string, PyObject*>& FlowContext::inputs() const
+{
+    return _inputs;
+}
+const std::map<std::string, PyObject*>& FlowContext::outputs() const
+{
+    return _outputs;
+}
+
+PyObject* FlowContext::input(const char* name) const
 {
     auto it = _inputs.find(name);
     if (it != _inputs.end())
         return it->second;
     return nullptr;
 }
-PyObject* FlowContext::graph_output(const char* name) const
+PyObject* FlowContext::output(const char* name) const
 {
     auto it = _outputs.find(name);
     if (it != _outputs.end())
@@ -184,11 +206,17 @@ PyObject* FlowContext::graph_output(const char* name) const
 }
 void FlowContext::set_input(const char* name, PyObject* value)
 {
-    _inputs[name] = value;
+    auto it = _inputs.find(name);
+    Py_XDECREF(it->second);
+    Py_XINCREF(value);
+    it->second = value;
 }
 void FlowContext::set_output(const char* name, PyObject* value)
 {
-    _outputs[name] = value;
+    auto it = _outputs.find(name);
+    Py_XDECREF(it->second);
+    Py_XINCREF(value);
+    it->second = value;
 }
 void FlowContext::initialize()
 {

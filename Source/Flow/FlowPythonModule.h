@@ -25,7 +25,12 @@ public:
     FlowNode* node_template(const char* node_class) const;
     FlowNode* create_node(const char* node_class) const;
 
-    PyObject* node_templates() const;
+    void install_graph_node(const char* name, FlowGraph* graph);
+    void install_graph_node_from_file(const char* file);
+
+    Tuple node_templates() const;
+
+    Dict run(const Tuple& args, const Dict& kw);
 
     static const char* name();
 

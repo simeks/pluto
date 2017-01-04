@@ -15,6 +15,7 @@
 #include "FlowWindow.h"
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
+#include "RunGraphNode.h"
 
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, open, const char*);
@@ -24,7 +25,10 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowPythonModule, save, const char*, FlowGra
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowPythonModule, install_node_template, FlowNode*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, node_template, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, create_node, const char*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowPythonModule, install_graph_node, const char*, FlowGraph*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowPythonModule, install_graph_node_from_file, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowPythonModule, node_templates);
+PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT_RETURN(FlowPythonModule, run);
 
 
 FlowPythonModule::FlowPythonModule(QtFlowUI* ui) : _ui(ui)
@@ -48,7 +52,10 @@ void FlowPythonModule::post_init()
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, install_node_template, "");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_template, "");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, create_node, "");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, install_graph_node, "");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, install_graph_node_from_file, "");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_templates, "");
+    MODULE_ADD_PYTHON_KEYWORD_FUNCTION(FlowPythonModule, run, "Runs a graph");
 }
 FlowWindow* FlowPythonModule::open(const char* file)
 {
@@ -120,16 +127,76 @@ FlowNode* FlowPythonModule::create_node(const char* node_class) const
         return object_clone(n);
     return nullptr;
 }
+void FlowPythonModule::install_graph_node(const char* name, FlowGraph* graph)
+{
+    RunGraphNode* node = object_new<RunGraphNode>();
+    node->set_graph(name, graph);
+    install_node_template(node);
+    node->release();
+}
+void FlowPythonModule::install_graph_node_from_file(const char* file)
+{
+    RunGraphNode* node = object_new<RunGraphNode>();
+    if (!node->load_graph(file))
+    {
+        node->release();
+        return;
+    }
 
-PyObject* FlowPythonModule::node_templates() const
+    install_node_template(node);
+}
+Tuple FlowPythonModule::node_templates() const
 {
     const std::vector<FlowNode*>& tpls = FlowModule::instance().node_templates();
-    PyObject* l = PyList_New(tpls.size());
+    Tuple l(tpls.size());
     for (int i = 0; i < tpls.size(); ++i)
     {
-        PyList_SetItem(l, i, python_convert::to_python(tpls[i]->node_class()));
+        l.set(i, python_convert::to_python(tpls[i]->node_class()));
     }
     return l;
+}
+Dict FlowPythonModule::run(const Tuple& args, const Dict& kw)
+{
+    if (args.size() < 1)
+        PYTHON_ERROR_R(ValueError, Dict(), "Expected at least 1 argument");
+
+    FlowGraph* graph = nullptr;
+    if (FlowGraph::static_class()->check_type(args.get(0)))
+        graph = python_convert::from_python<FlowGraph*>(args.get(0));
+    else if (PyUnicode_Check(args.get(0)))
+    {
+        // First argument was a string so we assume its a path to a graph file
+        const char* file = PyUnicode_AsUTF8(args.get(0));
+
+        JsonObject obj;
+        JsonReader reader;
+        if (!reader.read_file(file, obj))
+            PYTHON_ERROR_R(IOError, Dict(), reader.error_message().c_str());
+
+        graph = flow_graph::load(obj);
+    }
+    else
+        PYTHON_ERROR_R(ValueError, Dict(), "Invalid argument, expected graph or path to graph file");
+
+    FlowContext* context = object_new<FlowContext>(graph);
+
+    if (kw.valid())
+    {
+        for (auto it : context->inputs())
+        {
+            context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
+        }
+    }
+
+    context->run();
+
+    Dict ret;
+    for (auto it : context->outputs())
+    {
+        if (context->output(it.first.c_str()))
+            ret.set(it.first.c_str(), context->output(it.first.c_str()));
+    }
+    return ret;
 }
 const char* FlowPythonModule::name()
 {

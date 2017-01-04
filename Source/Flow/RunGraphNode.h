@@ -21,6 +21,8 @@ public:
     bool valid() const;
 
 private:
+    void create_pins();
+
     FlowGraph* _graph;
 };
 

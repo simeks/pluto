@@ -119,6 +119,21 @@
         return python_convert::to_python(tself->Fn(Tuple(args))); \
     }
 
+#define PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* kw) \
+    { \
+        TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
+        tself->Fn(Tuple(args), Dict(kw)); \
+        PYTHON_FUNCTION_CATCH_ERROR(); \
+        Py_RETURN_NONE; \
+    }
+#define PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT_RETURN(TClass, Fn) \
+    static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* kw) \
+    { \
+        TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
+        return python_convert::to_python(tself->Fn(Tuple(args), Dict(kw))); \
+    }
+
 
 template<typename TClass, typename R>
 void create_function(R TClass::*fn);

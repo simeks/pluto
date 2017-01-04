@@ -6,6 +6,8 @@
 #include "FlowContext.h"
 #include "FlowGraph.h"
 #include "FlowPin.h"
+#include "GraphInputNode.h"
+#include "GraphOutputNode.h"
 #include "RunGraphNode.h"
 
 OBJECT_INIT_TYPE_FN(RunGraphNode)
@@ -53,6 +55,8 @@ bool RunGraphNode::load_graph(const char* file)
     set_attribute("category", "Graphs");
     set_attribute("doc", "");
 
+    create_pins();
+
     return true;
 }
 void RunGraphNode::set_graph(const char* class_name, FlowGraph* graph)
@@ -65,6 +69,26 @@ void RunGraphNode::set_graph(const char* class_name, FlowGraph* graph)
 
     _graph = graph;
     _graph->addref();
+
+    create_pins();
+}
+void RunGraphNode::create_pins()
+{
+    if (!_graph)
+        return;
+
+    for (auto it : _graph->nodes())
+    {
+        if (it.second->is_a(GraphInputNode::static_class()))
+        {
+            add_pin(object_cast<GraphInputNode>(it.second)->name(), FlowPin::In);
+        }
+        if (it.second->is_a(GraphOutputNode::static_class()))
+        {
+            add_pin(object_cast<GraphOutputNode>(it.second)->name(), FlowPin::Out);
+        }
+    }
+
 }
 void RunGraphNode::run(FlowContext* ctx)
 {
@@ -86,7 +110,7 @@ void RunGraphNode::run(FlowContext* ctx)
     {
         if (p->pin_type() == FlowPin::Out)
         {
-            ctx->write_pin(p->name(), sub_ctx->graph_output(p->name()));
+            ctx->write_pin(p->name(), sub_ctx->output(p->name()));
         }
     }
 }

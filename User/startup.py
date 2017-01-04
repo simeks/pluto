@@ -45,4 +45,17 @@ else:
 imread = medkit.read
 imwrite = medkit.write
 
-w = flow.open('test.flow')
+import os
+
+# Load graphs
+graphs_path = os.path.join(pluto.user_dir(), 'graphs')
+if os.path.isdir(graphs_path):
+    print('Installing graph nodes from (%s):' % graphs_path)
+    for e in os.listdir(graphs_path):
+        flow.install_graph_node_from_file(os.path.join(graphs_path, e))
+        print(e)
+
+
+os.chdir('../_sandbox')
+w = flow.window()
+

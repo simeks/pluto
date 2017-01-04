@@ -31,7 +31,7 @@ void GraphInputNode::object_init()
 }
 void GraphInputNode::run(FlowContext* ctx)
 {
-    ctx->write_pin("Out", ctx->graph_input(name()));
+    ctx->write_pin("Out", ctx->input(name()));
 }
 const char* GraphInputNode::name()
 {

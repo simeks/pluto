@@ -42,8 +42,11 @@ public:
     const char* env_get(const char* key) const;
     void env_set(const char* key, const char* value);
 
-    PyObject* graph_input(const char* name) const;
-    PyObject* graph_output(const char* name) const;
+    const std::map<std::string, PyObject*>& inputs() const;
+    const std::map<std::string, PyObject*>& outputs() const;
+
+    PyObject* input(const char* name) const;
+    PyObject* output(const char* name) const;
 
     void set_input(const char* name, PyObject* value);
     void set_output(const char* name, PyObject* value);
