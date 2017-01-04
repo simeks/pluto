@@ -9,6 +9,9 @@
 #include "QtFlowPin.h"
 
 #include "Nodes/QtConstantNode.h"
+#include "Nodes/QtGraphInputNode.h"
+#include "Nodes/QtGraphOutputNode.h"
+#include "Nodes/QtPrintNode.h"
 #include "Nodes/QtPrintNode.h"
 #include "Nodes/QtVariableNode.h"
 
@@ -207,6 +210,14 @@ QtFlowNode* QtFlowGraphScene::_create_node(FlowNode* node)
     else if (cls == "flow.Variable")
     {
         n = new QtVariableNode(node);
+    }
+    else if (cls == "flow.GraphInput")
+    {
+        n = new QtGraphInputNode(node);
+    }
+    else if (cls == "flow.GraphOutput")
+    {
+        n = new QtGraphOutputNode(node);
     }
     else
     {

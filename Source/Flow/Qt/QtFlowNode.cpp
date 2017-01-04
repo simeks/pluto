@@ -50,12 +50,12 @@ void QtFlowNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
     const FlowUIStyle& style = FlowUIStyle::default_style();
 
-    painter->setBrush(QBrush(style.node_background));
+    painter->setBrush(QBrush(style.node_background_0));
 
     if (isSelected())
-        painter->setPen(QPen(style.node_border_selected, 2));
+        painter->setPen(QPen(style.node_border_selected_0, 2));
     else
-        painter->setPen(QPen(style.node_border, 2));
+        painter->setPen(QPen(style.node_border_0, 2));
 
     painter->drawRect(_rect);
 
@@ -86,8 +86,8 @@ void QtFlowNode::paint_status_marker(QPainter* painter, const QPointF& pos)
     switch (_status)
     {
     case Idle:
-        brush_color = style.node_background;
-        pen_color = style.node_background;
+        brush_color = style.node_background_0;
+        pen_color = style.node_background_0;
         break;
     case Running:
         brush_color = Qt::yellow;

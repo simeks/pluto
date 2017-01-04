@@ -19,10 +19,10 @@ public:
     void setup();
     virtual void node_updated() {}
 
-    void reset_run_status();
-    void node_started();
-    void node_finished();
-    void node_failed();
+    virtual void reset_run_status();
+    virtual void node_started();
+    virtual void node_finished();
+    virtual void node_failed();
 
     void move_node(const QPointF& scene_pos);
 

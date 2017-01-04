@@ -1,25 +1,16 @@
 #ifndef __FLOW_QT_PRINT_NODE_H__
 #define __FLOW_QT_PRINT_NODE_H__
 
-#include "../QtFlowNode.h"
+#include "QtSinglePinNode.h"
 
-class QtPrintNode : public QtFlowNode
+class QtPrintNode : public QtSinglePinNode
 {
 public:
     QtPrintNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
     virtual ~QtPrintNode();
-    
+
     virtual void node_updated() OVERRIDE;
-    virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) OVERRIDE;
-
-protected:
-    virtual void create_pins() OVERRIDE;
-    virtual void calculate_size() OVERRIDE;
-
-    const QString& value() const;
-
-    QtFlowPin* _in_pin;
-    QString _value;
+    virtual void reset_run_status() OVERRIDE;
 };
 
 #endif // __FLOW_QT_PRINT_NODE_H__

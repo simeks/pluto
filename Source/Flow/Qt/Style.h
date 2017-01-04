@@ -16,9 +16,12 @@ struct FlowUIStyle
     QColor link_color_selected;
 
     /// Nodes
-    QColor node_background;
-    QColor node_border;
-    QColor node_border_selected;
+    QColor node_background_0; // Default color
+    QColor node_background_1; // Input and Output nodes
+    QColor node_border_0;
+    QColor node_border_1;
+    QColor node_border_selected_0;
+    QColor node_border_selected_1;
     QColor node_shadow_color;
     QColor node_title_color;
 
