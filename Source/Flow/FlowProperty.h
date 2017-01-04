@@ -15,6 +15,7 @@ public:
     ~FlowProperty();
 
     void object_init();
+    void object_init(const char* name, const char* default_value);
     void object_python_init(const Tuple&, const Dict&);
 
     const char* name() const;

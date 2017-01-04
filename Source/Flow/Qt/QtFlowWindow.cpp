@@ -64,10 +64,10 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
 
     PYTHON_STDOUT("Running graph...\n");
 
-    FlowContext* ctx = object_new<FlowContext>();
+    FlowContext* ctx = object_new<FlowContext>(graph);
     
     QtFlowGraphRunnerCallback cb(this);
-    ctx->run(graph, &cb);
+    ctx->run(&cb);
     
     ctx->release();
 
@@ -146,8 +146,8 @@ void QtFlowWindow::run_graph()
     {
         QMetaObject::invokeMethod(this, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
 
-        FlowContext* ctx = object_new<FlowContext>();
-        ctx->run(graph());
+        FlowContext* ctx = object_new<FlowContext>(graph());
+        ctx->run();
         ctx->release();
 
         update_view();

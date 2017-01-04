@@ -5,6 +5,7 @@
 - Properties not restricted to flow, make it available for all objects?
 - PythonModule cleanup?
 - Argument check (keyword-arguments)
+- Embedded graphs classified by only filename, bound to be collisions
 
 UI
 - Flickering flow links

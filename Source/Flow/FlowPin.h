@@ -29,7 +29,7 @@ public:
     void object_python_init(const Tuple& args, const Dict&);
 
     Type pin_type() const;
-    const std::string& name() const;
+    const char* name() const;
 
     FlowNode* owner() const;
     void set_owner(FlowNode* node);

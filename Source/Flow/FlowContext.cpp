@@ -4,10 +4,12 @@
 #include "FlowGraph.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
+#include "GraphInputNode.h"
+#include "GraphOutputNode.h"
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowContext, write_pin, const char*, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, read_pin, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowContext, run, FlowGraph*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowContext, run);
 
 OBJECT_INIT_TYPE_FN(FlowContext)
 {
@@ -22,24 +24,42 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(FlowContext, Object);
 FlowContext::~FlowContext()
 {
 }
-void FlowContext::object_init()
+void FlowContext::object_init(FlowGraph* graph)
 {
+    _graph = graph;
     _current_node = nullptr;
     set_attribute("env", _env_dict);
+
+    initialize();
 }
-void FlowContext::object_python_init(const Tuple& , const Dict& )
+void FlowContext::object_python_init(const Tuple& t, const Dict& )
 {
+    if (t.size() != 1)
+        PYTHON_ERROR(ValueError, "expected 1 argument");
+
+    PyObject* o = t.get(0);
+    if (!o || !python_object::object(o))
+        PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
+
+    Object* obj = python_object::object(o);
+    if (!obj->is_a(FlowGraph::static_class()))
+        PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
+
+    _graph = object_cast<FlowGraph>(obj);
+
     _current_node = nullptr;
     set_attribute("env", _env_dict);
+
+    initialize();
 }
-void FlowContext::run(FlowGraph* graph, Callback* cb)
+void FlowContext::run(Callback* cb)
 {
     _nodes_to_execute.clear();
 
     std::map<FlowNode*, int> incoming_edges;
 
     // Find all nodes without inputs
-    for (auto n : graph->nodes())
+    for (auto n : _graph->nodes())
     {
         int edges = 0;
         for (auto p : n.second->pins())
@@ -93,7 +113,12 @@ void FlowContext::clean_up()
     _env_dict.clear();
     _nodes_to_execute.clear();
 }
-
+FlowContext* FlowContext::create_child_context(FlowGraph* graph)
+{
+    FlowContext* context = object_new<FlowContext>(graph);
+    context->_env_dict = _env_dict;
+    return context;
+}
 FlowNode* FlowContext::current_node()
 {
     return _current_node;
@@ -142,6 +167,46 @@ const char* FlowContext::env_get(const char* key) const
 void FlowContext::env_set(const char* key, const char* value)
 {
     _env_dict.set(key, PyUnicode_FromString(value));
+}
+PyObject* FlowContext::graph_input(const char* name) const
+{
+    auto it = _inputs.find(name);
+    if (it != _inputs.end())
+        return it->second;
+    return nullptr;
+}
+PyObject* FlowContext::graph_output(const char* name) const
+{
+    auto it = _outputs.find(name);
+    if (it != _outputs.end())
+        return it->second;
+    return nullptr;
+}
+void FlowContext::set_input(const char* name, PyObject* value)
+{
+    _inputs[name] = value;
+}
+void FlowContext::set_output(const char* name, PyObject* value)
+{
+    _outputs[name] = value;
+}
+void FlowContext::initialize()
+{
+    if (!_graph)
+        return;
+
+    for (auto n : _graph->nodes())
+    {
+        if (n.second->is_a(GraphInputNode::static_class()))
+        {
+            _inputs[n.second->attribute<const char*>("name")] = nullptr;
+        }
+        else if (n.second->is_a(GraphOutputNode::static_class()))
+        {
+            _outputs[n.second->attribute<const char*>("name")] = nullptr;
+        }
+    }
+
 }
 void FlowContext::find_dependents(FlowNode* node, std::set<FlowNode*>& dependents)
 {

@@ -10,8 +10,11 @@
 #include "FlowPin.h"
 #include "FlowPythonModule.h"
 #include "FlowWindow.h"
+#include "GraphInputNode.h"
+#include "GraphOutputNode.h"
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
+#include "RunGraphNode.h"
 
 namespace
 {
@@ -72,6 +75,9 @@ void FlowModule::uninstall()
 }
 void FlowModule::init()
 {
+    _node_templates.push_back(object_new<GraphInputNode>());
+    _node_templates.push_back(object_new<GraphOutputNode>());
+
     FlowPinDef pins[] = {
         { "In", FlowPin::In, "" },
         { 0, 0, 0 }

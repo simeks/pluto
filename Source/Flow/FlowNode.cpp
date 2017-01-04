@@ -106,7 +106,7 @@ FlowPin* FlowNode::pin(const char* name) const
 {
     for (auto& p : _pins)
     {
-        if (p->name() == name)
+        if (strcmp(p->name(), name) == 0)
         {
             return p;
         }
@@ -189,7 +189,7 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {
     for (auto& pin : other._pins)
     {
-        add_pin(pin->name().c_str(), pin->pin_type());
+        add_pin(pin->name(), pin->pin_type());
     }
     for (auto& prop : other._properties)
     {

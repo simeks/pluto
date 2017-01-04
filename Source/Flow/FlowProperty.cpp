@@ -17,6 +17,12 @@ void FlowProperty::object_init()
 {
     _owner = nullptr;
 }
+void FlowProperty::object_init(const char* name, const char* default_value)
+{
+    _owner = nullptr;
+    _name = name;
+    _default_value = default_value;
+}
 void FlowProperty::object_python_init(const Tuple& args, const Dict&)
 {
     _owner = nullptr;

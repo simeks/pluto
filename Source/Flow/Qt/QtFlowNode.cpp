@@ -118,7 +118,7 @@ void QtFlowNode::paint_pins(QPainter* painter)
     int in_pin = 0, out_pin = 0;
     for (auto& pin : _pins)
     {
-        int label_width = metrics.width(QString::fromStdString(pin->pin()->name()));
+        int label_width = metrics.width(pin->pin()->name());
 
         QPoint text_pos;
         if (pin->pin_type() == FlowPin::In)
@@ -268,9 +268,9 @@ void QtFlowNode::calculate_size()
     {
         int w = 0;
         if (i < in_pins.size())
-            w += font_metrics.width(QString::fromStdString(in_pins[i]->name())) + 20;
+            w += font_metrics.width(in_pins[i]->name()) + 20;
         if (i < out_pins.size())
-            w += font_metrics.width(QString::fromStdString(out_pins[i]->name())) + 20;
+            w += font_metrics.width(out_pins[i]->name()) + 20;
 
         width = std::max(width, w);
     }

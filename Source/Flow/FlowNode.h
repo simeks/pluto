@@ -52,8 +52,7 @@ public:
     void object_init(const FlowNodeDef& def);
     void object_python_init(const Tuple& args, const Dict& kw);
 
-
-    void run(FlowContext* ctx);
+    virtual void run(FlowContext* ctx);
 
     const std::vector<FlowPin*>& pins() const;
 
@@ -71,7 +70,6 @@ public:
     void add_pin(const char* name, int pin_type);
     void add_pin(FlowPin* pin);
 
-    void add_property(FlowProperty* prop);
     const std::vector<FlowProperty*>& properties() const;
 
     const char* property(const char* name) const;
@@ -82,6 +80,9 @@ public:
 
     FlowNode(const FlowNode&);
 protected:
+    /// Steals the reference to prop
+    void add_property(FlowProperty* prop);
+
     std::vector<FlowPin*> _pins;
     std::vector<FlowProperty*> _properties;
 

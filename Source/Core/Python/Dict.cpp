@@ -43,6 +43,12 @@ bool Dict::valid() const
 {
     return _d != nullptr;
 }
+Dict Dict::copy() const
+{
+    Dict d(PyDict_Copy(_d));
+    Py_XDECREF(d._d);
+    return d;
+}
 PyObject* Dict::dict() const
 {
     return _d;

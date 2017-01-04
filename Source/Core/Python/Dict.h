@@ -21,6 +21,8 @@ public:
 
     bool valid() const;
 
+    Dict copy() const;
+
     PyObject* dict() const;
 
 private:

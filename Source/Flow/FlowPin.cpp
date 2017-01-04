@@ -42,9 +42,9 @@ FlowPin::Type FlowPin::pin_type() const
 {
     return _pin_type;
 }
-const std::string& FlowPin::name() const
+const char* FlowPin::name() const
 {
-    return _name;
+    return _name.c_str();
 }
 FlowNode* FlowPin::owner() const
 {
