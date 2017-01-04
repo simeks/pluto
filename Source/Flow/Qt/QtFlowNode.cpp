@@ -13,7 +13,7 @@
 #include <QGraphicsSceneMoveEvent>
 #include <QPainter>
 
-QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1)
+QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1), _status(Idle)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -25,6 +25,8 @@ QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(
 
     _node = node;
     _node->addref();
+
+    _title = _node->title();
 }
 QtFlowNode::~QtFlowNode()
 {
@@ -61,17 +63,50 @@ void QtFlowNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     fnt.setBold(true);
     QFontMetrics metrics(fnt);
 
-    QRect title_rect = metrics.boundingRect(_node->title());
-
+    QRect title_rect = metrics.boundingRect(title());
     QPoint title_pos((_rect.width() - title_rect.width())/2, title_rect.height()+5);
 
     painter->setFont(fnt);
     painter->setPen(style.node_title_color);
-    painter->drawText(title_pos, _node->title());
+    painter->drawText(title_pos, title());
+
+    paint_status_marker(painter, QPointF(6, 6));
 
     fnt.setBold(false);
     painter->setFont(fnt);
     paint_pins(painter);
+}
+void QtFlowNode::paint_status_marker(QPainter* painter, const QPointF& pos)
+{
+    const FlowUIStyle& style = FlowUIStyle::default_style();
+
+    QColor brush_color;
+    QColor pen_color;
+
+    switch (_status)
+    {
+    case Idle:
+        brush_color = style.node_background;
+        pen_color = style.node_background;
+        break;
+    case Running:
+        brush_color = Qt::yellow;
+        pen_color = Qt::darkYellow;
+        break;
+    case Finished:
+        brush_color = Qt::green;
+        pen_color = Qt::darkGreen;
+        break;
+    case Failed:
+        brush_color = Qt::red;
+        pen_color = Qt::darkRed;
+        break;
+    }
+
+    painter->setBrush(brush_color);
+    painter->setPen(pen_color);
+
+    painter->drawEllipse(pos, 3, 3);
 }
 void QtFlowNode::paint_pins(QPainter* painter)
 {
@@ -139,6 +174,10 @@ Guid QtFlowNode::node_id() const
         return _node->node_id();
     return Guid();
 }
+const QString& QtFlowNode::title() const
+{
+    return _title;
+}
 
 void QtFlowNode::setup()
 {
@@ -152,6 +191,26 @@ void QtFlowNode::setup()
     calculate_size();
     create_pins();
 
+    update();
+}
+void QtFlowNode::reset_run_status()
+{
+    _status = Idle;
+    update();
+}
+void QtFlowNode::node_started()
+{
+    _status = Running;
+    update();
+}
+void QtFlowNode::node_finished()
+{
+    _status = Finished;
+    update();
+}
+void QtFlowNode::node_failed()
+{
+    _status = Failed;
     update();
 }
 void QtFlowNode::move_node(const QPointF& scene_pos)
@@ -204,7 +263,7 @@ void QtFlowNode::calculate_size()
     int rows = std::max((int)in_pins.size(), (int)out_pins.size());
     height +=  rows * (font_metrics.height() + 10); // Pins
 
-    int width = font_metrics.width(_node->title()) + 20;
+    int width = font_metrics.width(title()) + 20;
     for (int i = 0; i < rows; ++i)
     {
         int w = 0;

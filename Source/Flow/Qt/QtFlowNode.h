@@ -19,6 +19,11 @@ public:
     void setup();
     virtual void node_updated() {}
 
+    void reset_run_status();
+    void node_started();
+    void node_finished();
+    void node_failed();
+
     void move_node(const QPointF& scene_pos);
 
     QRectF boundingRect() const;
@@ -34,23 +39,38 @@ public:
     FlowNode* node() const;
     Guid node_id() const;
 
+    const QString& title() const;
+
     int type() const;
 
+
 protected:
+    enum Status 
+    {
+        Idle,
+        Running,
+        Finished,
+        Failed
+    };
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
 
     virtual void create_pins();
     virtual void calculate_size();
 
+    void paint_status_marker(QPainter* painter, const QPointF& pos);
     void paint_pins(QPainter* painter);
 
     FlowNode* _node;
+    QString _title;
 
     QRect _rect;
     std::vector<QtFlowPin*> _pins;
 
     int _highlighted_pin;
+
+    // Run status
+    Status _status;
 };
 
 #endif // __QT_FLOW_NODE_H__

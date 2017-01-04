@@ -176,6 +176,14 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         _links.push_back(link);
     }
 }
+QtFlowNode* QtFlowGraphScene::node(const Guid& id) const
+{
+    auto it = _nodes.find(id);
+    if (it != _nodes.end())
+        return it->second;
+
+    return nullptr;
+}
 void QtFlowGraphScene::clear_scene()
 {
     _nodes.clear();

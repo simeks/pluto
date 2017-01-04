@@ -32,7 +32,7 @@ void FlowContext::object_python_init(const Tuple& , const Dict& )
     _current_node = nullptr;
     set_attribute("env", _env_dict);
 }
-void FlowContext::run(FlowGraph* graph)
+void FlowContext::run(FlowGraph* graph, Callback* cb)
 {
     _nodes_to_execute.clear();
 
@@ -58,8 +58,15 @@ void FlowContext::run(FlowGraph* graph)
         _current_node = _nodes_to_execute.back();
         _nodes_to_execute.pop_back();
         
-        std::cout << "Running " << _current_node->category() << "/" << _current_node->title() << std::endl;;
+        std::cout << "Running " << _current_node->category() << "/" << _current_node->title() << std::endl;
+
+        if (cb)
+            cb->node_started(_current_node);
+
         _current_node->run(this);
+
+        if (cb)
+            cb->node_finished(_current_node);
 
         next.clear();
         find_dependents(_current_node, next);

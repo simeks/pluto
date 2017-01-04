@@ -16,9 +16,10 @@ protected:
     virtual void create_pins() OVERRIDE;
     virtual void calculate_size() OVERRIDE;
 
-    QString value() const;
+    const QString& name() const;
 
     QtFlowPin* _out_pin;
+    QString _name;
 };
 
 #endif // __FLOW_QT_VARIABLE_NODE_H__

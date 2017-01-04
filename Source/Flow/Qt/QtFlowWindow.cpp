@@ -21,6 +21,30 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 
+namespace
+{
+    class QtFlowGraphRunnerCallback : public FlowContext::Callback
+    {
+    public:
+        QtFlowGraphRunnerCallback(QtFlowGraphRunner* r) : _runner(r) {}
+
+        virtual void node_started(FlowNode* node)
+        {
+            emit _runner->node_started(node);
+        }
+        virtual void node_finished(FlowNode* node)
+        {
+            emit _runner->node_finished(node);
+        }
+        virtual void node_failed(FlowNode* node)
+        {
+            emit _runner->node_failed(node);
+        }
+
+    private:
+        QtFlowGraphRunner* _runner;
+    };
+}
 
 QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window)
 {
@@ -36,11 +60,15 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
 
     PlutoKernelProxy* kernel = PlutoCore::instance().kernel_proxy();
     emit kernel->busy();
+    emit reset_nodes();
 
     PYTHON_STDOUT("Running graph...\n");
 
     FlowContext* ctx = object_new<FlowContext>();
-    ctx->run(graph);
+    
+    QtFlowGraphRunnerCallback cb(this);
+    ctx->run(graph, &cb);
+    
     ctx->release();
 
     emit kernel->ready();
@@ -74,6 +102,10 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
 
     _graph_runner = new QtFlowGraphRunner(this);
     connect(_graph_runner, SIGNAL(finished()), this, SLOT(update_view()));
+    connect(_graph_runner, SIGNAL(reset_nodes()), _graph_view, SLOT(reset_nodes()));
+    connect(_graph_runner, SIGNAL(node_started(FlowNode*)), _graph_view, SLOT(node_started(FlowNode*)));
+    connect(_graph_runner, SIGNAL(node_finished(FlowNode*)), _graph_view, SLOT(node_finished(FlowNode*)));
+    connect(_graph_runner, SIGNAL(node_failed(FlowNode*)), _graph_view, SLOT(node_failed(FlowNode*)));
 }
 
 QtFlowWindow::~QtFlowWindow()

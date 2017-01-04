@@ -13,12 +13,19 @@
 QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsWidget* parent) :
     QtFlowNode(node, parent)
 {
+    _value = _node->attribute<const char*>("value");
+    if (_value.isEmpty())
+        _value = "[None]";
 }
 QtConstantNode::~QtConstantNode()
 {
 }
 void QtConstantNode::node_updated()
 {
+    _value = _node->attribute<const char*>("value");
+    if (_value.isEmpty())
+        _value = "[None]";
+
     calculate_size();
     
     QPointF pin_pos = _out_pin->local_pos();
@@ -82,13 +89,10 @@ void QtConstantNode::calculate_size()
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
     int height = font_metrics.height() + 10; // Title
-    int width = std::max(25, font_metrics.width(value())+25);
+    int width = std::max(40, font_metrics.width(value())+25);
     _rect = QRect(0, 0, width, height);
 }
-QString QtConstantNode::value() const
+const QString& QtConstantNode::value() const
 {
-    QString value = _node->attribute<const char*>("value");
-    if (value.isEmpty())
-        value = "[None]";
-    return value;
+    return _value;
 }

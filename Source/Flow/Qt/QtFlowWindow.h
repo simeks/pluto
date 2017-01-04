@@ -28,6 +28,11 @@ private:
 
 signals:
     void finished();
+
+    void reset_nodes();
+    void node_started(FlowNode* node);
+    void node_finished(FlowNode* node);
+    void node_failed(FlowNode* node);
 };
 
 class QtFlowWindow : public QMainWindow

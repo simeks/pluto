@@ -42,6 +42,8 @@ public:
     FlowGraph* graph() const;
     void set_graph(FlowGraph* graph);
     
+    QtFlowNode* node(const Guid& id) const;
+
 private:
     void clear_scene();
 

@@ -28,6 +28,11 @@ public slots:
     void node_copy();
     void node_paste();
 
+    void reset_nodes();
+    void node_started(FlowNode* node);
+    void node_finished(FlowNode* node);
+    void node_failed(FlowNode* node);
+
 protected:
     void mousePressEvent(QMouseEvent* mouse_event);
     void mouseMoveEvent(QMouseEvent* mouse_event);

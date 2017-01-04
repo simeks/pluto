@@ -13,12 +13,15 @@
 QtVariableNode::QtVariableNode(FlowNode* node, QGraphicsWidget* parent) :
     QtFlowNode(node, parent)
 {
+    _name = _node->attribute<const char*>("name");
 }
 QtVariableNode::~QtVariableNode()
 {
 }
 void QtVariableNode::node_updated()
 {
+    _name = _node->attribute<const char*>("name");
+
     calculate_size();
     
     QPointF pin_pos = _out_pin->local_pos();
@@ -55,7 +58,7 @@ void QtVariableNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* op
     painter->setFont(fnt);
     painter->setPen(style.node_title_color);
 
-    painter->drawText(title_pos, value());
+    painter->drawText(title_pos, name());
 
     QtFlowPin* pin = _pins[0];
     painter->setBrush(pin->color());
@@ -82,11 +85,10 @@ void QtVariableNode::calculate_size()
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
     int height = font_metrics.height() + 10; // Title
-    int width = std::max(25, font_metrics.width(value()) + 25);
+    int width = std::max(40, font_metrics.width(name()) + 25);
     _rect = QRect(0, 0, width, height);
 }
-QString QtVariableNode::value() const
+const QString& QtVariableNode::name() const
 {
-    QString value = _node->attribute<const char*>("name");
-    return value;
+    return _name;
 }

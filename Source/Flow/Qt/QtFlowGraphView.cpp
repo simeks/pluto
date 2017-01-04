@@ -474,3 +474,30 @@ void QtFlowGraphView::node_paste()
 
     }
 }
+void QtFlowGraphView::reset_nodes()
+{
+    for (auto i : items())
+    {
+        if (i->type() == QtFlowNode::Type)
+            ((QtFlowNode*)i)->reset_run_status();
+    }
+}
+void QtFlowGraphView::node_started(FlowNode* node)
+{
+    QtFlowNode* n = _scene->node(node->node_id());
+    if (n)
+        n->node_started();
+}
+void QtFlowGraphView::node_finished(FlowNode* node)
+{
+    QtFlowNode* n = _scene->node(node->node_id());
+    if (n)
+        n->node_finished();
+}
+void QtFlowGraphView::node_failed(FlowNode* node)
+{
+    QtFlowNode* n = _scene->node(node->node_id());
+    if (n)
+        n->node_failed();
+}
+

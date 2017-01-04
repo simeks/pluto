@@ -12,13 +12,21 @@ class FLOW_API FlowContext : public Object
     DECLARE_OBJECT(FlowContext, Object);
 
 public:
+    class Callback
+    {
+    public:
+        virtual void node_started(FlowNode*) {}
+        virtual void node_finished(FlowNode*) {}
+        virtual void node_failed(FlowNode*) {}
+    };
+    
     DECLARE_OBJECT_CONSTRUCTOR(FlowContext);
     ~FlowContext();
 
     void object_init();
     void object_python_init(const Tuple& args, const Dict& kw);
 
-    void run(FlowGraph* graph);
+    void run(FlowGraph* graph, Callback* cb = nullptr);
     void clean_up();
 
     FlowNode* current_node();
