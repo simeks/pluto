@@ -29,7 +29,7 @@ PlutoCore::~PlutoCore()
 }
 void PlutoCore::init()
 {
-    _kernel->prepare();
+    QMetaObject::invokeMethod(_kernel_proxy, "prepare", Qt::BlockingQueuedConnection);
 
     std::vector<ModuleInterface*> modules;
     ModuleManager::instance().loaded_modules(modules);

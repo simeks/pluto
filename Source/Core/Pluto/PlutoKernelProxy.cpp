@@ -38,6 +38,10 @@ PlutoKernelProxy::~PlutoKernelProxy()
         _thread.wait();
     }
 }
+void PlutoKernelProxy::prepare()
+{
+    _kernel->prepare();
+}
 void PlutoKernelProxy::start()
 {
     _kernel->set_stdout_callback(kernel_stdout, this);

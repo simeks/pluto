@@ -34,7 +34,6 @@ PlutoKernel::~PlutoKernel()
 void PlutoKernel::prepare()
 {
     Py_Initialize();
-    PyEval_InitThreads();
     PythonClass::ready_all();
 
     _stdout = object_new<PyStdStream>();
@@ -79,6 +78,7 @@ void PlutoKernel::run_code(const std::string& source)
     }
 
     PyObject* ret = PyRun_String(source.c_str(), inp, _main_module->dict(), _main_module->dict());
+
     if (!ret)
     {
         PyErr_Print();

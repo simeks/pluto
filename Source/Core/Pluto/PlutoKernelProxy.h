@@ -17,7 +17,8 @@ public:
     void on_stdout(const char* text, bool html = false);
     void on_stderr(const char* text);
 
-    public slots:
+public slots:
+    void prepare();
     void start();
     void stop();
 
