@@ -136,6 +136,15 @@ namespace python_convert
     {
     }
 
+    template<>
+    CORE_API bool from_python(PyObject* obj)
+    {
+        if (PyBool_Check(obj))
+            return (obj == Py_True);
+        PyErr_SetString(PyExc_ValueError, "Expected bool");
+        return false;
+    }
+
 
     INT_TO_PYTHON(int8_t);
     INT_TO_PYTHON(int16_t);
@@ -187,5 +196,15 @@ namespace python_convert
     {
         return PyUnicode_FromString(guid::to_string(value).c_str());
     }
+    template<>
+    CORE_API PyObject* to_python(const bool& value)
+    {
+        if (value)
+        {
+            Py_RETURN_TRUE;
+        }
+        Py_RETURN_FALSE;
+    }
+
 
 }
