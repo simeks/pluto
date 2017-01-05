@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "Convert.h"
 #include "Dict.h"
+#include "PythonModule.h"
 #include "Tuple.h"
 
 #include "Image/Types.h"
@@ -179,6 +180,12 @@ namespace python_convert
         PyObject* o = value.dict();
         Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
         return o;
+    }
+
+    template<>
+    CORE_API PyObject* to_python(const Guid& value)
+    {
+        return PyUnicode_FromString(guid::to_string(value).c_str());
     }
 
 }

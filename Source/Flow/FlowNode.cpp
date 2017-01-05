@@ -10,11 +10,13 @@
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowNode, run, FlowContext*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowNode, add_pin, const char*, int);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowNode, node_id);
 
 OBJECT_INIT_TYPE_FN(FlowNode)
 {
     OBJECT_PYTHON_ADD_METHOD(FlowNode, run, "");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, add_pin, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowNode, node_id, "");
 }
 
 IMPLEMENT_OBJECT(FlowNode, "FlowNode", FLOW_API);
