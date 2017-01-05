@@ -67,6 +67,8 @@ private slots:
 
     void on_run();
 
+    void about();
+
 private:
     QtFlowGraphView* _graph_view;
     QtNodePropertyWidget* _node_property_view;

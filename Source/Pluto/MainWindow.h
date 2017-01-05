@@ -19,7 +19,7 @@ private:
 
 private slots:
     void on_exit_triggered();
-
+    void about();
 };
 
 #endif // __MAIN_WINDOW_H__

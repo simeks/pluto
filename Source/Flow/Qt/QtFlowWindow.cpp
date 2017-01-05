@@ -239,7 +239,7 @@ void QtFlowWindow::setup_ui()
         action_save_as->setStatusTip("Saves the current graph as");
         connect(action_save_as, &QAction::triggered, this, &QtFlowWindow::on_save_as);
 
-        QAction* action_exit = new QAction(tr("Close"), this);
+        QAction* action_exit = new QAction(tr("Exit"), this);
         action_exit->setShortcuts(QKeySequence::Quit);
         action_exit->setStatusTip("Closes this window");
         connect(action_exit, &QAction::triggered, this, &QtFlowWindow::on_exit_triggered);
@@ -279,6 +279,15 @@ void QtFlowWindow::setup_ui()
         connect(action_run, &QAction::triggered, this, &QtFlowWindow::on_run);
 
         menu_run->addAction(action_run);
+    }
+
+    {
+        QMenu* menu_help = new QMenu("Help", menu_bar);
+        menu_bar->addAction(menu_help->menuAction());
+
+        QAction* action_about = new QAction(tr("About Flow"), this);
+        menu_help->addAction(action_about);
+        connect(action_about, &QAction::triggered, this, &QtFlowWindow::about);
     }
 
     connect(this, SIGNAL(node_template_added(FlowNode*)), _graph_view, SLOT(node_template_added(FlowNode*)));
@@ -338,4 +347,9 @@ void QtFlowWindow::on_save_as()
 void QtFlowWindow::on_run()
 {
     run_graph();
+}
+void QtFlowWindow::about()
+{
+    QMessageBox::about(this, tr("About Flow"),
+        tr("Developed by Simon Ekström (simon.ekstrom@surgsci.uu.se)"));
 }
