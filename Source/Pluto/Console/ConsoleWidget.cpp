@@ -90,57 +90,59 @@ QFont ConsoleWidget::get_font()
 
 void ConsoleWidget::keyPressEvent(QKeyEvent *e)
 {
-    if (e->modifiers() == Qt::ControlModifier)
+    if (e->modifiers() & Qt::ControlModifier)
     {
         if (e->key() == Qt::Key_C && isReadOnly() && !textCursor().hasSelection())
         {
             emit interrupt_kernel();
+            return;
+        }
+        else if (e->matches(QKeySequence::Cut))
+        {
+            cut();
+            return;
+        }
+        else if (e->matches(QKeySequence::Paste))
+        {
+            paste();
+            return;
         }
     }
-
-    if (e->matches(QKeySequence::Cut))
+    else
     {
-        cut();
-        return;
-    }
-    else if (e->matches(QKeySequence::Paste))
-    {
-        paste();
-        return;
-    }
-
-    switch (e->key())
-    {
-    case Qt::Key_Return:
-        handle_return();
-        return;
-    case Qt::Key_Backspace:
-        if (textCursor().position() <= _prompt_position)
+        switch (e->key())
         {
+        case Qt::Key_Return:
+            handle_return();
             return;
-        }
-    case Qt::Key_End:
-    case Qt::Key_Home:
-        break;
-    case Qt::Key_Left:
-        if (!cursor_in_prompt(textCursor()))
-        {
-            moveCursor(QTextCursor::End);
-            return;
-        }
-        if (textCursor().position() <= _prompt_position)
-        {
-            return;
-        }
-        break;
-    case Qt::Key_Right:
-        if (!cursor_in_prompt(textCursor()))
-        {
-            moveCursor(QTextCursor::End);
-            return;
-        }
-        break;
-    case Qt::Key_Up:
+        case Qt::Key_Backspace:
+            if (textCursor().position() <= _prompt_position)
+            {
+                return;
+            }
+            break;
+        case Qt::Key_End:
+        case Qt::Key_Home:
+            break;
+        case Qt::Key_Left:
+            if (!cursor_in_prompt(textCursor()))
+            {
+                moveCursor(QTextCursor::End);
+                return;
+            }
+            if (textCursor().position() <= _prompt_position)
+            {
+                return;
+            }
+            break;
+        case Qt::Key_Right:
+            if (!cursor_in_prompt(textCursor()))
+            {
+                moveCursor(QTextCursor::End);
+                return;
+            }
+            break;
+        case Qt::Key_Up:
         {
             if (!cursor_in_prompt(textCursor()))
                 moveCursor(QTextCursor::End);
@@ -161,7 +163,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
             return;
         }
         break;
-    case Qt::Key_Down:
+        case Qt::Key_Down:
         {
             if (!cursor_in_prompt(textCursor()))
                 moveCursor(QTextCursor::End);
@@ -179,11 +181,12 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
             return;
         }
         break;
-    default:
-        if (!cursor_in_prompt(textCursor()))
-            moveCursor(QTextCursor::End);
-        break;
-    };
+        default:
+            if (!cursor_in_prompt(textCursor()))
+                moveCursor(QTextCursor::End);
+            break;
+        };
+    }
     
     QTextEdit::keyPressEvent(e);
 }
