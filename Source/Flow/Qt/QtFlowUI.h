@@ -20,6 +20,10 @@ public slots:
 signals:
     void node_template_added(FlowNode* n);
     void node_template_removed(FlowNode* n);
+
+    /// Signalled when a node template reloaded
+    /// n : Pointer to the new node template
+    void node_template_reloaded(FlowNode* n);
     
 private:
     std::vector<QtFlowWindow*> _windows;

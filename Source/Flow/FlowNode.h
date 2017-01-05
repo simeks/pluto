@@ -59,9 +59,13 @@ public:
     FlowPin* pin(int id) const;
     FlowPin* pin(const char* name) const;
 
+    bool is_pin_linked(const char* name) const;
+
     const Guid& node_id() const;
     void set_node_id(const Guid& id);
-    void set_flow_graph(FlowGraph* graph);
+
+    FlowGraph* graph() const;
+    void set_graph(FlowGraph* graph);
 
     const char* node_class() const;
     const char* title() const;

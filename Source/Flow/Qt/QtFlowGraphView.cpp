@@ -49,12 +49,12 @@ QtFlowGraphView::~QtFlowGraphView()
 }
 void QtFlowGraphView::update_nodes()
 {
-    for (auto i : items())
+    for (auto& i : items())
     {
         if (i->type() == QtFlowNode::Type)
             ((QtFlowNode*)i)->node_updated();
     }
-    for (auto i : items(viewport()->rect()))
+    for (auto& i : items(viewport()->rect()))
     {
         if (i->type() == QtFlowNode::Type)
             i->update();
@@ -446,10 +446,14 @@ void QtFlowGraphView::node_template_removed(FlowNode* )
     // Rebuild node menu
     build_node_menu();
 }
+void QtFlowGraphView::node_template_reloaded(FlowNode* n)
+{
+    _scene->graph()->reload(n->node_class());
+}
 void QtFlowGraphView::node_copy()
 {
     _node_clipboard.clear();
-    for (auto i : _scene->selectedItems())
+    for (auto& i : _scene->selectedItems())
     {
         if (i->type() == QtFlowNode::Type)
         {
@@ -476,7 +480,7 @@ void QtFlowGraphView::node_paste()
 }
 void QtFlowGraphView::reset_nodes()
 {
-    for (auto i : items())
+    for (auto& i : items())
     {
         if (i->type() == QtFlowNode::Type)
             ((QtFlowNode*)i)->reset_run_status();

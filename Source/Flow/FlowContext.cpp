@@ -7,15 +7,21 @@
 #include "GraphInputNode.h"
 #include "GraphOutputNode.h"
 
+#include <QTemporaryDir>
+
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowContext, write_pin, const char*, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, read_pin, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowContext, run);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_dir);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_node_dir);
 
 OBJECT_INIT_TYPE_FN(FlowContext)
 {
     OBJECT_PYTHON_ADD_METHOD(FlowContext, write_pin, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, read_pin, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, run, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_dir, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_node_dir, "");
 }
 
 IMPLEMENT_OBJECT(FlowContext, "FlowContext", FLOW_API);
@@ -24,9 +30,12 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(FlowContext, Object);
 FlowContext::~FlowContext()
 {
     clean_up();
+    delete _temp_dir;
 }
 void FlowContext::object_init(FlowGraph* graph)
 {
+    _temp_dir = new QTemporaryDir();
+    _temp_dir->setAutoRemove(false);
     _graph = graph;
     _current_node = nullptr;
     set_attribute("env", _env_dict);
@@ -60,7 +69,7 @@ void FlowContext::run(Callback* cb)
     std::map<FlowNode*, int> incoming_edges;
 
     // Find all nodes without inputs
-    for (auto n : _graph->nodes())
+    for (auto& n : _graph->nodes())
     {
         int edges = 0;
         for (auto p : n.second->pins())
@@ -106,16 +115,16 @@ void FlowContext::run(Callback* cb)
 }
 void FlowContext::clean_up()
 {
-    for (auto o : _state)
+    for (auto& o : _state)
     {
         Py_XDECREF(o.second);
     }
-    for (auto i : _inputs)
+    for (auto& i : _inputs)
     {
         Py_XDECREF(i.second);
         i.second = nullptr;
     }
-    for (auto i : _outputs)
+    for (auto& i : _outputs)
     {
         Py_XDECREF(i.second);
         i.second = nullptr;
@@ -218,12 +227,31 @@ void FlowContext::set_output(const char* name, PyObject* value)
     Py_XINCREF(value);
     it->second = value;
 }
+const char* FlowContext::temp_dir() const
+{
+    return _temp_dir->path().toUtf8();
+}
+std::string FlowContext::temp_node_dir() const
+{
+    if (!_current_node)
+        PYTHON_ERROR_R(ValueError, nullptr, "No current node");
+
+    QString node_id = guid::to_string(_current_node->node_id()).c_str();
+
+    QDir dir(_temp_dir->path());
+    if (!dir.exists(node_id))
+        dir.mkdir(node_id);
+
+    dir = QDir::cleanPath(dir.path() + QDir::separator() + node_id);
+    return dir.path().toStdString();
+}
+
 void FlowContext::initialize()
 {
     if (!_graph)
         return;
 
-    for (auto n : _graph->nodes())
+    for (auto& n : _graph->nodes())
     {
         if (n.second->is_a(GraphInputNode::static_class()))
         {
@@ -242,7 +270,7 @@ void FlowContext::find_dependents(FlowNode* node, std::set<FlowNode*>& dependent
     {
         if (p->pin_type() == FlowPin::Out)
         {
-            for (auto p2 : p->links())
+            for (auto& p2 : p->links())
             {
                 dependents.emplace(p2->owner());
             }

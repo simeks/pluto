@@ -9,6 +9,7 @@ class FlowNode;
 class FlowPin;
 class GraphInputNode;
 class GraphOutputNode;
+class QTemporaryDir;
 class FLOW_API FlowContext : public Object
 {
     DECLARE_OBJECT(FlowContext, Object);
@@ -51,6 +52,12 @@ public:
     void set_input(const char* name, PyObject* value);
     void set_output(const char* name, PyObject* value);
 
+    const char* temp_dir() const;
+
+    /// Returns the path to the temporary directory for the current node.
+    ///     Creates a new directory if there is none
+    std::string temp_node_dir() const;
+
 private:
     void initialize();
     void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
@@ -64,6 +71,8 @@ private:
 
     std::map<std::string, PyObject*> _inputs;
     std::map<std::string, PyObject*> _outputs;
+
+    QTemporaryDir* _temp_dir;
 };
 
 #endif // __FLOW_CONTEXT_H__

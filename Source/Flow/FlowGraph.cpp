@@ -7,9 +7,11 @@
 #include "FlowPin.h"
 #include "FlowProperty.h"
 
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowGraph, reload);
+
 OBJECT_INIT_TYPE_FN(FlowGraph)
 {
-    OBJECT_PYTHON_NO_METHODS();
+    OBJECT_PYTHON_ADD_METHOD(FlowGraph, reload, "");
 }
 
 IMPLEMENT_OBJECT(FlowGraph, "FlowGraph", FLOW_API);
@@ -32,7 +34,7 @@ void FlowGraph::add_node(FlowNode* node)
     _nodes[node->node_id()] = node;
 
     node->addref();
-    node->set_flow_graph(this);
+    node->set_graph(this);
 }
 void FlowGraph::remove_node(FlowNode* node)
 {
@@ -42,7 +44,7 @@ void FlowGraph::remove_node(FlowNode* node)
         if (it->second == node)
         {
             remove_links(node);
-            node->set_flow_graph(nullptr);
+            node->set_graph(nullptr);
             node->release();
             _nodes.erase(it);
             break;
@@ -100,6 +102,29 @@ const std::map<Guid, FlowNode*>& FlowGraph::nodes() const
 {
     return _nodes;
 }
+void FlowGraph::reload()
+{
+    for (auto& it : _nodes)
+    {
+        FlowNode* tpl = FlowModule::instance().node_template(it.second->node_class());
+        FlowNode* old = it.second;
+        it.second = flow_graph::reload_node(tpl, old);
+        old->release();
+    }
+}
+void FlowGraph::reload(const char* node_class)
+{
+    for (auto& it : _nodes)
+    {
+        if (strcmp(it.second->node_class(), node_class) == 0)
+        {
+            FlowNode* tpl = FlowModule::instance().node_template(node_class);
+            FlowNode* old = it.second;
+            it.second = flow_graph::reload_node(tpl, old);
+            old->release();
+        }
+    }
+}
 
 FlowGraph* flow_graph::load(const JsonObject& root)
 {
@@ -132,7 +157,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         const JsonObject& properties = n["properties"];
         if (properties.is_object())
         {
-            for (auto p : properties)
+            for (auto& p : properties)
             {
                 if (p.second.is_string())
                     out_node->set_property(p.first.c_str(), p.second.as_string().c_str());
@@ -180,7 +205,7 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 
     JsonObject& nodes = root["nodes"];
     nodes.set_empty_array();
-    for (auto n : graph->nodes())
+    for (auto& n : graph->nodes())
     {
         JsonObject& node = nodes.append();
         node.set_empty_object();
@@ -226,3 +251,37 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         link["end_pin"].set_int(l.second->pin_id());
     }
 }
+FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
+{
+    if (tpl->get_class() != old->get_class())
+        return nullptr;
+    if (strcmp(tpl->node_class(), old->node_class()) != 0)
+        return nullptr;
+
+    FlowNode* n = object_clone(tpl);
+    n->set_node_id(old->node_id());
+    n->set_graph(old->graph());
+    n->set_ui_pos(old->ui_pos());
+    for (auto p : old->properties())
+    {
+        n->set_attribute(p->name(), old->attribute(p->name()));
+    }
+
+    std::vector<FlowPin*> links;
+    for (int i = 0; i < old->pins().size(); ++i)
+    {
+        FlowPin* old_pin = old->pins()[i];
+        FlowPin* new_pin = n->pins()[i];
+
+        links = old_pin->links();
+        old_pin->break_all_links();
+
+        for (FlowPin* l : links)
+        {
+            new_pin->link_to(l);
+        }
+    }
+
+    return n;
+}
+

@@ -31,6 +31,11 @@ public:
 
     FlowNode* node(const Guid& id) const;
     const std::map<Guid, FlowNode*>& nodes() const;
+
+    /// Reloads all nodes in the graph
+    void reload();
+    /// Reloads all nodes of the specified class
+    void reload(const char* node_class);
     
 private:
     std::map<Guid, FlowNode*> _nodes;
@@ -43,7 +48,9 @@ namespace flow_graph
     FlowGraph* load(const JsonObject& root);
     void save(FlowGraph* graph, JsonObject& root);
 
-
+    /// Creates a new node from a template and copies any attributes from an old node.
+    /// This requires both template and old node to have same type and node class
+    FlowNode* reload_node(FlowNode* tpl, FlowNode* old);
 }
 
 

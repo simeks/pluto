@@ -292,6 +292,7 @@ void QtFlowWindow::setup_ui()
 
     connect(this, SIGNAL(node_template_added(FlowNode*)), _graph_view, SLOT(node_template_added(FlowNode*)));
     connect(this, SIGNAL(node_template_removed(FlowNode*)), _graph_view, SLOT(node_template_removed(FlowNode*)));
+    connect(this, SIGNAL(node_template_reloaded(FlowNode*)), _graph_view, SLOT(node_template_reloaded(FlowNode*)));
 
     _node_property_view = new QtNodePropertyWidget(this);
     connect(_graph_view, SIGNAL(flow_node_selected(QtFlowNode*)), _node_property_view, SLOT(flow_node_selected(QtFlowNode*)));

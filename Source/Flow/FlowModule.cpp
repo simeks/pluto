@@ -67,7 +67,7 @@ void FlowModule::install()
 }
 void FlowModule::uninstall()
 {
-    for (auto n : _node_templates)
+    for (auto& n : _node_templates)
     {
         n->release();
     }
@@ -88,9 +88,23 @@ void FlowModule::init()
 }
 void FlowModule::install_node_template(FlowNode* node)
 {
+    bool reload = false;
+
+    auto it = std::find_if(_node_templates.begin(), _node_templates.end(), [&](FlowNode* n) { return strcmp(n->node_class(), node->node_class()) == 0; });
+    if (it != _node_templates.end())
+    {
+        reload = true;
+        (*it)->release();
+        _node_templates.erase(it);
+    }
+
     node->addref();
     _node_templates.push_back(node);
-    emit _ui->node_template_added(node);
+
+    if (reload)
+        emit _ui->node_template_reloaded(node);
+    else
+        emit _ui->node_template_added(node);
 }
 void FlowModule::install_node_template(const FlowNodeDef& def)
 {
@@ -105,7 +119,7 @@ void FlowModule::install_node_template(const FlowNodeDef& def)
 }
 FlowNode* FlowModule::node_template(const char* node_class) const
 {
-    for (auto n : _node_templates)
+    for (auto& n : _node_templates)
     {
         if (strcmp(n->node_class(), node_class) == 0)
             return n;

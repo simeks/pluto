@@ -22,5 +22,6 @@ QtFlowWindow* QtFlowUI::create_window()
     _windows.push_back(window);
     connect(this, SIGNAL(node_template_added(FlowNode*)), window, SIGNAL(node_template_added(FlowNode*)));
     connect(this, SIGNAL(node_template_removed(FlowNode*)), window, SIGNAL(node_template_removed(FlowNode*)));
+    connect(this, SIGNAL(node_template_reloaded(FlowNode*)), window, SIGNAL(node_template_reloaded(FlowNode*)));
     return window;
 }

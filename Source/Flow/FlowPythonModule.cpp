@@ -182,7 +182,7 @@ Dict FlowPythonModule::run(const Tuple& args, const Dict& kw)
 
     if (kw.valid())
     {
-        for (auto it : context->inputs())
+        for (auto& it : context->inputs())
         {
             context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
         }
@@ -191,7 +191,7 @@ Dict FlowPythonModule::run(const Tuple& args, const Dict& kw)
     context->run();
 
     Dict ret;
-    for (auto it : context->outputs())
+    for (auto& it : context->outputs())
     {
         if (context->output(it.first.c_str()))
             ret.set(it.first.c_str(), context->output(it.first.c_str()));

@@ -79,6 +79,7 @@ private:
 signals:
     void node_template_added(FlowNode* node);
     void node_template_removed(FlowNode* node);
+    void node_template_reloaded(FlowNode* node);
     void set_graph(FlowGraph* graph);
     void clear_graph();
 };

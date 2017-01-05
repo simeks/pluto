@@ -11,12 +11,14 @@
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowNode, run, FlowContext*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowNode, add_pin, const char*, int);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowNode, node_id);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowNode, is_pin_linked, const char*);
 
 OBJECT_INIT_TYPE_FN(FlowNode)
 {
     OBJECT_PYTHON_ADD_METHOD(FlowNode, run, "");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, add_pin, "");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, node_id, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowNode, is_pin_linked, "");
 }
 
 IMPLEMENT_OBJECT(FlowNode, "FlowNode", FLOW_API);
@@ -115,6 +117,11 @@ FlowPin* FlowNode::pin(const char* name) const
     }
     return nullptr;
 }
+bool FlowNode::is_pin_linked(const char* name) const
+{
+    FlowPin* p = pin(name);
+    return p && p->links().size() != 0;
+}
 
 const Guid& FlowNode::node_id() const
 {
@@ -124,7 +131,11 @@ void FlowNode::set_node_id(const Guid& id)
 {
     _node_id = id;
 }
-void FlowNode::set_flow_graph(FlowGraph* graph)
+FlowGraph* FlowNode::graph() const
+{
+    return _owner_graph;
+}
+void FlowNode::set_graph(FlowGraph* graph)
 {
     _owner_graph = graph;
 }

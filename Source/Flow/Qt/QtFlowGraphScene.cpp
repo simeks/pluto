@@ -144,7 +144,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     /// Links pointing from first pin to second pin
     typedef std::pair<FlowPin*, FlowPin*> Link;
     std::vector<Link> links;
-    for (auto n : graph->nodes())
+    for (auto& n : graph->nodes())
     {
         FlowNode* node = n.second;
         QtFlowNode* ui_node = _create_node(node);
