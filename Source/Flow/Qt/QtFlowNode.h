@@ -35,6 +35,7 @@ public:
 
     const std::vector<QtFlowPin*>& pins() const;
     QtFlowPin* pin(int idx) const;
+    QtFlowPin* pin(const char* name) const;
 
     FlowNode* node() const;
     Guid node_id() const;

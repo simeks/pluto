@@ -114,13 +114,31 @@ void FlowGraph::reload()
 }
 void FlowGraph::reload(const char* node_class)
 {
+    std::vector<FlowPin*> links;
     for (auto& it : _nodes)
     {
         if (strcmp(it.second->node_class(), node_class) == 0)
         {
             FlowNode* tpl = FlowModule::instance().node_template(node_class);
             FlowNode* old = it.second;
-            it.second = flow_graph::reload_node(tpl, old);
+            FlowNode* new_node = flow_graph::reload_node(tpl, old);
+            it.second = new_node;
+            
+            for (auto& old_pin : old->pins())
+            {
+                FlowPin* new_pin = new_node->pin(old_pin->name());
+
+                links = old_pin->links();
+                old_pin->break_all_links();
+
+                if (new_pin)
+                {
+                    for (FlowPin* l : links)
+                    {
+                        new_pin->link_to(l);
+                    }
+                }
+            }
             old->release();
         }
     }
@@ -265,21 +283,6 @@ FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
     for (auto p : old->properties())
     {
         n->set_attribute(p->name(), old->attribute(p->name()));
-    }
-
-    std::vector<FlowPin*> links;
-    for (int i = 0; i < old->pins().size(); ++i)
-    {
-        FlowPin* old_pin = old->pins()[i];
-        FlowPin* new_pin = n->pins()[i];
-
-        links = old_pin->links();
-        old_pin->break_all_links();
-
-        for (FlowPin* l : links)
-        {
-            new_pin->link_to(l);
-        }
     }
 
     return n;

@@ -2,6 +2,7 @@
 
 #include "FlowNode.h"
 #include "FlowPin.h"
+#include "QtFlowGraphScene.h"
 #include "QtFlowLink.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
@@ -163,6 +164,17 @@ const std::vector<QtFlowPin*>& QtFlowNode::pins() const
 QtFlowPin* QtFlowNode::pin(int idx) const
 {
     return _pins[idx];
+}
+QtFlowPin* QtFlowNode::pin(const char* name) const
+{
+    for (auto& p : _pins)
+    {
+        if (strcmp(p->name(), name) == 0)
+        {
+            return p;
+        }
+    }
+    return nullptr;
 }
 FlowNode* QtFlowNode::node() const
 {

@@ -49,7 +49,8 @@ namespace flow_graph
     void save(FlowGraph* graph, JsonObject& root);
 
     /// Creates a new node from a template and copies any attributes from an old node.
-    /// This requires both template and old node to have same type and node class
+    ///     This requires both template and old node to have same type and node class
+    /// Note: This function does not copy all links from the old node
     FlowNode* reload_node(FlowNode* tpl, FlowNode* old);
 }
 

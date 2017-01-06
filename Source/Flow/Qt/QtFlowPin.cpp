@@ -44,6 +44,10 @@ QtFlowNode* QtFlowPin::owner() const
 {
     return _owner;
 }
+const char* QtFlowPin::name() const
+{
+    return _pin->name();
+}
 int QtFlowPin::id() const
 {
     return _pin->pin_id();

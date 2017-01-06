@@ -25,7 +25,7 @@ public:
 public slots:
     void node_template_added(FlowNode* node);
     void node_template_removed(FlowNode* node);
-    void node_template_reloaded(FlowNode* node);
+    void node_template_reloaded(FlowNode* tpl);
     void node_copy();
     void node_paste();
 

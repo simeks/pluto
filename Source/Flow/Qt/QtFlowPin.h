@@ -18,6 +18,7 @@ public:
     bool is_linked() const;
 
     QtFlowNode* owner() const;
+    const char* name() const;
     int id() const;
 
     FlowPin* pin() const;

@@ -21,6 +21,10 @@ public:
     void create_node(FlowNode* node, const QPointF& pos);
     void add_node(QtFlowNode* node);
     void remove_node(QtFlowNode* node);
+    
+    /// Called whenever a node template is reloaded.
+    /// This reloads all nodes belonging to the node class associated with the template
+    void node_template_reloaded(FlowNode* tpl);
 
     bool try_add_link(QtFlowLink* link);
     void remove_link(QtFlowLink* link);
@@ -32,6 +36,9 @@ public:
 
     /// Finds all links associated to the given pin
     void find_links(QtFlowPin* pin, std::vector<QtFlowLink*>& links) const;
+
+    /// Finds all links associated to the given node
+    void find_links(QtFlowNode* node, std::vector<QtFlowLink*>& links) const;
 
     /// Returns the first link associated to the given pin, useful for in-pins which are limited to only one link
     /// Returns null if no link was found

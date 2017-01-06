@@ -358,29 +358,29 @@ void QtFlowGraphView::build_node_menu()
             {
                 std::vector<std::string> elems;
 
-                std::stringstream ss(node->category());
-                std::string item;
-                while (std::getline(ss, item, '/'))
-                {
-                    elems.push_back(item);
-                }
+std::stringstream ss(node->category());
+std::string item;
+while (std::getline(ss, item, '/'))
+{
+    elems.push_back(item);
+}
 
 
-                QMenu* target_menu = _node_menu;
-                std::string menu_str = "";
-                for (int i = 0; i < int(elems.size()); ++i)
-                {
-                    if (menu_str != "")
-                        menu_str += "/";
-                    menu_str += elems[i];
-                    auto it = sub_menus.find(menu_str);
-                    if (it == sub_menus.end())
-                    {
-                        sub_menus[menu_str] = new QMenu(QString::fromStdString(elems[i]), target_menu);
-                        target_menu->addMenu(sub_menus[menu_str]);
-                    }
-                    target_menu = sub_menus[menu_str];
-                }
+QMenu* target_menu = _node_menu;
+std::string menu_str = "";
+for (int i = 0; i < int(elems.size()); ++i)
+{
+    if (menu_str != "")
+        menu_str += "/";
+    menu_str += elems[i];
+    auto it = sub_menus.find(menu_str);
+    if (it == sub_menus.end())
+    {
+        sub_menus[menu_str] = new QMenu(QString::fromStdString(elems[i]), target_menu);
+        target_menu->addMenu(sub_menus[menu_str]);
+    }
+    target_menu = sub_menus[menu_str];
+}
             }
         }
 
@@ -436,19 +436,19 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
         }
     }
 }
-void QtFlowGraphView::node_template_added(FlowNode* )
+void QtFlowGraphView::node_template_added(FlowNode*)
 {
     // Rebuild node menu
     build_node_menu();
 }
-void QtFlowGraphView::node_template_removed(FlowNode* )
+void QtFlowGraphView::node_template_removed(FlowNode*)
 {
     // Rebuild node menu
     build_node_menu();
 }
-void QtFlowGraphView::node_template_reloaded(FlowNode* n)
+void QtFlowGraphView::node_template_reloaded(FlowNode* tpl)
 {
-    _scene->graph()->reload(n->node_class());
+    _scene->node_template_reloaded(tpl);
 }
 void QtFlowGraphView::node_copy()
 {

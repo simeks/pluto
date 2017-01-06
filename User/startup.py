@@ -42,8 +42,16 @@ except ImportError as e:
     print('Failed to import medkit:',e)
 else:
     print('Import module: medkit')
-imread = medkit.read
-imwrite = medkit.write
+    imread = medkit.read
+    imwrite = medkit.write
+
+try:
+    import elastix
+except ImportError as e:
+    print('Failed to import elastix:',e)
+else:
+    print('Import module: elastix')
+
 
 import os
 
