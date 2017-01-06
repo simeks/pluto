@@ -6,6 +6,7 @@
 #include "FlowModule.h"
 #include "FlowPin.h"
 #include "FlowProperty.h"
+#include "RunGraphNode.h"
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowGraph, reload);
 
@@ -114,12 +115,13 @@ void FlowGraph::reload()
 }
 void FlowGraph::reload(const char* node_class)
 {
+    FlowNode* tpl = FlowModule::instance().node_template(node_class);
+
     std::vector<FlowPin*> links;
     for (auto& it : _nodes)
     {
         if (strcmp(it.second->node_class(), node_class) == 0)
         {
-            FlowNode* tpl = FlowModule::instance().node_template(node_class);
             FlowNode* old = it.second;
             FlowNode* new_node = flow_graph::reload_node(tpl, old);
             it.second = new_node;
@@ -140,6 +142,14 @@ void FlowGraph::reload(const char* node_class)
                 }
             }
             old->release();
+        }
+
+        // Special case: Update any embedded graphs as well
+        if (it.second->is_a(RunGraphNode::static_class()))
+        {
+            RunGraphNode* n = object_cast<RunGraphNode>(it.second);
+            if (n->graph() != this)
+                n->graph()->reload(node_class);
         }
     }
 }
