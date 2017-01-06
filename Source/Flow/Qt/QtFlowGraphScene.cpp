@@ -42,7 +42,7 @@ QtFlowGraphScene::~QtFlowGraphScene()
 void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
 {
     QtFlowNode* ui_node = _create_node(node);
-    ui_node->setPos(pos);
+    ui_node->move_node(pos);
     addItem(ui_node);
 
     _flow_graph->add_node(node);
@@ -160,7 +160,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     {
         FlowNode* node = n.second;
         QtFlowNode* ui_node = _create_node(node);
-        ui_node->setPos(node->ui_pos().x, node->ui_pos().y);
+        ui_node->move_node(QPointF(node->ui_pos().x, node->ui_pos().y));
         addItem(ui_node);
 
         _nodes[node->node_id()] = ui_node;
