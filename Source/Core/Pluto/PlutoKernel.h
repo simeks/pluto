@@ -9,6 +9,7 @@ public:
     virtual void print_html(const char* text) = 0;
 };
 
+class AutoReloader;
 class FlowModule;
 class ImageModule;
 class PlutoModule;
@@ -41,7 +42,7 @@ public:
     /// Interrupts the kernel, aborting any ongoing execution. This may be called from any thread.
     void interrupt();
 
-    void import_module(const std::string& module);
+    void add_auto_reload(PyObject* module);
 
     void set_stdout_callback(OutputCallback* fn, void* data);
     void set_stderr_callback(OutputCallback* fn, void* data);
@@ -56,6 +57,7 @@ private:
     PyStdStream* _stderr;
     PyStdStream* _htmlout;
 
+    AutoReloader* _reloader;
 };
 
 

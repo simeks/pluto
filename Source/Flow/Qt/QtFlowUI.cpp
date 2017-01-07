@@ -20,8 +20,8 @@ QtFlowWindow* QtFlowUI::create_window()
 {
     QtFlowWindow* window = new QtFlowWindow();
     _windows.push_back(window);
-    connect(this, SIGNAL(node_template_added(FlowNode*)), window, SIGNAL(node_template_added(FlowNode*)));
-    connect(this, SIGNAL(node_template_removed(FlowNode*)), window, SIGNAL(node_template_removed(FlowNode*)));
-    connect(this, SIGNAL(node_template_reloaded(FlowNode*)), window, SIGNAL(node_template_reloaded(FlowNode*)));
+    connect(this, SIGNAL(node_template_added(FlowNode*)), window, SIGNAL(node_template_added(FlowNode*)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(node_template_removed(FlowNode*)), window, SIGNAL(node_template_removed(FlowNode*)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(node_template_reloaded(FlowNode*)), window, SIGNAL(node_template_reloaded(FlowNode*)), Qt::BlockingQueuedConnection);
     return window;
 }

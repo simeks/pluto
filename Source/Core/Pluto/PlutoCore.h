@@ -16,7 +16,10 @@ public:
     void shutdown();
 
     const char* user_dir() const;
+    const char* python_dir() const;
+    const char* module_dir() const;
 
+    PlutoKernel* kernel() const;
     PlutoKernelProxy* kernel_proxy() const;
     QThread* kernel_thread() const;
 

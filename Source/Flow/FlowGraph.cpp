@@ -124,6 +124,13 @@ void FlowGraph::reload(const char* node_class)
         {
             FlowNode* old = it.second;
             FlowNode* new_node = flow_graph::reload_node(tpl, old);
+            if (!new_node)
+            {
+                // TODO:
+                std::cout << "Reloading node " << guid::to_string(old->node_id()) 
+                    << " failed (node_class: " << node_class << ")" << std::endl;
+                continue;
+            }
             it.second = new_node;
             
             for (auto& old_pin : old->pins())
@@ -281,8 +288,6 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 }
 FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
 {
-    if (tpl->get_class() != old->get_class())
-        return nullptr;
     if (strcmp(tpl->node_class(), old->node_class()) != 0)
         return nullptr;
 

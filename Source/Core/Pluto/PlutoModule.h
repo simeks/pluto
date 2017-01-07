@@ -13,6 +13,8 @@ public:
     virtual void post_init() OVERRIDE;
 
     const char* user_dir();
+    const char* python_dir();
+    const char* module_dir();
 
     void print_html(const std::string& txt);
 
@@ -20,6 +22,8 @@ public:
     PyObject* classes() const;
     
     Object* create_object(const Tuple& args);
+
+    void auto_reload(PyObject* module);
 
     static const char* name();
 private:

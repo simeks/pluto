@@ -52,6 +52,18 @@ const char* PlutoCore::user_dir() const
 {
     return "..\\User"; // TODO:
 }
+const char* PlutoCore::python_dir() const
+{
+    return "..\\Python"; // TODO:
+}
+const char* PlutoCore::module_dir() const
+{
+    return "..\\Python\\modules"; // TODO:
+}
+PlutoKernel* PlutoCore::kernel() const
+{
+    return _kernel;
+}
 PlutoKernelProxy* PlutoCore::kernel_proxy() const
 {
     return _kernel_proxy;

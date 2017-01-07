@@ -8,10 +8,13 @@
 #include "Python/StdStream.h"
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, user_dir);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, python_dir);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, module_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, print_html, std::string);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(PlutoModule, register_class, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, classes);
 PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_RETURN(PlutoModule, create_object);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, auto_reload, PyObject*);
 
 std::string PlutoModule::s_version = "0.0";
 
@@ -24,10 +27,13 @@ PlutoModule::~PlutoModule()
 void PlutoModule::post_init()
 {
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, python_dir, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, module_dir, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, create_object, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, auto_reload, "");
 
     add_type("Object", Object::static_class());
     add_type("StdStream", PyStdStream::static_class());
@@ -36,6 +42,14 @@ void PlutoModule::post_init()
 const char* PlutoModule::user_dir()
 {
     return PlutoCore::instance().user_dir();
+}
+const char* PlutoModule::python_dir()
+{
+    return PlutoCore::instance().python_dir();
+}
+const char* PlutoModule::module_dir()
+{
+    return PlutoCore::instance().module_dir();
 }
 void PlutoModule::print_html(const std::string& txt)
 {
@@ -82,6 +96,10 @@ Object* PlutoModule::create_object(const Tuple& args)
         obj_args.set(i-1, args.get(i));
 
     return cls->create_object(obj_args);
+}
+void PlutoModule::auto_reload(PyObject* module)
+{
+    PlutoCore::instance().kernel()->add_auto_reload(module);
 }
 const char* PlutoModule::name()
 {

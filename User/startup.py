@@ -2,15 +2,22 @@
 
 print('* Running Pluto startup script')
 
-import sys
-sys.path.append('../Python')
-
 try:
     import pluto
 except ImportError:
     print('Failed to import pluto')
 else:
     print('Import module: pluto [Version: %s]' % pluto.__version__)
+
+__real_import__ = __import__
+
+def pluto_import(name, globals=None, locals=None, fromlist=(), level=0):
+    m = __real_import__(name, globals, locals, fromlist, level)
+    pluto.auto_reload(m)
+    return m
+
+__builtins__.__import__ = pluto_import
+
 try:
     import numpy as np
 except ImportError:
@@ -19,41 +26,39 @@ else:
     print('Import module: numpy as np [Version: %s]' % np.__version__)
 
 try:
-    import image
-except ImportError:
-    print('Failed to import image')
-else:
-    print('Import module: image')
-
-from image import Image
-
-try:
     import flow
 except ImportError as e:
     print('Failed to import flow:',e)
 else:
     print('Import module: flow')
 
-import console
-
 try:
-    import medkit
+    import image
 except ImportError as e:
-    print('Failed to import medkit:',e)
+    print('Failed to import image:',e)
 else:
-    print('Import module: medkit')
+    print('Import module: image')
+
+import console
+import importlib
+import os
+import sys
+
+for m in os.listdir(pluto.module_dir()):
+    try:
+        module = importlib.import_module(m)
+        setattr(sys.modules[__name__], m, module)
+    except ImportError as e:
+        print('Failed to import %s:' % m, e)
+    else:
+        print('Import module: %s' % m)    
+
+if image:
+    Image = image.Image
+
+if medkit:
     imread = medkit.read
     imwrite = medkit.write
-
-try:
-    import elastix
-except ImportError as e:
-    print('Failed to import elastix:',e)
-else:
-    print('Import module: elastix')
-
-
-import os
 
 # Load graphs
 graphs_path = os.path.join(pluto.user_dir(), 'graphs')

@@ -1,7 +1,10 @@
 #include "Common.h"
+
+#include "AutoReloader.h"
 #include "Image/ImageModule.h"
 #include "Platform/FilePath.h"
 #include "Platform/FileUtil.h"
+#include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
 #include "Python/NumPy.h"
@@ -14,13 +17,15 @@
 #include <fstream>
 
 PlutoKernel::PlutoKernel()
-    : _main_module(nullptr)
+    : _main_module(nullptr), _reloader(nullptr)
 {
     PlutoModule::create();
     ImageModule::create();
 }
 PlutoKernel::~PlutoKernel()
 {
+    delete _reloader;
+
     PythonModule sys(PyImport_ImportModule("sys"));
     sys.set_object("stdout", Py_None);
     sys.set_object("stderr", Py_None);
@@ -50,12 +55,18 @@ void PlutoKernel::prepare()
     _stderr->addref();
     sys.set_object("stderr", _stderr);
 
+    PyObject* path = sys.object("path");
+    PyList_Append(path, PyUnicode_FromString(PlutoCore::instance().python_dir()));
+    PyList_Append(path, PyUnicode_FromString(PlutoCore::instance().module_dir()));
+
     numpy::initialize();
 
     _main_module = new PythonModule(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
 
     _htmlout->addref();
     PlutoModule::instance().set_object("htmlout", _htmlout);
+
+    _reloader = new AutoReloader();
 }
 void PlutoKernel::start()
 {
@@ -126,16 +137,9 @@ void PlutoKernel::interrupt()
 {
     PyErr_SetInterrupt();
 }
-void PlutoKernel::import_module(const std::string& module)
+void PlutoKernel::add_auto_reload(PyObject* module)
 {
-    print("Importing module '" + module + "'.");
-    PyObject* m = PyImport_ImportModule(module.c_str());
-    if (!m)
-    {
-        PyErr_Print();
-        return;
-    }
-    _main_module->set_object(module.c_str(), m);
+    _reloader->add_module(module);
 }
 
 void PlutoKernel::set_stdout_callback(OutputCallback* fn, void* data)

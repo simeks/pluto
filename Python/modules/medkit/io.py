@@ -67,6 +67,9 @@ def read(File):
     reader.SetFileName(File)
     itk_img = reader.Execute()
 
+    if itk_img == None:
+        raise IOError('Failed to load image')
+
     fmt = format_from_sitk(itk_img)
     if fmt == None:
         raise IOError('Unknown format (SimpleITK PixelID: '+str(itk_img.GetPixelID())+')')
