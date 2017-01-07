@@ -36,9 +36,9 @@ void QtGraphInputNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     painter->setBrush(QBrush(style.node_background_1));
 
     if (isSelected())
-        painter->setPen(QPen(style.node_border_selected_1, 2));
+        painter->setPen(QPen(style.node_border_selected_1, 1));
     else
-        painter->setPen(QPen(style.node_border_1, 2));
+        painter->setPen(QPen(style.node_border_1, 1));
 
     painter->drawRect(_rect);
 

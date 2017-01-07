@@ -54,9 +54,9 @@ void QtFlowNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     painter->setBrush(QBrush(style.node_background_0));
 
     if (isSelected())
-        painter->setPen(QPen(style.node_border_selected_0, 2));
+        painter->setPen(QPen(style.node_border_selected_0, 1));
     else
-        painter->setPen(QPen(style.node_border_0, 2));
+        painter->setPen(QPen(style.node_border_0, 1));
 
     painter->drawRect(_rect);
 
