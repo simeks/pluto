@@ -170,7 +170,7 @@ PyObject* FlowContext::read_pin(const char* name)
         }
         // else TODO: Error
     }
-    return nullptr;
+    Py_RETURN_NONE;
 }
 bool FlowContext::has_env_var(const char* key) const
 {

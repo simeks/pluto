@@ -275,7 +275,7 @@ void QtFlowNode::calculate_size()
     int rows = std::max((int)in_pins.size(), (int)out_pins.size());
     height +=  rows * (font_metrics.height() + 10); // Pins
 
-    int width = font_metrics.width(title()) + 20;
+    int width = font_metrics.width(title()) + 30;
     for (int i = 0; i < rows; ++i)
     {
         int w = 0;

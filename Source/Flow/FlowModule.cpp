@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Image/ImageObject.h>
 #include <Core/Pluto/PlutoCore.h>
 #include <Core/Python/PythonFunction.h>
 #include <Core/Qt/WindowManager.h>
@@ -28,7 +29,15 @@ namespace
             return;
         }
 
-        if (Object::static_class()->check_type(obj))
+        if (ImageObject::static_class()->check_type(obj))
+        {
+            ImageObject* o = python_convert::from_python<ImageObject*>(obj);
+            PYTHON_STDOUT("ImageObject, size=(%d, %d, %d), spacing=(%f, %f, %f), origin=(%f, %f, %f)", 
+                o->size().x, o->size().y, o->size().z,
+                o->spacing().x, o->spacing().y, o->spacing().z,
+                o->origin().x, o->origin().y, o->origin().z);
+        }
+        else if (Object::static_class()->check_type(obj))
         {
             Object* o = python_convert::from_python<Object*>(obj);
             PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
