@@ -33,6 +33,7 @@ void AutoReloader::file_changed(const QString& path)
 {
     auto it = _modules.find(path);
     assert(it != _modules.end());
-    PyImport_ReloadModule(it->second);
+    if (!PyImport_ReloadModule(it->second))
+        PyErr_Print();
 }
 
