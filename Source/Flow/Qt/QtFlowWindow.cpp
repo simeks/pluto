@@ -9,6 +9,7 @@
 #include "QtFlowWindow.h"
 #include "QtFlowGraphScene.h"
 #include "QtFlowGraphView.h"
+#include "QtFlowUndoStack.h"
 #include "QtNodePropertyWidget.h"
 
 #include <QCloseEvent>
@@ -18,6 +19,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QThread>
+#include <QUndoStack>
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
@@ -82,6 +84,8 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
     _recent_menu(nullptr),
     _changed(false)
 {
+    _undo_stack = new QUndoStack(this);
+
     setMinimumSize(800, 600);
 
     QSettings settings;
@@ -112,6 +116,7 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
 
 QtFlowWindow::~QtFlowWindow()
 {
+    delete _undo_stack;
     delete _graph_runner;
 }
 FlowGraph* QtFlowWindow::graph()
@@ -295,6 +300,10 @@ void QtFlowWindow::setup_ui()
     _graph_view = new QtFlowGraphView(this);
     _graph_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     connect(_graph_view, SIGNAL(graph_changed()), this, SLOT(graph_changed()));
+    connect(_graph_view, SIGNAL(node_create(QtFlowNode*)), this, SLOT(node_create(QtFlowNode*)));
+    connect(_graph_view, SIGNAL(link_create(QtFlowLink*)), this, SLOT(link_create(QtFlowLink*)));
+    connect(_graph_view, SIGNAL(selection_move(const QPointF&, const QPointF&)), this, SLOT(selection_move(const QPointF&, const QPointF&)));
+    connect(_graph_view, SIGNAL(selection_destroy()), this, SLOT(selection_destroy()));
 
     QMenuBar* menu_bar = new QMenuBar(this);
     setMenuBar(menu_bar);
@@ -344,6 +353,12 @@ void QtFlowWindow::setup_ui()
         QMenu* menu_edit = new QMenu("Edit", menu_bar);
         menu_bar->addAction(menu_edit->menuAction());
 
+        QAction* action_undo = _undo_stack->createUndoAction(this, tr("Undo"));
+        action_undo->setShortcuts(QKeySequence::Undo);
+
+        QAction* action_redo = _undo_stack->createRedoAction(this, tr("Redo"));
+        action_redo->setShortcuts(QKeySequence::Redo);
+
         QAction* action_copy = new QAction(tr("Copy"), this);
         action_copy->setShortcuts(QKeySequence::Copy);
         connect(action_copy, &QAction::triggered, _graph_view, &QtFlowGraphView::node_copy);
@@ -352,6 +367,9 @@ void QtFlowWindow::setup_ui()
         action_paste->setShortcuts(QKeySequence::Paste);
         connect(action_paste, &QAction::triggered, _graph_view, &QtFlowGraphView::node_paste);
 
+        menu_edit->addAction(action_undo);
+        menu_edit->addAction(action_redo);
+        menu_edit->addSeparator();
         menu_edit->addAction(action_copy);
         menu_edit->addAction(action_paste);
     }
@@ -532,4 +550,21 @@ void QtFlowWindow::set_current_file(const QString& file)
 {
     _current_file = file;
     update_title();
+}
+
+void QtFlowWindow::node_create(QtFlowNode* node)
+{
+    _undo_stack->push(new NodeCreateCommand(node, _graph_view->scene()));
+}
+void QtFlowWindow::link_create(QtFlowLink* link)
+{
+    _undo_stack->push(new LinkCreateCommand(link, _graph_view->scene()));
+}
+void QtFlowWindow::selection_move(const QPointF& old_pos, const QPointF& new_pos)
+{
+    _undo_stack->push(new SelectionMoveCommand(old_pos, new_pos, _graph_view->scene()));
+}
+void QtFlowWindow::selection_destroy()
+{
+    _undo_stack->push(new SelectionDestroyCommand(_graph_view->scene()));
 }

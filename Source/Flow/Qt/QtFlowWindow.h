@@ -10,8 +10,11 @@ class FlowContext;
 class FlowGraph;
 class FlowNode;
 class QtFlowGraphView;
+class QtFlowLink;
+class QtFlowNode;
 class QtFlowWindow;
 class QtNodePropertyWidget;
+class QUndoStack;
 class QtFlowGraphRunner : public QObject
 {
     Q_OBJECT
@@ -75,6 +78,12 @@ private slots:
 
     void about();
 
+    void node_create(QtFlowNode* node);
+    void link_create(QtFlowLink* link);
+
+    void selection_move(const QPointF& old_pos, const QPointF& new_pos);
+    void selection_destroy();
+
 private:
     void setup_ui();
     void update_recent_menu();
@@ -101,6 +110,8 @@ private:
     QtFlowGraphRunner* _graph_runner;
 
     bool _changed;
+
+    QUndoStack* _undo_stack;
 
 signals:
     void node_template_added(FlowNode* node);

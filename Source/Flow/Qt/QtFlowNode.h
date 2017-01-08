@@ -44,7 +44,6 @@ public:
 
     int type() const;
 
-
 protected:
     enum Status 
     {

@@ -36,7 +36,8 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 
     QtFlowGraphScene* graph_scene = new QtFlowGraphScene(this);
     graph_scene->setSceneRect(-2500, -2500, 5000, 5000);
-    set_scene(graph_scene);
+    _scene = graph_scene;
+    setScene(graph_scene);
 
     connect(graph_scene, SIGNAL(graph_changed()), this, SIGNAL(graph_changed()));
 
@@ -49,6 +50,11 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 
     _running_text_timer = new QTimer(this);
     connect(_running_text_timer, SIGNAL(timeout()), this, SLOT(running_text_anim()));
+
+    connect(this, SIGNAL(node_create(QtFlowNode*)), this, SIGNAL(graph_changed()));
+    connect(this, SIGNAL(link_create(QtFlowLink*)), this, SIGNAL(graph_changed()));
+    connect(this, SIGNAL(selection_move(const QPointF&, const QPointF&)), this, SIGNAL(graph_changed()));
+    connect(this, SIGNAL(selection_destroy()), this, SIGNAL(graph_changed()));
 }
 
 QtFlowGraphView::~QtFlowGraphView()
@@ -62,11 +68,6 @@ void QtFlowGraphView::update_nodes()
         if (i->type() == QtFlowNode::Type)
             i->update();
     }
-}
-void QtFlowGraphView::set_scene(QtFlowGraphScene* scene)
-{
-    _scene = scene;
-    setScene(scene);
 }
 QtFlowGraphScene* QtFlowGraphView::scene() const
 {
@@ -84,72 +85,77 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
                 return;
 
             auto& item = scene_items[0];
-            if (!_scene->selectedItems().contains(item))
+            if (item->type() == QtFlowNode::Type)
             {
-                emit flow_node_selected(nullptr);
-
-                if (item->type() == QtFlowNode::Type)
-                {
-                    QtFlowNode* node = (QtFlowNode*)item;
-                    int pin_id = node->check_pin(node->mapFromScene(mapToScene(mouse_event->pos())));
-                    if (pin_id != -1)
-                    {
-                        _scene->clearSelection();
-                        _scene->clearFocus();
-
-                        if (_temp_link)
-                            delete _temp_link;
-                        _temp_link = nullptr;
-
-                        QtFlowPin* pin = node->pin(pin_id);
-                        if (pin->pin_type() == FlowPin::In && pin->is_linked())
-                        {
-                            QtFlowLink* link = _scene->find_link(pin);
-                            assert(link);
-
-                            _scene->remove_link(link);
-
-                            link->unset_pin(FlowPin::In);
-                            _temp_link = link;
-                        }
-                        else
-                        {
-                            if (pin->pin_type() == FlowPin::Out)
-                            {
-                                _temp_link = new QtFlowLink(pin, nullptr);
-                            }
-                            else
-                            {
-                                _temp_link = new QtFlowLink(nullptr, pin);
-                            }
-                        }
-                        _temp_link->move_free_end(mapToScene(mouse_event->pos()));
-                        _scene->addItem(_temp_link);
-
-                        _mode = Mode_DragPin;
-                    }
-                    else
-                    {
-                        _scene->clearSelection();
-                        _scene->clearFocus();
-
-                        node->setSelected(true);
-
-                        emit flow_node_selected((QtFlowNode*)node);
-
-                        _mode = Mode_Move;
-                    }
-                }
-                else if (item->type() == QtFlowLink::Type)
+                QtFlowNode* node = (QtFlowNode*)item;
+                int pin_id = node->check_pin(node->mapFromScene(mapToScene(mouse_event->pos())));
+                if (pin_id != -1)
                 {
                     _scene->clearSelection();
                     _scene->clearFocus();
-                    item->setSelected(true);
+
+                    if (_temp_link)
+                        delete _temp_link;
+                    _temp_link = nullptr;
+
+                    QtFlowPin* pin = node->pin(pin_id);
+                    if (pin->pin_type() == FlowPin::In && pin->is_linked())
+                    {
+                        QtFlowLink* link = _scene->find_link(pin);
+                        assert(link);
+
+                        _scene->remove_link(link);
+
+                        link->unset_pin(FlowPin::In);
+                        _temp_link = link;
+                    }
+                    else
+                    {
+                        if (pin->pin_type() == FlowPin::Out)
+                        {
+                            _temp_link = new QtFlowLink(pin, nullptr);
+                        }
+                        else
+                        {
+                            _temp_link = new QtFlowLink(nullptr, pin);
+                        }
+                    }
+                    _temp_link->move_free_end(mapToScene(mouse_event->pos()));
+                    _scene->addItem(_temp_link);
+
+                    _mode = Mode_DragPin;
                 }
-            }
-            else
-            {
-                _mode = Mode_Move;
+                else
+                {
+                    if (!_scene->selectedItems().contains(item))
+                    {
+                        emit flow_node_selected(nullptr);
+
+                        if (item->type() == QtFlowNode::Type)
+                        {
+                            _scene->clearSelection();
+                            _scene->clearFocus();
+
+                            node->setSelected(true);
+
+                            emit flow_node_selected((QtFlowNode*)node);
+
+                            _mode = Mode_Move;
+                            _move_start = item->pos();
+                        }
+                        else if (item->type() == QtFlowLink::Type)
+                        {
+                            _scene->clearSelection();
+                            _scene->clearFocus();
+                            item->setSelected(true);
+                        }
+                    }
+                    else
+                    {
+                        _mode = Mode_Move;
+                        _move_start = _scene->selectedItems()[0]->pos();
+                    }
+                }
             }
         }
         else if (mouse_event->modifiers() & Qt::AltModifier || mouse_event->buttons() & Qt::MiddleButton)
@@ -238,6 +244,15 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
 {
     switch (_mode)
     {
+    case Mode_Move:
+    {
+        if (_move_start != mouse_event->pos())
+        {
+            emit selection_move(_move_start, _scene->selectedItems()[0]->pos());
+        }
+        QGraphicsView::mouseMoveEvent(mouse_event);
+        break;
+    }
     case Mode_DragPin:
     {
         if (!_temp_link)
@@ -248,6 +263,7 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
             _temp_link->set_pin(_highlight_pin);
             if (_scene->try_add_link(_temp_link))
             {
+                emit link_create(_temp_link);
                 _temp_link = nullptr;
             }
             _highlight_pin->set_highlight(false);
@@ -300,21 +316,23 @@ void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_Delete)
     {
+        if (_scene->selectedItems().size())
+            emit selection_destroy();
+
         for (auto& item : _scene->selectedItems())
         {
             if (item->type() == QtFlowNode::Type)
             {
                 QtFlowNode* node = (QtFlowNode*)item;
                 _scene->remove_node(node);
-                delete node;
             }
             else if (item->type() == QtFlowLink::Type)
             {
                 QtFlowLink* link = (QtFlowLink*)item;
                 _scene->remove_link(link);
-                delete link;
             }
         }
+
         _scene->clearSelection();
     }
 
@@ -470,7 +488,9 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
             {
                 FlowNode* node = object_cast<FlowNode>(object_clone(template_node));
                 node->set_node_id(guid::create_guid());
-                _scene->create_node(node, mapToScene(pt));
+                
+                QtFlowNode* n = _scene->create_node(node, mapToScene(pt));
+                emit node_create(n);
             }
         }
     }
@@ -511,7 +531,8 @@ void QtFlowGraphView::node_paste()
             QPointF offset = i->scenePos() - origin;
             FlowNode* copy = object_clone(i->node());
             copy->set_node_id(guid::create_guid());
-            _scene->create_node(copy, mouse_pos + offset);
+            QtFlowNode* n = _scene->create_node(copy, mouse_pos + offset);
+            emit node_create(n);
             copy->release();
         }
 

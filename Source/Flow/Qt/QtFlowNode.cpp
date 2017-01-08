@@ -233,10 +233,9 @@ void QtFlowNode::move_node(const QPointF& scene_pos)
 {
     setPos(scene_pos);
     _node->set_ui_pos(Vec2i(scene_pos.x(), scene_pos.y()));
-
-    if (scene())
-        emit((QtFlowGraphScene*)scene())->graph_changed();
 }
+
+
 void QtFlowNode::create_pins()
 {
     _pins.resize(_node->pins().size());

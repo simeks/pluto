@@ -39,7 +39,7 @@ QtFlowGraphScene::~QtFlowGraphScene()
     clear();
 }
 
-void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
+QtFlowNode* QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
 {
     QtFlowNode* ui_node = _create_node(node);
     ui_node->move_node(pos);
@@ -48,15 +48,16 @@ void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
     _flow_graph->add_node(node);
     _nodes[node->node_id()] = ui_node;
 
-    emit graph_changed();
+    return ui_node;
 }
 void QtFlowGraphScene::add_node(QtFlowNode* node)
 {
+    if (_nodes.find(node->node_id()) != _nodes.end())
+        return;
+
     addItem(node);
     _flow_graph->add_node(node->node());
     _nodes[node->node_id()] = node;
-
-    emit graph_changed();
 }
 void QtFlowGraphScene::remove_node(QtFlowNode* node)
 {
@@ -68,8 +69,6 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
     removeItem(node);
 
     _flow_graph->remove_node(node->node());
-
-    emit graph_changed();
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
@@ -86,10 +85,13 @@ bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
     if (!a || !b)
         return false;
 
+    if (std::find(_links.begin(), _links.end(), link) != _links.end())
+        return true;
+
     if (_flow_graph->try_add_link(a->pin(), b->pin()))
     {
         _links.push_back(link);
-        emit graph_changed();
+        addItem(link);
         return true;
     }
     return false;
@@ -102,8 +104,6 @@ void QtFlowGraphScene::remove_link(QtFlowLink* link)
     _flow_graph->remove_link(link->start()->pin(), link->end()->pin());
     _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
     removeItem(link);
-
-    emit graph_changed();
 }
 void QtFlowGraphScene::remove_links(QtFlowNode* node)
 {
@@ -127,10 +127,14 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
         else
             ++it;
     }
-
-    emit graph_changed();
 }
-
+void QtFlowGraphScene::find_links(QtFlowNode* node, std::vector<QtFlowLink*>& links) const
+{
+    for (auto p : node->pins())
+    {
+        find_links(p, links);
+    }
+}
 void QtFlowGraphScene::find_links(QtFlowPin* pin, std::vector<QtFlowLink*>& links) const
 {
     for (auto l : _links)

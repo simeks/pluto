@@ -19,7 +19,6 @@ public:
 
     void update_nodes();
 
-    void set_scene(QtFlowGraphScene* scene);
     QtFlowGraphScene* scene() const;
 
 public slots:
@@ -60,6 +59,7 @@ private:
 
     QtFlowGraphScene* _scene;
 
+    QPointF _move_start;
     QPoint _last_mouse_pos;
 
     Mode _mode;
@@ -85,6 +85,12 @@ private slots:
 signals:
     void flow_node_selected(QtFlowNode* node);
     void graph_changed();
+
+    void node_create(QtFlowNode* node);
+    void link_create(QtFlowLink* link);
+
+    void selection_move(const QPointF& old_pos, const QPointF& new_pos);
+    void selection_destroy();
 
 };
 
