@@ -32,10 +32,9 @@ namespace
         if (ImageObject::static_class()->check_type(obj))
         {
             ImageObject* o = python_convert::from_python<ImageObject*>(obj);
-            PYTHON_STDOUT("ImageObject, size=(%d, %d, %d), spacing=(%f, %f, %f), origin=(%f, %f, %f)", 
-                o->size().x, o->size().y, o->size().z,
-                o->spacing().x, o->spacing().y, o->spacing().z,
-                o->origin().x, o->origin().y, o->origin().z);
+            PYTHON_STDOUT("ImageObject, type=%s, size=(%d, %d, %d)", 
+                image::pixel_type_to_string(o->pixel_type()),
+                o->size().x, o->size().y, o->size().z);
         }
         else if (Object::static_class()->check_type(obj))
         {

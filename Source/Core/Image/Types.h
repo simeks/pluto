@@ -11,8 +11,11 @@ namespace image
     {
         PixelType_Unknown,
         PixelType_UInt8,
+        PixelType_Int8,
         PixelType_UInt16,
+        PixelType_Int16,
         PixelType_UInt32,
+        PixelType_Int32,
         PixelType_Float32,
         PixelType_Float64,
         PixelType_Vec3u8,
@@ -23,14 +26,14 @@ namespace image
         PixelType_Vec4d
     };
     
-    size_t pixel_size(int type);
-    int string_to_pixel_type(const char* str);
-    const char* pixel_type_to_string(int type);
+    CORE_API size_t pixel_size(int type);
+    CORE_API int string_to_pixel_type(const char* str);
+    CORE_API const char* pixel_type_to_string(int type);
 
     /// Number of components for the given type
-    int num_components(int type);
+    CORE_API int num_components(int type);
     /// Component size in bytes
-    size_t component_size(int type);
+    CORE_API size_t component_size(int type);
 
     template<typename T>
     struct pixel_type
@@ -53,8 +56,11 @@ namespace image
         }; 
 
     PIXEL_TYPE_TRAIT(uint8_t, image::PixelType_UInt8);
+    PIXEL_TYPE_TRAIT(int8_t, image::PixelType_Int8);
     PIXEL_TYPE_TRAIT(uint16_t, image::PixelType_UInt16);
+    PIXEL_TYPE_TRAIT(int16_t, image::PixelType_Int16);
     PIXEL_TYPE_TRAIT(uint32_t, image::PixelType_UInt32);
+    PIXEL_TYPE_TRAIT(int32_t, image::PixelType_Int32);
     PIXEL_TYPE_TRAIT(float, image::PixelType_Float32);
     PIXEL_TYPE_TRAIT(double, image::PixelType_Float64);
     PIXEL_TYPE_TRAIT(Vec3u8, image::PixelType_Vec3u8);

@@ -21,10 +21,16 @@ int numpy::pixel_type_to_numpy(int pixel_type)
     case image::PixelType_Vec3u8:
     case image::PixelType_Vec4u8:
         return NPY_UINT8;
+    case image::PixelType_Int8:
+        return NPY_INT8;
     case image::PixelType_UInt16:
         return NPY_UINT16;
+    case image::PixelType_Int16:
+        return NPY_INT16;
     case image::PixelType_UInt32:
         return NPY_UINT32;
+    case image::PixelType_Int32:
+        return NPY_INT32;
     case image::PixelType_Float32:
     case image::PixelType_Vec3f:
     case image::PixelType_Vec4f:

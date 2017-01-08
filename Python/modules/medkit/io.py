@@ -8,10 +8,16 @@ def format_from_sitk(img):
 
     if pixel_id == sitk.sitkUInt8:
         return image.PixelType_UInt8
+    elif pixel_id == sitk.sitkInt8:
+        return image.PixelType_Int8
     elif pixel_id == sitk.sitkUInt16:
         return image.PixelType_UInt16
+    elif pixel_id == sitk.sitkInt16:
+        return image.PixelType_Int16
     elif pixel_id == sitk.sitkUInt32:
         return image.PixelType_UInt32
+    elif pixel_id == sitk.sitkInt32:
+        return image.PixelType_Int32
     elif pixel_id == sitk.sitkFloat32:
         return image.PixelType_Float32
     elif pixel_id == sitk.sitkFloat64:
@@ -36,10 +42,16 @@ def format_from_sitk(img):
 def format_to_sitk(fmt):
     if fmt == image.PixelType_UInt8:
         return sitk.sitkUInt8, 1
+    elif fmt == image.PixelType_Int8:
+        return sitk.sitkInt8, 1
     elif fmt == image.PixelType_UInt16:
         return sitk.sitkUInt16, 1
+    elif fmt == image.PixelType_Int16:
+        return sitk.sitkInt16, 1
     elif fmt == image.PixelType_UInt32:
         return sitk.sitkUInt32, 1
+    elif fmt == image.PixelType_Int32:
+        return sitk.sitkInt32, 1
     elif fmt == image.PixelType_Float32:
         return sitk.sitkFloat32, 1
     elif fmt == image.PixelType_Float64:

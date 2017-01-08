@@ -131,8 +131,11 @@ public:
 };
 
 typedef ImageTpl<uint8_t> ImageUInt8;
+typedef ImageTpl<int8_t> ImageInt8;
 typedef ImageTpl<uint16_t> ImageUInt16;
+typedef ImageTpl<int16_t> ImageInt16;
 typedef ImageTpl<uint32_t> ImageUInt32;
+typedef ImageTpl<int32_t> ImageInt32;
 typedef ImageTpl<float> ImageFloat32;
 typedef ImageTpl<double> ImageFloat64;
 typedef ImageTpl<Vec3u8> ImageVec3u8;

@@ -11,10 +11,16 @@ size_t image::pixel_size(int type)
     {
     case PixelType_UInt8:
         return sizeof(uint8_t);
+    case PixelType_Int8:
+        return sizeof(int8_t);
     case PixelType_UInt16:
         return sizeof(uint16_t);
+    case PixelType_Int16:
+        return sizeof(int16_t);
     case PixelType_UInt32:
         return sizeof(uint32_t);
+    case PixelType_Int32:
+        return sizeof(int32_t);
     case PixelType_Float32:
         return sizeof(float);
     case PixelType_Float64:
@@ -42,13 +48,25 @@ int image::string_to_pixel_type(const char* str)
     {
         pixel_t = image::PixelType_UInt8;
     }
+    else if (strcmp(str, "int8") == 0)
+    {
+        pixel_t = image::PixelType_Int8;
+    }
     else if (strcmp(str, "uint16") == 0)
     {
         pixel_t = image::PixelType_UInt16;
     }
+    else if (strcmp(str, "int16") == 0)
+    {
+        pixel_t = image::PixelType_Int16;
+    }
     else if (strcmp(str, "uint32") == 0)
     {
         pixel_t = image::PixelType_UInt32;
+    }
+    else if (strcmp(str, "int32") == 0)
+    {
+        pixel_t = image::PixelType_Int32;
     }
     else if (strcmp(str, "float32") == 0)
     {
@@ -91,10 +109,16 @@ const char* image::pixel_type_to_string(int type)
     {
     case image::PixelType_UInt8:
         return "uint8";
+    case image::PixelType_Int8:
+        return "int8";
     case image::PixelType_UInt16:
         return "uint16";
+    case image::PixelType_Int16:
+        return "int16";
     case image::PixelType_UInt32:
         return "uint32";
+    case image::PixelType_Int32:
+        return "int32";
     case image::PixelType_Float32:
         return "float32";
     case image::PixelType_Float64:
@@ -121,8 +145,11 @@ int image::num_components(int type)
     switch (type)
     {
     case image::PixelType_UInt8:
+    case image::PixelType_Int8:
     case image::PixelType_UInt16:
+    case image::PixelType_Int16:
     case image::PixelType_UInt32:
+    case image::PixelType_Int32:
     case image::PixelType_Float32:
     case image::PixelType_Float64:
         return 1;
@@ -142,14 +169,17 @@ size_t image::component_size(int type)
     switch (type)
     {
     case image::PixelType_UInt8:
+    case image::PixelType_Int8:
     case image::PixelType_Vec3u8:
     case image::PixelType_Vec4u8:
         return 1;
 
     case image::PixelType_UInt16:
+    case image::PixelType_Int16:
         return 2;
 
     case image::PixelType_UInt32:
+    case image::PixelType_Int32:
     case image::PixelType_Float32:
     case image::PixelType_Vec3f:
     case image::PixelType_Vec4f:
