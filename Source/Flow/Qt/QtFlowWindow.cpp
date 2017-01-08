@@ -57,11 +57,10 @@ QtFlowGraphRunner::~QtFlowGraphRunner()
 }
 void QtFlowGraphRunner::run(FlowGraph* graph)
 {
-    QMetaObject::invokeMethod(_window, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
+    emit run_started();
 
     PlutoKernelProxy* kernel = PlutoCore::instance().kernel_proxy();
     emit kernel->busy();
-    emit reset_nodes();
 
     PYTHON_STDOUT("Running graph...\n");
 
@@ -73,9 +72,7 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
     ctx->release();
 
     emit kernel->ready();
-    emit finished();
-
-    QMetaObject::invokeMethod(_window, "setDisabled", Q_ARG(bool, false));
+    emit run_ended();
 }
 
 int QtFlowWindow::s_max_num_recent_files = 5;
@@ -106,8 +103,8 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
     connect(this, SIGNAL(clear_graph()), SLOT(_clear_graph()));
 
     _graph_runner = new QtFlowGraphRunner(this);
-    connect(_graph_runner, SIGNAL(finished()), this, SLOT(update_view()));
-    connect(_graph_runner, SIGNAL(reset_nodes()), _graph_view, SLOT(reset_nodes()));
+    connect(_graph_runner, SIGNAL(run_started()), this, SLOT(run_graph_started()), Qt::BlockingQueuedConnection);
+    connect(_graph_runner, SIGNAL(run_ended()), this, SLOT(run_graph_ended()), Qt::BlockingQueuedConnection);
     connect(_graph_runner, SIGNAL(node_started(FlowNode*)), _graph_view, SLOT(node_started(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_finished(FlowNode*)), _graph_view, SLOT(node_finished(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_failed(FlowNode*)), _graph_view, SLOT(node_failed(FlowNode*)));
@@ -134,14 +131,13 @@ void QtFlowWindow::run_graph()
         QMetaObject::invokeMethod(_graph_runner, "run", Q_ARG(FlowGraph*, graph()));
     else
     {
-        QMetaObject::invokeMethod(this, "setDisabled", Qt::BlockingQueuedConnection, Q_ARG(bool, true));
+        run_graph_started();
 
         FlowContext* ctx = object_new<FlowContext>(graph());
         ctx->run();
         ctx->release();
 
-        update_view();
-        QMetaObject::invokeMethod(this, "setDisabled", Q_ARG(bool, false));
+        run_graph_ended();
     }
 
 }
@@ -190,28 +186,43 @@ void QtFlowWindow::save_graph(const QString& file)
     set_graph_changed(false);
     add_recent_file(file);
 }
-void QtFlowWindow::update_view()
-{
-    _graph_view->update_nodes();
-}
 void QtFlowWindow::graph_changed()
 {
     set_graph_changed(true);
 }
+void QtFlowWindow::run_graph_started()
+{
+    menuBar()->setDisabled(true);
+    _node_property_view->setDisabled(true);
+    _graph_view->run_graph_started();
+    _title_prefix = "[Running] ";
+    update_title();
+}
+void QtFlowWindow::run_graph_ended()
+{
+    menuBar()->setDisabled(false);
+    _node_property_view->setDisabled(false);
+    _graph_view->run_graph_ended();
+    _title_prefix = "";
+    update_title();
+}
 void QtFlowWindow::set_graph_changed(bool changed)
 {
     _changed = changed;
-
+    update_title();
+}
+void QtFlowWindow::update_title()
+{
     if (_changed)
     {
         if (!_current_file.isEmpty())
         {
             QFileInfo f(_current_file);
-            setWindowTitle(f.fileName() + "* - Flow Editor");
+            setWindowTitle(_title_prefix + f.fileName() + "* - Flow Editor");
         }
         else
         {
-            setWindowTitle("New* - Flow Editor");
+            setWindowTitle(_title_prefix + "New* - Flow Editor");
         }
     }
     else
@@ -219,11 +230,11 @@ void QtFlowWindow::set_graph_changed(bool changed)
         if (!_current_file.isEmpty())
         {
             QFileInfo f(_current_file);
-            setWindowTitle(f.fileName() + " - Flow Editor");
+            setWindowTitle(_title_prefix + f.fileName() + " - Flow Editor");
         }
         else
         {
-            setWindowTitle("New - Flow Editor");
+            setWindowTitle(_title_prefix + "New - Flow Editor");
         }
     }
 }
@@ -268,7 +279,7 @@ void QtFlowWindow::add_recent_file(const QString& file)
 }
 void QtFlowWindow::setup_ui()
 {
-    setWindowTitle("Flow Editor");
+    update_title();
 
     _graph_view = new QtFlowGraphView(this);
     _graph_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -502,14 +513,5 @@ void QtFlowWindow::about()
 void QtFlowWindow::set_current_file(const QString& file)
 {
     _current_file = file;
-
-    if (!_current_file.isEmpty())
-    {
-        QFileInfo f(_current_file);
-        setWindowTitle(f.fileName() + " - Flow Editor");
-    }
-    else
-    {
-        setWindowTitle("Flow Editor");
-    }
+    update_title();
 }

@@ -9,7 +9,7 @@ public:
     QtPrintNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
     virtual ~QtPrintNode();
 
-    virtual void node_updated() OVERRIDE;
+    virtual void node_finished() OVERRIDE;
     virtual void reset_run_status() OVERRIDE;
 };
 

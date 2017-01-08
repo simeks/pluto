@@ -34,12 +34,16 @@ public slots:
     void node_finished(FlowNode* node);
     void node_failed(FlowNode* node);
 
+    void run_graph_started();
+    void run_graph_ended();
+
 protected:
     void mousePressEvent(QMouseEvent* mouse_event);
     void mouseMoveEvent(QMouseEvent* mouse_event);
     void mouseReleaseEvent(QMouseEvent* mouse_event);
     void keyPressEvent(QKeyEvent *e);
     void wheelEvent(QWheelEvent *e);
+    void paintEvent(QPaintEvent *e);
 
     void drawBackground(QPainter * painter, const QRectF & rect);
 private:
@@ -58,6 +62,9 @@ private:
     QPoint _last_mouse_pos;
 
     Mode _mode;
+    bool _running;
+    QString _running_text;
+    QTimer* _running_text_timer;
 
     QtFlowLink* _temp_link;
     QtFlowPin* _highlight_pin;
@@ -72,6 +79,7 @@ private:
 
 private slots:
     void show_context_menu(const QPoint&);
+    void running_text_anim();
 
 signals:
     void flow_node_selected(QtFlowNode* node);

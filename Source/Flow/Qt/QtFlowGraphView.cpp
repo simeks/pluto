@@ -15,6 +15,7 @@
 #include <QMenu>
 #include <QMetaType>
 #include <QMouseEvent>
+#include <QTimer>
 
 Q_DECLARE_METATYPE(FlowNode*);
 
@@ -22,6 +23,7 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     : QGraphicsView(parent),
     _node_menu(nullptr),
     _mode(Mode_Nothing),
+    _running(false),
     _temp_link(nullptr),
     _highlight_pin(nullptr)
 {
@@ -44,18 +46,17 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 
     const FlowUIStyle& style = FlowUIStyle::default_style();
     setBackgroundBrush(style.background_color);
+
+    _running_text_timer = new QTimer(this);
+    connect(_running_text_timer, SIGNAL(timeout()), this, SLOT(running_text_anim()));
 }
 
 QtFlowGraphView::~QtFlowGraphView()
 {
+    delete _running_text_timer;
 }
 void QtFlowGraphView::update_nodes()
 {
-    for (auto& i : items())
-    {
-        if (i->type() == QtFlowNode::Type)
-            ((QtFlowNode*)i)->node_updated();
-    }
     for (auto& i : items(viewport()->rect()))
     {
         if (i->type() == QtFlowNode::Type)
@@ -81,6 +82,9 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
         auto scene_items = items(mouse_event->pos());
         if (scene_items.size() != 0)
         {
+            if (_running)
+                return;
+
             for (auto& item : scene_items)
             {
                 if (item->type() == QtFlowNode::Type)
@@ -261,6 +265,12 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
 }
 void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
 {
+    if (_running)
+    {
+        e->ignore();
+        return;
+    }
+
     if (e->key() == Qt::Key_Delete)
     {
         for (auto& item : _scene->selectedItems())
@@ -505,5 +515,63 @@ void QtFlowGraphView::node_failed(FlowNode* node)
     QtFlowNode* n = _scene->node(node->node_id());
     if (n)
         n->node_failed();
+}
+void QtFlowGraphView::run_graph_started()
+{
+    _running = true;
+    reset_nodes();
+
+    emit flow_node_selected(nullptr);
+    _scene->clearSelection();
+    _scene->clearFocus();
+    _mode = Mode_Nothing;
+
+    _running_text = "Running";
+    _running_text_timer->start(1000);
+}
+void QtFlowGraphView::run_graph_ended()
+{
+    _running = false;
+    update_nodes();
+
+    _running_text_timer->stop();
+}
+void QtFlowGraphView::paintEvent(QPaintEvent *e)
+{
+    // Draw scene
+    QGraphicsView::paintEvent(e);
+
+    // Draw overlay
+    QPainter painter(viewport());
+
+    painter.setRenderHints(QPainter::Antialiasing);
+
+    QFont fnt;
+    fnt.setBold(true);
+
+    if (_running)
+    {
+        painter.setFont(fnt);
+        painter.setPen(Qt::black);
+        painter.drawText(QPoint(7, 17), _running_text);
+        painter.setPen(Qt::white);
+        painter.drawText(QPoint(5, 15), _running_text);
+    }
+}
+void QtFlowGraphView::running_text_anim()
+{
+    static int dot_count = 1;
+
+    _running_text = "Running";
+    for (int i = 0; i < dot_count; ++i)
+    {
+        _running_text.append(".");
+    }
+    ++dot_count;
+    if (dot_count > 3)
+        dot_count = 0;
+
+    resetCachedContent();
+    update();
 }
 

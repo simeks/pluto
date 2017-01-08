@@ -18,10 +18,10 @@ QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsWidget* parent) :
 QtPrintNode::~QtPrintNode()
 {
 }
-void QtPrintNode::node_updated()
+void QtPrintNode::node_finished()
 {
     _text = _node->attribute<const char*>("value");
-    QtSinglePinNode::node_updated();
+    QtSinglePinNode::node_finished();
 }
 void QtPrintNode::reset_run_status()
 {
