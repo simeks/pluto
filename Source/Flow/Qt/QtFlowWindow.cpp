@@ -11,6 +11,7 @@
 #include "QtFlowGraphView.h"
 #include "QtNodePropertyWidget.h"
 
+#include <QCloseEvent>
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -77,8 +78,12 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
     QMetaObject::invokeMethod(_window, "setDisabled", Q_ARG(bool, false));
 }
 
+int QtFlowWindow::s_max_num_recent_files = 5;
+
 QtFlowWindow::QtFlowWindow(QWidget *parent) :
-    QMainWindow(parent)
+    QMainWindow(parent),
+    _recent_menu(nullptr),
+    _changed(false)
 {
     setMinimumSize(800, 600);
 
@@ -111,21 +116,6 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
 QtFlowWindow::~QtFlowWindow()
 {
     delete _graph_runner;
-
-    QSettings settings;
-
-    settings.beginGroup("flowwindow");
-
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("savestate", saveState());
-    settings.setValue("maximized", isMaximized());
-    if (!isMaximized()) 
-    {
-        settings.setValue("pos", pos());
-        settings.setValue("size", size());
-    }
-
-    settings.endGroup();
 }
 FlowGraph* QtFlowWindow::graph()
 {
@@ -155,6 +145,14 @@ void QtFlowWindow::run_graph()
     }
 
 }
+void QtFlowWindow::new_graph()
+{
+    QtFlowGraphScene* scene = _graph_view->scene();
+    if (scene)
+        scene->new_graph();
+
+    set_current_file("");
+}
 void QtFlowWindow::load_graph(const QString& file)
 {
     JsonObject obj;
@@ -173,7 +171,9 @@ void QtFlowWindow::load_graph(const QString& file)
     }
 
     set_graph(graph);
-    _current_file = file;
+    set_current_file(file);
+
+    add_recent_file(file);
 }
 void QtFlowWindow::save_graph(const QString& file)
 {
@@ -186,11 +186,46 @@ void QtFlowWindow::save_graph(const QString& file)
         QMessageBox::warning(this, tr("Flow"), tr("Cannot write file %1.").arg(QDir::toNativeSeparators(file)));
         return;
     }
-    _current_file = file;
+    set_current_file(file);
+    set_graph_changed(false);
+    add_recent_file(file);
 }
 void QtFlowWindow::update_view()
 {
     _graph_view->update_nodes();
+}
+void QtFlowWindow::graph_changed()
+{
+    set_graph_changed(true);
+}
+void QtFlowWindow::set_graph_changed(bool changed)
+{
+    _changed = changed;
+
+    if (_changed)
+    {
+        if (!_current_file.isEmpty())
+        {
+            QFileInfo f(_current_file);
+            setWindowTitle(f.fileName() + "* - Flow Editor");
+        }
+        else
+        {
+            setWindowTitle("New* - Flow Editor");
+        }
+    }
+    else
+    {
+        if (!_current_file.isEmpty())
+        {
+            QFileInfo f(_current_file);
+            setWindowTitle(f.fileName() + " - Flow Editor");
+        }
+        else
+        {
+            setWindowTitle("New - Flow Editor");
+        }
+    }
 }
 void QtFlowWindow::_set_graph(FlowGraph* graph)
 {
@@ -204,13 +239,40 @@ void QtFlowWindow::_clear_graph()
     if (scene)
         scene->new_graph();
 }
+QStringList QtFlowWindow::recent_files() const
+{
+    QSettings settings;
+    settings.beginGroup("flowwindow");
 
+    QStringList files = settings.value("recent").toStringList();
+    settings.endGroup();
+    return files;
+}
+void QtFlowWindow::add_recent_file(const QString& file)
+{
+    QSettings settings;
+    settings.beginGroup("flowwindow");
+
+    QStringList files = settings.value("recent").toStringList();
+    if (!files.contains(file))
+    {
+        files.push_front(file);
+        if (files.size() > s_max_num_recent_files)
+            files.pop_back();
+    }
+
+    settings.setValue("recent", files);
+    settings.endGroup();
+
+    update_recent_menu();
+}
 void QtFlowWindow::setup_ui()
 {
     setWindowTitle("Flow Editor");
 
     _graph_view = new QtFlowGraphView(this);
     _graph_view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    connect(_graph_view, SIGNAL(graph_changed()), this, SLOT(graph_changed()));
 
     QMenuBar* menu_bar = new QMenuBar(this);
     setMenuBar(menu_bar);
@@ -229,6 +291,8 @@ void QtFlowWindow::setup_ui()
         action_open->setStatusTip("Opens an existing graph");
         connect(action_open, &QAction::triggered, this, &QtFlowWindow::on_open);
 
+        _recent_menu = new QMenu("Open Recent", menu_file);
+
         QAction* action_save = new QAction(tr("Save"), this);
         action_save->setShortcuts(QKeySequence::Save);
         action_save->setStatusTip("Saves the current graph");
@@ -246,6 +310,7 @@ void QtFlowWindow::setup_ui()
 
         menu_file->addAction(action_new);
         menu_file->addAction(action_open);
+        menu_file->addAction(_recent_menu->menuAction());
         menu_file->addSeparator();
         menu_file->addAction(action_save);
         menu_file->addAction(action_save_as);
@@ -304,6 +369,67 @@ void QtFlowWindow::setup_ui()
     layout->addWidget(_node_property_view);
 
     setCentralWidget(central_widget);
+
+    update_recent_menu();
+}
+void QtFlowWindow::update_recent_menu()
+{
+    _recent_menu->clear();
+
+    QStringList files = recent_files();
+    for (auto& f : files)
+    {
+        QAction* action = new QAction(f, this);
+        action->setData(f);
+        connect(action, &QAction::triggered, this, &QtFlowWindow::on_open_recent);
+
+        _recent_menu->addAction(action);
+    }
+    if (_recent_menu->isEmpty())
+        _recent_menu->setDisabled(true);
+    else
+        _recent_menu->setDisabled(false);
+
+    _recent_menu->addSeparator();
+    QAction* clear_action = new QAction("Clear Items", this);
+    connect(clear_action, &QAction::triggered, this, &QtFlowWindow::on_clear_recent);
+    _recent_menu->addAction(clear_action);
+}
+void QtFlowWindow::closeEvent(QCloseEvent* e)
+{
+    if (_changed)
+    {
+        const QMessageBox::StandardButton ret
+            = QMessageBox::warning(this, tr("Flow Editor"),
+                tr("The graph has been modified.\n"
+                    "Do you want to save your changes?"),
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        
+        switch (ret) 
+        {
+        case QMessageBox::Save:
+            on_save();
+            e->accept();
+            break;
+        case QMessageBox::Cancel:
+            e->ignore();
+            return;
+        }
+    }
+    QSettings settings;
+
+    settings.beginGroup("flowwindow");
+
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("savestate", saveState());
+    settings.setValue("maximized", isMaximized());
+    if (!isMaximized())
+    {
+        settings.setValue("pos", pos());
+        settings.setValue("size", size());
+    }
+
+    settings.endGroup();
 }
 void QtFlowWindow::on_exit_triggered()
 {
@@ -312,9 +438,7 @@ void QtFlowWindow::on_exit_triggered()
 
 void QtFlowWindow::on_new()
 {
-    QtFlowGraphScene* scene = _graph_view->scene();
-    if (scene)
-        scene->new_graph();
+    new_graph();
 }
 void QtFlowWindow::on_open()
 {
@@ -326,6 +450,27 @@ void QtFlowWindow::on_open()
             load_graph(file_name);
         }
     }
+}
+void QtFlowWindow::on_open_recent()
+{
+    if (_graph_view)
+    {
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action)
+        {
+            load_graph(action->data().toString());
+        }
+    }
+}
+void QtFlowWindow::on_clear_recent()
+{
+    QSettings settings;
+
+    settings.beginGroup("flowwindow");
+    settings.setValue("recent", QStringList());
+    settings.endGroup();
+
+    update_recent_menu();
 }
 void QtFlowWindow::on_save()
 {
@@ -353,4 +498,18 @@ void QtFlowWindow::about()
 {
     QMessageBox::about(this, tr("About Flow"),
         tr("Developed by Simon Ekström (simon.ekstrom@surgsci.uu.se)"));
+}
+void QtFlowWindow::set_current_file(const QString& file)
+{
+    _current_file = file;
+
+    if (!_current_file.isEmpty())
+    {
+        QFileInfo f(_current_file);
+        setWindowTitle(f.fileName() + " - Flow Editor");
+    }
+    else
+    {
+        setWindowTitle("Flow Editor");
+    }
 }

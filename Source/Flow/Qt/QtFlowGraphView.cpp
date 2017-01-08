@@ -30,11 +30,13 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(show_context_menu(const QPoint&)));
 
-    setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     QtFlowGraphScene* graph_scene = new QtFlowGraphScene(this);
     graph_scene->setSceneRect(-2500, -2500, 5000, 5000);
     set_scene(graph_scene);
+
+    connect(graph_scene, SIGNAL(graph_changed()), this, SIGNAL(graph_changed()));
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -285,7 +287,7 @@ void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
 void QtFlowGraphView::wheelEvent(QWheelEvent *e)
 {
     qreal zoom = e->delta()*0.0005;
-    
+
     QTransform t = transform();
     t.scale(1 + zoom, 1 + zoom);
     setTransform(t);
@@ -358,29 +360,29 @@ void QtFlowGraphView::build_node_menu()
             {
                 std::vector<std::string> elems;
 
-std::stringstream ss(node->category());
-std::string item;
-while (std::getline(ss, item, '/'))
-{
-    elems.push_back(item);
-}
+                std::stringstream ss(node->category());
+                std::string item;
+                while (std::getline(ss, item, '/'))
+                {
+                    elems.push_back(item);
+                }
 
 
-QMenu* target_menu = _node_menu;
-std::string menu_str = "";
-for (int i = 0; i < int(elems.size()); ++i)
-{
-    if (menu_str != "")
-        menu_str += "/";
-    menu_str += elems[i];
-    auto it = sub_menus.find(menu_str);
-    if (it == sub_menus.end())
-    {
-        sub_menus[menu_str] = new QMenu(QString::fromStdString(elems[i]), target_menu);
-        target_menu->addMenu(sub_menus[menu_str]);
-    }
-    target_menu = sub_menus[menu_str];
-}
+                QMenu* target_menu = _node_menu;
+                std::string menu_str = "";
+                for (int i = 0; i < int(elems.size()); ++i)
+                {
+                    if (menu_str != "")
+                        menu_str += "/";
+                    menu_str += elems[i];
+                    auto it = sub_menus.find(menu_str);
+                    if (it == sub_menus.end())
+                    {
+                        sub_menus[menu_str] = new QMenu(QString::fromStdString(elems[i]), target_menu);
+                        target_menu->addMenu(sub_menus[menu_str]);
+                    }
+                    target_menu = sub_menus[menu_str];
+                }
             }
         }
 

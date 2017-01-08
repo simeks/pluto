@@ -62,6 +62,8 @@ private:
     std::map<Guid, QtFlowNode*> _nodes;
     std::vector<QtFlowLink*> _links;
 
+signals:
+    void graph_changed();
 };
 
 

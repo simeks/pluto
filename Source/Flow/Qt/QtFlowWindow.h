@@ -48,12 +48,14 @@ public:
     void run_graph();
     
 public slots:
+    void new_graph();
     void load_graph(const QString& file);
     void save_graph(const QString& file);
     void update_view();
+    void graph_changed();
 
-private:
-    void setup_ui();
+protected:
+    void closeEvent(QCloseEvent* e);
 
 private slots:
     void on_exit_triggered();
@@ -62,6 +64,8 @@ private slots:
 
     void on_new();
     void on_open();
+    void on_open_recent();
+    void on_clear_recent();
     void on_save();
     void on_save_as();
 
@@ -70,11 +74,24 @@ private slots:
     void about();
 
 private:
+    void setup_ui();
+    void update_recent_menu();
+    void set_current_file(const QString& file);
+    void set_graph_changed(bool changed);
+
+    QStringList recent_files() const;
+    void add_recent_file(const QString& file);
+
+    static int s_max_num_recent_files;
+
+    QMenu* _recent_menu;
     QtFlowGraphView* _graph_view;
     QtNodePropertyWidget* _node_property_view;
     QString _current_file;
 
     QtFlowGraphRunner* _graph_runner;
+
+    bool _changed;
 
 signals:
     void node_template_added(FlowNode* node);

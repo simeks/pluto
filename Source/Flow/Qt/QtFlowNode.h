@@ -17,7 +17,7 @@ public:
     virtual ~QtFlowNode();
 
     void setup();
-    virtual void node_updated() {}
+    virtual void node_updated();
 
     virtual void reset_run_status();
     virtual void node_started();
@@ -72,6 +72,7 @@ protected:
 
     // Run status
     Status _status;
+
 };
 
 #endif // __QT_FLOW_NODE_H__

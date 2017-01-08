@@ -75,6 +75,7 @@ private slots:
 
 signals:
     void flow_node_selected(QtFlowNode* node);
+    void graph_changed();
 
 };
 

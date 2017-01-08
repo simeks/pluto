@@ -20,6 +20,8 @@ QtSinglePinNode::~QtSinglePinNode()
 }
 void QtSinglePinNode::node_updated()
 {
+    QtFlowNode::node_updated();
+
     calculate_size();
     
     QPointF pin_pos = _pin->local_pos();

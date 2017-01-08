@@ -35,7 +35,6 @@ FlowContext::~FlowContext()
 void FlowContext::object_init(FlowGraph* graph)
 {
     _temp_dir = new QTemporaryDir();
-    _temp_dir->setAutoRemove(false);
     _graph = graph;
     _current_node = nullptr;
     set_attribute("env", _env_dict);

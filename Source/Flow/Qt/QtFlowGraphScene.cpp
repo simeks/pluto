@@ -47,12 +47,16 @@ void QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
 
     _flow_graph->add_node(node);
     _nodes[node->node_id()] = ui_node;
+
+    emit graph_changed();
 }
 void QtFlowGraphScene::add_node(QtFlowNode* node)
 {
     addItem(node);
     _flow_graph->add_node(node->node());
     _nodes[node->node_id()] = node;
+
+    emit graph_changed();
 }
 void QtFlowGraphScene::remove_node(QtFlowNode* node)
 {
@@ -64,12 +68,16 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
     removeItem(node);
 
     _flow_graph->remove_node(node->node());
+
+    emit graph_changed();
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
     // Reload the nodes in the graph
     _flow_graph->reload(tpl->node_class());
     set_graph(_flow_graph);
+
+    emit graph_changed();
 }
 bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
 {
@@ -81,6 +89,7 @@ bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
     if (_flow_graph->try_add_link(a->pin(), b->pin()))
     {
         _links.push_back(link);
+        emit graph_changed();
         return true;
     }
     return false;
@@ -90,6 +99,8 @@ void QtFlowGraphScene::remove_link(QtFlowLink* link)
     _flow_graph->remove_link(link->start()->pin(), link->end()->pin());
     _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
     removeItem(link);
+
+    emit graph_changed();
 }
 void QtFlowGraphScene::remove_links(QtFlowNode* node)
 {
@@ -113,6 +124,8 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
         else
             ++it;
     }
+
+    emit graph_changed();
 }
 
 void QtFlowGraphScene::find_links(QtFlowPin* pin, std::vector<QtFlowLink*>& links) const
@@ -151,7 +164,6 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     graph->addref();
     _flow_graph->release();
     _flow_graph = graph;
-
 
     /// Links pointing from first pin to second pin
     typedef std::pair<FlowPin*, FlowPin*> Link;
