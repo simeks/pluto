@@ -91,7 +91,8 @@ bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
     if (_flow_graph->try_add_link(a->pin(), b->pin()))
     {
         _links.push_back(link);
-        addItem(link);
+        if (link->scene() != this)
+            addItem(link);
         return true;
     }
     return false;
