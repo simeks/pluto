@@ -96,6 +96,9 @@ bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
 }
 void QtFlowGraphScene::remove_link(QtFlowLink* link)
 {
+    if (std::find(_links.begin(), _links.end(), link) == _links.end())
+        return;
+
     _flow_graph->remove_link(link->start()->pin(), link->end()->pin());
     _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
     removeItem(link);

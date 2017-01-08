@@ -11,7 +11,8 @@ QtFlowUI::~QtFlowUI()
 {
     for (auto w : _windows)
     {
-        w->close();
+        if (w->isVisible())
+            w->close();
         delete w;
     }
     _windows.clear();

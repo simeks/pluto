@@ -52,7 +52,8 @@ private:
         Mode_Nothing,
         Mode_Move,
         Mode_DragPin,
-        Mode_Scroll
+        Mode_Scroll,
+        Mode_Select
     };
 
     QMenu* _node_menu;

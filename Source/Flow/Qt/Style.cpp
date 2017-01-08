@@ -19,7 +19,7 @@ const FlowUIStyle& FlowUIStyle::default_style()
         s_default->node_background_1 = QColor::fromRgb(20, 20, 20);
         s_default->node_border_0 = QColor::fromRgb(20, 20, 20);
         s_default->node_border_1 = QColor::fromRgb(62, 62, 62);
-        s_default->node_border_selected_0 = QColor::fromRgb(104, 104, 104);
+        s_default->node_border_selected_0 = QColor::fromRgb(180, 180, 180);
         s_default->node_border_selected_1 = QColor::fromRgb(180, 180, 180);
         s_default->node_shadow_color = QColor::fromRgb(0, 0, 0);
         s_default->node_title_color = QColor::fromRgb(218, 218, 218);

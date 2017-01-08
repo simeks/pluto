@@ -77,16 +77,17 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
 {
     if (_scene && mouse_event->button() & Qt::MouseButton::LeftButton)
     {
-        emit flow_node_selected(nullptr);
-
         auto scene_items = items(mouse_event->pos());
         if (scene_items.size() != 0)
         {
             if (_running)
                 return;
 
-            for (auto& item : scene_items)
+            auto& item = scene_items[0];
+            if (!_scene->selectedItems().contains(item))
             {
+                emit flow_node_selected(nullptr);
+
                 if (item->type() == QtFlowNode::Type)
                 {
                     QtFlowNode* node = (QtFlowNode*)item;
@@ -126,7 +127,6 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
                         _scene->addItem(_temp_link);
 
                         _mode = Mode_DragPin;
-                        break;
                     }
                     else
                     {
@@ -139,20 +139,20 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
 
                         _mode = Mode_Move;
                     }
-
-                    break;
                 }
                 else if (item->type() == QtFlowLink::Type)
                 {
                     _scene->clearSelection();
                     _scene->clearFocus();
                     item->setSelected(true);
-                    break;
                 }
-
+            }
+            else
+            {
+                _mode = Mode_Move;
             }
         }
-        else
+        else if (mouse_event->modifiers() & Qt::AltModifier || mouse_event->buttons() & Qt::MiddleButton)
         {
             _mode = Mode_Scroll;
             setDragMode(DragMode::ScrollHandDrag);
@@ -161,9 +161,18 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
             _scene->clearSelection();
             _scene->clearFocus();
         }
+
+
+        if (_mode == Mode_Nothing)
+        {
+            _mode = Mode_Select;
+            setDragMode(DragMode::RubberBandDrag);
+            QGraphicsView::mousePressEvent(mouse_event);
+        }
     }
     else
     {
+        setDragMode(DragMode::NoDrag);
         QGraphicsView::mousePressEvent(mouse_event);
     }
     _scene->update();
@@ -213,6 +222,11 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
         QGraphicsView::mouseMoveEvent(mouse_event);
         break;
     }
+    case Mode_Select:
+    {
+        QGraphicsView::mouseMoveEvent(mouse_event);
+        break;
+    }
     default:
         QGraphicsView::mouseMoveEvent(mouse_event);
     };
@@ -253,6 +267,19 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
         setDragMode(DragMode::NoDrag);
         QGraphicsView::mouseMoveEvent(mouse_event);
         break;
+    }
+    case Mode_Select:
+    {
+        QGraphicsView::mouseMoveEvent(mouse_event);
+
+        emit flow_node_selected(nullptr);
+        if (_scene->selectedItems().size() == 1)
+        {
+            QGraphicsItem* item = _scene->selectedItems()[0];
+            if (item->type() == QtFlowNode::Type)
+                emit flow_node_selected((QtFlowNode*)item);
+        }
+
     }
     default:
         QGraphicsView::mouseMoveEvent(mouse_event);
