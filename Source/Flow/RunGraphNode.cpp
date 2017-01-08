@@ -29,7 +29,7 @@ void RunGraphNode::object_init()
 {
     _graph = nullptr;
 }
-bool RunGraphNode::load_graph(const char* file)
+bool RunGraphNode::load_graph(const char* class_name, const char* file)
 {
     JsonObject obj;
     JsonReader reader;
@@ -46,8 +46,7 @@ bool RunGraphNode::load_graph(const char* file)
     FilePath path(file);
     path = path.filename();
 
-    std::string cls = "graph:" + path.get();
-    set_attribute("node_class", cls);
+    set_attribute("node_class", class_name);
 
     path.trim_extension();
     set_attribute("title", path.get());

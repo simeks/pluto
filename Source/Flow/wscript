@@ -22,6 +22,7 @@ def build(bld):
 			'Qt/QtFlowPin.h', 
 			'Qt/QtFlowUI.h',
 			'Qt/QtFlowWindow.h',
+			'Qt/QtGraphFileReloader.h', 
 			'Qt/QtNodePropertyWidget.h',
 			],
 		includes='. ..',

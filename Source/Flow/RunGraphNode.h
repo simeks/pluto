@@ -13,7 +13,7 @@ public:
     ~RunGraphNode();
 
     void object_init();
-    bool load_graph(const char* file);
+    bool load_graph(const char* class_name, const char* file);
     void set_graph(const char* class_name, FlowGraph* graph);
 
     void run(FlowContext* ctx) OVERRIDE;

@@ -4,8 +4,10 @@
 #include <Core/Python/PythonModule.h>
 
 class FlowContext;
+class FlowGraph;
 class FlowNode;
 class FlowWindow;
+class GraphFileReloader;
 class QtFlowUI;
 class FlowPythonModule : public PythonModuleHelper<FlowPythonModule>
 {
@@ -25,8 +27,8 @@ public:
     FlowNode* node_template(const char* node_class) const;
     FlowNode* create_node(const char* node_class) const;
 
-    void install_graph_node(const char* name, FlowGraph* graph);
-    void install_graph_node_from_file(const char* file);
+    FlowNode* install_graph_node(const char* class_name, FlowGraph* graph);
+    FlowNode* install_graph_node_from_file(const char* class_name, const char* file);
 
     Tuple node_templates() const;
 
@@ -36,7 +38,7 @@ public:
 
 private:
     QtFlowUI* _ui;
-
+    GraphFileReloader* _reloader;
 };
 
 
