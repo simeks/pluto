@@ -82,6 +82,11 @@ private:
     void set_graph_changed(bool changed);
     void update_title();
 
+    /// Asks if the user wants to save
+    /// Returns true if the user saved or wants to discard the changes, 
+    ///         false if it wants to cancel the current action
+    bool ask_save();
+
     QStringList recent_files() const;
     void add_recent_file(const QString& file);
 

@@ -151,6 +151,11 @@ void QtFlowWindow::new_graph()
 }
 void QtFlowWindow::load_graph(const QString& file)
 {
+    if (!ask_save())
+    {
+        return;
+    }
+
     JsonObject obj;
     JsonReader reader;
     if (!reader.read_file(file.toStdString(), obj))
@@ -170,6 +175,7 @@ void QtFlowWindow::load_graph(const QString& file)
     set_current_file(file);
 
     add_recent_file(file);
+    set_graph_changed(false);
 }
 void QtFlowWindow::save_graph(const QString& file)
 {
@@ -270,6 +276,11 @@ void QtFlowWindow::add_recent_file(const QString& file)
         files.push_front(file);
         if (files.size() > s_max_num_recent_files)
             files.pop_back();
+    }
+    else
+    {
+        files.removeOne(file);
+        files.push_front(file);
     }
 
     settings.setValue("recent", files);
@@ -408,27 +419,13 @@ void QtFlowWindow::update_recent_menu()
 }
 void QtFlowWindow::closeEvent(QCloseEvent* e)
 {
-    if (_changed)
+    if (!ask_save())
     {
-        const QMessageBox::StandardButton ret
-            = QMessageBox::warning(this, tr("Flow Editor"),
-                tr("The graph has been modified.\n"
-                    "Do you want to save your changes?"),
-                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        
-        switch (ret) 
-        {
-        case QMessageBox::Save:
-            on_save();
-            e->accept();
-            break;
-        case QMessageBox::Cancel:
-            e->ignore();
-            return;
-        }
+        e->ignore();
+        return;
     }
-    QSettings settings;
 
+    QSettings settings;
     settings.beginGroup("flowwindow");
 
     settings.setValue("geometry", saveGeometry());
@@ -441,6 +438,27 @@ void QtFlowWindow::closeEvent(QCloseEvent* e)
     }
 
     settings.endGroup();
+}
+bool QtFlowWindow::ask_save()
+{
+    if (_changed)
+    {
+        const QMessageBox::StandardButton ret
+            = QMessageBox::warning(this, tr("Flow Editor"),
+                tr("The graph has been modified.\n"
+                    "Do you want to save your changes?"),
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            on_save();
+            return true;
+        case QMessageBox::Cancel:
+            return false;
+        }
+    }
+    return true;
 }
 void QtFlowWindow::on_exit_triggered()
 {
