@@ -23,11 +23,14 @@ RunGraphNode::~RunGraphNode()
 {
     if (_graph)
         _graph->release();
+    if (_context)
+        _context->release();
 }
 
 void RunGraphNode::object_init()
 {
     _graph = nullptr;
+    _context = nullptr;
 }
 bool RunGraphNode::load_graph(const char* class_name, const char* file)
 {
@@ -94,24 +97,35 @@ void RunGraphNode::run(FlowContext* ctx)
     if (!_graph)
         return;
 
-    FlowContext* sub_ctx = ctx->create_child_context(_graph);
-    for (auto p : pins())
+    if (!_context)
     {
-        if (p->pin_type() == FlowPin::In)
+        _context = ctx->create_child_context(_graph);
+
+        for (auto p : pins())
         {
-            sub_ctx->set_input(p->name(), ctx->read_pin(p->name()));
+            if (p->pin_type() == FlowPin::In)
+            {
+                _context->set_input(p->name(), ctx->read_pin(p->name()));
+            }
         }
     }
 
-    sub_ctx->run();
+    if (!_context->run())
+    {
+        ctx->raise_error(_context->error());
+        return;
+    }
 
     for (auto p : pins())
     {
         if (p->pin_type() == FlowPin::Out)
         {
-            ctx->write_pin(p->name(), sub_ctx->output(p->name()));
+            ctx->write_pin(p->name(), _context->output(p->name()));
         }
     }
+
+    _context->release();
+    _context = nullptr;
 }
 bool RunGraphNode::valid() const
 {

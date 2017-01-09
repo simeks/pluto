@@ -25,12 +25,17 @@ public:
 
 public slots:
     void run(FlowGraph* graph);
+    
+    /// Resets the runner, meaning the next run will be a full run
+    void reset();
 
 private:
     QtFlowWindow* _window;
+    FlowContext* _context;
 
 signals:
     void run_started();
+    void run_failed(const QString& error);
     void run_ended();
 
     void node_started(FlowNode* node);
@@ -49,6 +54,7 @@ public:
     FlowGraph* graph();
 
     void run_graph();
+
     
 public slots:
     void new_graph();
@@ -57,6 +63,7 @@ public slots:
     void graph_changed();
 
     void run_graph_started();
+    void run_graph_failed(const QString& error);
     void run_graph_ended();
 
 protected:
@@ -75,6 +82,7 @@ private slots:
     void on_save_as();
 
     void on_run();
+    void on_full_run();
 
     void about();
 

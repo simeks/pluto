@@ -49,13 +49,15 @@ namespace
     };
 }
 
-QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window)
+QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window), _context(nullptr)
 {
     qRegisterMetaType<FlowGraph*>("FlowGraph*");
     this->moveToThread(PlutoCore::instance().kernel_thread());
 }
 QtFlowGraphRunner::~QtFlowGraphRunner()
 {
+    if (_context)
+        _context->release();
 }
 void QtFlowGraphRunner::run(FlowGraph* graph)
 {
@@ -66,15 +68,32 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
 
     PYTHON_STDOUT("Running graph...\n");
 
-    FlowContext* ctx = object_new<FlowContext>(graph);
+    if (!_context)
+        _context = object_new<FlowContext>(graph);
     
     QtFlowGraphRunnerCallback cb(this);
-    ctx->run(&cb);
+    if (_context->run(&cb))
+    {
+        // If the run was sucessful we destroy the context, 
+        // If not we save the state for future re-runs
+        _context->release();
+        _context = nullptr;
+    }
     
-    ctx->release();
-
     emit kernel->ready();
-    emit run_ended();
+
+    if (_context && _context->failed())
+        emit run_failed(_context->error());
+    else
+        emit run_ended();
+}
+void QtFlowGraphRunner::reset()
+{
+    if (_context)
+    {
+        _context->release();
+        _context = nullptr;
+    }
 }
 
 int QtFlowWindow::s_max_num_recent_files = 5;
@@ -108,6 +127,7 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
 
     _graph_runner = new QtFlowGraphRunner(this);
     connect(_graph_runner, SIGNAL(run_started()), this, SLOT(run_graph_started()), Qt::BlockingQueuedConnection);
+    connect(_graph_runner, SIGNAL(run_failed(const QString&)), this, SLOT(run_graph_failed(const QString&)), Qt::BlockingQueuedConnection);
     connect(_graph_runner, SIGNAL(run_ended()), this, SLOT(run_graph_ended()), Qt::BlockingQueuedConnection);
     connect(_graph_runner, SIGNAL(node_started(FlowNode*)), _graph_view, SLOT(node_started(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_finished(FlowNode*)), _graph_view, SLOT(node_finished(FlowNode*)));
@@ -207,6 +227,14 @@ void QtFlowWindow::run_graph_started()
     _node_property_view->setDisabled(true);
     _graph_view->run_graph_started();
     _title_prefix = "[Running] ";
+    update_title();
+}
+void QtFlowWindow::run_graph_failed(const QString& error)
+{
+    menuBar()->setDisabled(false);
+    _node_property_view->setDisabled(false);
+    _graph_view->run_graph_failed(error);
+    _title_prefix = "[Failed] ";
     update_title();
 }
 void QtFlowWindow::run_graph_ended()
@@ -383,7 +411,13 @@ void QtFlowWindow::setup_ui()
         action_run->setStatusTip("Runs the current graph");
         connect(action_run, &QAction::triggered, this, &QtFlowWindow::on_run);
 
+        QAction* action_full_run = new QAction(tr("Full Run Graph"), this);
+        action_full_run->setShortcut(QKeySequence::fromString("Ctrl+F5"));
+        action_full_run->setStatusTip("Runs the current graph from start");
+        connect(action_full_run, &QAction::triggered, this, &QtFlowWindow::on_full_run);
+
         menu_run->addAction(action_run);
+        menu_run->addAction(action_full_run);
     }
 
     {
@@ -541,6 +575,12 @@ void QtFlowWindow::on_run()
 {
     run_graph();
 }
+void QtFlowWindow::on_full_run()
+{
+    _graph_view->run_graph_reset();
+    _graph_runner->reset();
+    run_graph();
+}
 void QtFlowWindow::about()
 {
     QMessageBox::about(this, tr("About Flow"),
@@ -555,10 +595,16 @@ void QtFlowWindow::set_current_file(const QString& file)
 void QtFlowWindow::node_create(QtFlowNode* node)
 {
     _undo_stack->push(new NodeCreateCommand(node, _graph_view->scene()));
+
+    _graph_runner->reset();
+    _graph_view->run_graph_reset();
 }
 void QtFlowWindow::link_create(QtFlowLink* link)
 {
     _undo_stack->push(new LinkCreateCommand(link, _graph_view->scene()));
+
+    _graph_runner->reset();
+    _graph_view->run_graph_reset();
 }
 void QtFlowWindow::selection_move(const QPointF& old_pos, const QPointF& new_pos)
 {
@@ -567,4 +613,7 @@ void QtFlowWindow::selection_move(const QPointF& old_pos, const QPointF& new_pos
 void QtFlowWindow::selection_destroy()
 {
     _undo_stack->push(new SelectionDestroyCommand(_graph_view->scene()));
+
+    _graph_runner->reset();
+    _graph_view->run_graph_reset();
 }

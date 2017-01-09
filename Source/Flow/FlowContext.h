@@ -29,7 +29,9 @@ public:
     void object_init(FlowGraph* graph);
     void object_python_init(const Tuple& args, const Dict& kw);
 
-    void run(Callback* cb = nullptr);
+    /// Returns true if the run was successful, false if not.
+    /// Run will continue from previous state if last run failed.
+    bool run(Callback* cb = nullptr);
     void clean_up();
 
     FlowContext* create_child_context(FlowGraph* graph);
@@ -58,6 +60,12 @@ public:
     ///     Creates a new directory if there is none
     std::string temp_node_dir() const;
 
+    bool failed() const;
+    const char* error() const;
+
+    void raise_error(const char* error);
+    void reset_error();
+
 private:
     void initialize();
     void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
@@ -73,6 +81,9 @@ private:
     std::map<std::string, PyObject*> _outputs;
 
     QTemporaryDir* _temp_dir;
+
+    bool _failed;
+    std::string _error;
 };
 
 #endif // __FLOW_CONTEXT_H__

@@ -23,7 +23,7 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     : QGraphicsView(parent),
     _node_menu(nullptr),
     _mode(Mode_Nothing),
-    _running(false),
+    _run_status(RunStatus_Idle),
     _temp_link(nullptr),
     _highlight_pin(nullptr)
 {
@@ -81,7 +81,7 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
         auto scene_items = items(mouse_event->pos());
         if (scene_items.size() != 0)
         {
-            if (_running)
+            if (_run_status == RunStatus_Running)
                 return;
 
             auto& item = scene_items[0];
@@ -246,7 +246,7 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
     {
     case Mode_Move:
     {
-        if (_move_start != mouse_event->pos())
+        if ((_move_start - _scene->selectedItems()[0]->pos()).manhattanLength() > 0)
         {
             emit selection_move(_move_start, _scene->selectedItems()[0]->pos());
         }
@@ -308,7 +308,7 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
 }
 void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
 {
-    if (_running)
+    if (_run_status == RunStatus_Running)
     {
         e->ignore();
         return;
@@ -563,25 +563,45 @@ void QtFlowGraphView::node_failed(FlowNode* node)
     QtFlowNode* n = _scene->node(node->node_id());
     if (n)
         n->node_failed();
+    _run_status = RunStatus_Failed;
 }
 void QtFlowGraphView::run_graph_started()
 {
-    _running = true;
-    reset_nodes();
+    if (_run_status == RunStatus_Idle)
+        reset_nodes();
+
+    _run_status = RunStatus_Running;
 
     emit flow_node_selected(nullptr);
     _scene->clearSelection();
     _scene->clearFocus();
     _mode = Mode_Nothing;
 
-    _running_text = "Running";
+    _status_text = "Running";
     _running_text_timer->start(1000);
+}
+void QtFlowGraphView::run_graph_failed(const QString& error)
+{
+    _run_status = RunStatus_Failed;
+    update_nodes();
+
+    _status_text = error;
+    _running_text_timer->stop();
 }
 void QtFlowGraphView::run_graph_ended()
 {
-    _running = false;
+    _run_status = RunStatus_Idle;
     update_nodes();
 
+    _status_text = "Successful";
+    _running_text_timer->stop();
+}
+void QtFlowGraphView::run_graph_reset()
+{
+    _run_status = RunStatus_Idle;
+    reset_nodes();
+
+    _status_text = "";
     _running_text_timer->stop();
 }
 void QtFlowGraphView::paintEvent(QPaintEvent *e)
@@ -597,23 +617,31 @@ void QtFlowGraphView::paintEvent(QPaintEvent *e)
     QFont fnt;
     fnt.setBold(true);
 
-    if (_running)
+    if (_run_status == RunStatus_Failed)
     {
         painter.setFont(fnt);
         painter.setPen(Qt::black);
-        painter.drawText(QPoint(7, 17), _running_text);
+        painter.drawText(QPoint(7, 17), _status_text);
+        painter.setPen(Qt::red);
+        painter.drawText(QPoint(5, 15), _status_text);
+    }
+    else
+    {
+        painter.setFont(fnt);
+        painter.setPen(Qt::black);
+        painter.drawText(QPoint(7, 17), _status_text);
         painter.setPen(Qt::white);
-        painter.drawText(QPoint(5, 15), _running_text);
+        painter.drawText(QPoint(5, 15), _status_text);
     }
 }
 void QtFlowGraphView::running_text_anim()
 {
     static int dot_count = 1;
 
-    _running_text = "Running";
+    _status_text = "Running";
     for (int i = 0; i < dot_count; ++i)
     {
-        _running_text.append(".");
+        _status_text.append(".");
     }
     ++dot_count;
     if (dot_count > 3)

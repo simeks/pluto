@@ -34,7 +34,9 @@ public slots:
     void node_failed(FlowNode* node);
 
     void run_graph_started();
+    void run_graph_failed(const QString& error);
     void run_graph_ended();
+    void run_graph_reset();
 
 protected:
     void mousePressEvent(QMouseEvent* mouse_event);
@@ -54,6 +56,12 @@ private:
         Mode_Scroll,
         Mode_Select
     };
+    enum RunStatus
+    {
+        RunStatus_Idle,
+        RunStatus_Running,
+        RunStatus_Failed
+    };
 
     QMenu* _node_menu;
 
@@ -63,8 +71,8 @@ private:
     QPoint _last_mouse_pos;
 
     Mode _mode;
-    bool _running;
-    QString _running_text;
+    RunStatus _run_status;
+    QString _status_text;
     QTimer* _running_text_timer;
 
     QtFlowLink* _temp_link;

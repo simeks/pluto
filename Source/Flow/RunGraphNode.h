@@ -13,6 +13,7 @@ public:
     ~RunGraphNode();
 
     void object_init();
+
     bool load_graph(const char* class_name, const char* file);
     void set_graph(const char* class_name, FlowGraph* graph);
 
@@ -24,6 +25,7 @@ private:
     void create_pins();
 
     FlowGraph* _graph;
+    FlowContext* _context;
 };
 
 

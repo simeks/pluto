@@ -89,9 +89,7 @@ void FlowNode::run(FlowContext* ctx)
     if (!PyCFunction_Check(method))
     {
         // To avoid recursion we only call "run" if it is actually overriden by Python.
-        PyObject* ret = PyObject_Call(method, python_helpers::build_args(ctx), nullptr);
-        if (!ret)
-            PyErr_Print();
+        PyObject_Call(method, python_helpers::build_args(ctx), nullptr);
     }
     else if (_function)
     {
