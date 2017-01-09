@@ -7,7 +7,7 @@ class FlowContext;
 class FlowGraph;
 class FlowNode;
 class FlowWindow;
-class GraphFileReloader;
+class GraphFileLoader;
 class QtFlowUI;
 class FlowPythonModule : public PythonModuleHelper<FlowPythonModule>
 {
@@ -27,8 +27,7 @@ public:
     FlowNode* node_template(const char* node_class) const;
     FlowNode* create_node(const char* node_class) const;
 
-    FlowNode* install_graph_node(const char* class_name, FlowGraph* graph);
-    FlowNode* install_graph_node_from_file(const char* class_name, const char* file);
+    void add_graph_path(const char* path);
 
     Tuple node_templates() const;
 
@@ -38,7 +37,7 @@ public:
 
 private:
     QtFlowUI* _ui;
-    GraphFileReloader* _reloader;
+    std::vector<GraphFileLoader*> _loaders;
 };
 
 

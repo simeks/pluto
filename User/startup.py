@@ -60,27 +60,8 @@ if medkit:
     imread = medkit.read
     imwrite = medkit.write
 
-# Load graphs
-user_graphs_path = os.path.join(pluto.user_dir(), 'graphs')
-if os.path.isdir(user_graphs_path):
-    print('Installing graph nodes from (%s):' % user_graphs_path)
-    for root, _, files in os.walk(user_graphs_path):
-        for f in files:
-            if f.endswith('.flow'):
-                local_path = root[len(user_graphs_path)+1:]
-                cls = 'graph:' + local_path.replace(os.sep, '.') + '.' + os.path.splitext(f)[0]
-                tpl = flow.install_graph_node_from_file(cls, os.path.join(root, f))
 
-                tpl.title = f[0].upper() + os.path.splitext(f)[0][1:]
-                cat = 'Graphs/'
-                for t in local_path.split(os.sep):
-                    cat += t[0].upper() + t[1:] + '/'
-                if cat != '':
-                    cat = cat[0:len(cat)-1]
-                tpl.category = cat
-                print(os.path.join(root, f)+', Class:',cls)
-
-
+flow.add_graph_path(os.path.join(pluto.user_dir(), 'graphs'))
 
 os.chdir('../_sandbox')
 w = flow.window()
