@@ -27,7 +27,7 @@ QtNoteItem::~QtNoteItem()
 }
 QRectF QtNoteItem::boundingRect() const
 {
-    return QRectF(0, 0, 200, 100);
+    return QRectF(-10, -10, 210, 110);
 }
 void QtNoteItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
@@ -36,18 +36,20 @@ void QtNoteItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
     painter->setClipRect(boundingRect());
     painter->setRenderHint(QPainter::Antialiasing);
-
-    painter->setBrush(QColor::fromRgba(qRgba(100, 100, 100, 80)));
+    painter->setBrush(QColor::fromRgba(qRgba(100, 100, 100, 150)));
 
     QPen pen;
-    pen.setWidth(2);
     if (isSelected())
-        pen.setColor(QColor::fromRgba(qRgba(255, 255, 255, 200)));
+        pen.setColor(QColor::fromRgba(qRgba(255, 255, 255, 255)));
     else
         pen.setColor(QColor::fromRgba(qRgba(180, 180, 180, 200)));
     
     painter->setPen(pen);
-    painter->drawRect(boundingRect());
+    painter->drawRect(QRectF(0, 0, 200, 100));
+
+    painter->setBrush(QColor::fromRgba(qRgba(0, 122, 204, 255)));
+    painter->setPen(QColor::fromRgba(qRgba(0, 80, 180, 255)));
+    painter->drawEllipse(QPoint(2, 2), 7, 7);
 }
 void QtNoteItem::set_text(const QString& txt) const
 {

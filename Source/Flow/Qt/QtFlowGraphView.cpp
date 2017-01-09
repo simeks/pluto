@@ -641,6 +641,10 @@ void QtFlowGraphView::run_graph_reset()
     _status_text = "";
     _running_text_timer->stop();
 }
+void QtFlowGraphView::reset_view()
+{
+    resetTransform();
+}
 void QtFlowGraphView::paintEvent(QPaintEvent *e)
 {
     // Draw scene

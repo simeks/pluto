@@ -214,6 +214,8 @@ void QtFlowWindow::new_graph()
         scene->new_graph();
 
     set_current_file("");
+
+    _graph_view->reset_view();
 }
 void QtFlowWindow::load_graph(const QString& file)
 {
@@ -258,6 +260,8 @@ void QtFlowWindow::load_graph(const QString& file)
     set_current_file(file);
     add_recent_file(file);
     set_graph_changed(false);
+
+    _graph_view->reset_view();
 }
 void QtFlowWindow::save_graph(const QString& file)
 {
@@ -473,6 +477,16 @@ void QtFlowWindow::setup_ui()
         menu_edit->addSeparator();
         menu_edit->addAction(action_copy);
         menu_edit->addAction(action_paste);
+    }
+
+    {
+        QMenu* menu_view = new QMenu("View", menu_bar);
+        menu_bar->addAction(menu_view->menuAction());
+
+        QAction* action_reset = new QAction(tr("Reset"), this);
+        connect(action_reset, &QAction::triggered, _graph_view, &QtFlowGraphView::reset_view);
+
+        menu_view->addAction(action_reset);
     }
 
     {

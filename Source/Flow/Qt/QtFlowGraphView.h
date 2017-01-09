@@ -39,6 +39,8 @@ public slots:
     void run_graph_ended();
     void run_graph_reset();
 
+    void reset_view();
+
 protected:
     void mousePressEvent(QMouseEvent* mouse_event);
     void mouseMoveEvent(QMouseEvent* mouse_event);
