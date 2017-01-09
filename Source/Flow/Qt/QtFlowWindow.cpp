@@ -241,22 +241,6 @@ void QtFlowWindow::load_graph(const QString& file)
 
     set_graph(graph);
 
-    // Add notes after we set the graph as set_graph clears the scene
-    const JsonObject& notes = obj["notes"];
-    if (notes.is_array())
-    {
-        for (int i = 0; i < notes.size(); ++i)
-        {
-            const JsonObject& n = notes[i];
-
-            QtNoteItem* note_item = new QtNoteItem();
-            note_item->set_text(QString::fromStdString(n["text"].as_string()));
-            note_item->setPos(QPointF(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
-
-            _graph_view->scene()->add_note(note_item);
-        }
-    }
-    
     set_current_file(file);
     add_recent_file(file);
     set_graph_changed(false);
@@ -267,21 +251,6 @@ void QtFlowWindow::save_graph(const QString& file)
 {
     JsonObject obj;
     flow_graph::save(graph(), obj);
-
-    JsonObject& notes = obj["notes"];
-    notes.set_empty_array();
-    for (auto& note : _graph_view->scene()->notes())
-    {
-        JsonObject& n = notes.append();
-        n.set_empty_object();
-
-        n["text"].set_string(note->text().toStdString());
-
-        QPointF pos = note->pos();
-        n["ui_pos"].set_empty_array();
-        n["ui_pos"].append().set_float(pos.x());
-        n["ui_pos"].append().set_float(pos.y());
-    }
 
     JsonWriter writer;
     if (!writer.write_file(obj, file.toStdString(), true))

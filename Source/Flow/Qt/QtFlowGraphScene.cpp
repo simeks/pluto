@@ -78,6 +78,7 @@ void QtFlowGraphScene::add_note(QtNoteItem* note)
         return;
 
     addItem(note);
+    _flow_graph->add_note(note->note());
     _notes.push_back(note);
 }
 void QtFlowGraphScene::remove_note(QtNoteItem* note)
@@ -87,6 +88,8 @@ void QtFlowGraphScene::remove_note(QtNoteItem* note)
         _notes.erase(it);
 
     removeItem(note);
+
+    _flow_graph->remove_note(note->note());
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
@@ -224,6 +227,14 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         QtFlowLink* link = new QtFlowLink(begin_pin, end_pin);
         addItem(link);
         _links.push_back(link);
+    }
+
+    for (auto& n : graph->notes())
+    {
+        QtNoteItem* note_item = new QtNoteItem(n.second);
+        addItem(note_item);
+
+        _notes.push_back(note_item);
     }
 }
 QtFlowNode* QtFlowGraphScene::node(const Guid& id) const

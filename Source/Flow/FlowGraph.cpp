@@ -6,6 +6,7 @@
 #include "FlowModule.h"
 #include "FlowPin.h"
 #include "FlowProperty.h"
+#include "GraphNote.h"
 #include "RunGraphNode.h"
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowGraph, reload);
@@ -20,6 +21,7 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(FlowGraph, Object);
 
 FlowGraph::~FlowGraph()
 {
+    clear();
 }
 
 void FlowGraph::add_node(FlowNode* node)
@@ -52,9 +54,44 @@ void FlowGraph::remove_node(FlowNode* node)
         }
     }
 }
+void FlowGraph::add_note(GraphNote* note)
+{
+    assert(note);
+    assert(_notes.find(note->id()) == _notes.end()); // Collision detected: Node ID already exists in graph
+
+    if (!note->id().is_valid())
+    {
+        // Node have no ID, assign a new one
+        note->set_id(guid::create_guid());
+    }
+    _notes[note->id()] = note;
+
+    note->addref();
+    note->set_graph(this);
+}
+void FlowGraph::remove_note(GraphNote* note)
+{
+    assert(note);
+    for (auto it = _notes.begin(); it != _notes.end(); ++it)
+    {
+        if (it->second == note)
+        {
+            note->set_graph(nullptr);
+            note->release();
+            _notes.erase(it);
+            break;
+        }
+    }
+}
+
 void FlowGraph::clear()
 {
+    for (auto& n : _nodes)
+        n.second->release();
+    for (auto& n : _notes)
+        n.second->release();
     _nodes.clear();
+    _notes.clear();
 }
 bool FlowGraph::try_add_link(FlowPin* a, FlowPin* b)
 {
@@ -102,6 +139,18 @@ FlowNode* FlowGraph::node(const Guid& id) const
 const std::map<Guid, FlowNode*>& FlowGraph::nodes() const
 {
     return _nodes;
+}
+GraphNote* FlowGraph::note(const Guid& id) const
+{
+    assert(id.is_valid());
+    auto it = _notes.find(id);
+    if (it != _notes.end())
+        return it->second;
+    return nullptr;
+}
+const std::map<Guid, GraphNote*>& FlowGraph::notes() const
+{
+    return _notes;
 }
 void FlowGraph::reload()
 {
@@ -158,6 +207,17 @@ void FlowGraph::reload(const char* node_class)
             if (n->graph() != this)
                 n->graph()->reload(node_class);
         }
+    }
+}
+FlowGraph::FlowGraph(const FlowGraph& other) : Object(other)
+{
+    for (auto& n : other._nodes)
+    {
+        _nodes[n.first] = object_clone(n.second);
+    }
+    for (auto& n : other._notes)
+    {
+        _notes[n.first] = object_clone(n.second);
     }
 }
 
@@ -259,6 +319,23 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         }
     }
 
+
+    const JsonObject& notes = root["notes"];
+    if (notes.is_array())
+    {
+        for (int i = 0; i < notes.size(); ++i)
+        {
+            const JsonObject& n = notes[i];
+
+            GraphNote* note = object_new<GraphNote>();
+            note->set_text(n["text"].as_string().c_str());
+            note->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
+
+            out_graph->add_note(note);
+        }
+    }
+
+
     return out_graph;
 }
 void flow_graph::save(FlowGraph* graph, JsonObject& root)
@@ -317,6 +394,21 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 
         link["begin_pin"].set_string(l.first->name());
         link["end_pin"].set_string(l.second->name());
+    }
+
+    JsonObject& notes = root["notes"];
+    notes.set_empty_array();
+    for (auto& note : graph->notes())
+    {
+        JsonObject& n = notes.append();
+        n.set_empty_object();
+
+        n["text"].set_string(note.second->text());
+
+        Vec2i pos = note.second->ui_pos();
+        n["ui_pos"].set_empty_array();
+        n["ui_pos"].append().set_int(pos.x);
+        n["ui_pos"].append().set_int(pos.y);
     }
 }
 FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)

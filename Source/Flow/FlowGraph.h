@@ -7,6 +7,7 @@
 
 class FlowNode;
 class FlowPin;
+class GraphNote;
 class FLOW_API FlowGraph : public Object
 {
     DECLARE_OBJECT(FlowGraph, Object);
@@ -17,6 +18,10 @@ public:
 
     void add_node(FlowNode* node);
     void remove_node(FlowNode* node);
+
+    void add_note(GraphNote* note);
+    void remove_note(GraphNote* note);
+
     void clear();
 
     /// Tries to add a link from a to b
@@ -32,14 +37,18 @@ public:
     FlowNode* node(const Guid& id) const;
     const std::map<Guid, FlowNode*>& nodes() const;
 
+    GraphNote* note(const Guid& id) const;
+    const std::map<Guid, GraphNote*>& notes() const;
+    
     /// Reloads all nodes in the graph
     void reload();
     /// Reloads all nodes of the specified class
     void reload(const char* node_class);
     
+    FlowGraph(const FlowGraph& other);
 private:
     std::map<Guid, FlowNode*> _nodes;
-
+    std::map<Guid, GraphNote*> _notes;
 };
 
 class JsonObject;
