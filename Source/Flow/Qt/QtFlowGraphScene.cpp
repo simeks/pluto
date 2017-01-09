@@ -72,11 +72,8 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
-    // Reload the nodes in the graph
     _flow_graph->reload(tpl->node_class());
     set_graph(_flow_graph);
-
-    emit graph_changed();
 }
 bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
 {

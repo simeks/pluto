@@ -131,3 +131,8 @@ bool RunGraphNode::valid() const
 {
     return _graph != nullptr;
 }
+RunGraphNode::RunGraphNode(const RunGraphNode& other) : FlowNode(other)
+{
+    _context = nullptr;
+    _graph = object_clone(other._graph);
+}

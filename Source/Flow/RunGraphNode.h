@@ -21,6 +21,7 @@ public:
 
     bool valid() const;
 
+    RunGraphNode(const RunGraphNode&);
 private:
     void create_pins();
 
