@@ -57,8 +57,11 @@ public:
     const std::vector<FlowPin*>& pins() const;
 
     FlowPin* pin(int id) const;
+
+    /// Note: Pin names are case-insensitive
     FlowPin* pin(const char* name) const;
 
+    /// Note: Pin names are case-insensitive
     bool is_pin_linked(const char* name) const;
 
     const Guid& node_id() const;

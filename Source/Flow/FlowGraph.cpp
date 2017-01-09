@@ -161,9 +161,19 @@ void FlowGraph::reload(const char* node_class)
     }
 }
 
+static const char* flow_graph_file_version = "1.0";
+
 FlowGraph* flow_graph::load(const JsonObject& root)
 {
     // TODO: Validation and error handling
+
+    if (root["version"].as_string() != flow_graph_file_version)
+    {
+        std::cout << "FlowGraph: Expected version '" 
+            << flow_graph_file_version << "', got '" 
+            << root["version"].as_string() << "'" << std::endl;
+        return nullptr;
+    }
 
     FlowGraph* out_graph = object_new<FlowGraph>();
 
@@ -210,9 +220,6 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             Guid begin_node_id = guid::from_string(links[i]["begin_node"].as_string());
             Guid end_node_id = guid::from_string(links[i]["end_node"].as_string());
 
-            int begin_pin_id = links[i]["begin_pin"].as_int();
-            int end_pin_id = links[i]["end_pin"].as_int();
-
             FlowNode* begin_node = out_graph->node(begin_node_id);
             FlowNode* end_node = out_graph->node(end_node_id);
 
@@ -221,8 +228,32 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             if (!begin_node || !end_node)
                 continue;
 
-            FlowPin* begin_pin = begin_node->pin(begin_pin_id);
-            FlowPin* end_pin = end_node->pin(end_pin_id);
+            FlowPin* begin_pin = nullptr; // begin_node->pin(begin_pin_id);
+            FlowPin* end_pin = nullptr; // end_node->pin(end_pin_id);
+
+            if (links[i]["begin_pin"].is_number())
+            {
+                int begin_pin_id = links[i]["begin_pin"].as_int();
+                begin_pin = begin_node->pin(begin_pin_id);
+            }
+            else if (links[i]["begin_pin"].is_string())
+            {
+                begin_pin = begin_node->pin(links[i]["begin_pin"].as_string().c_str());
+            }
+
+            if (links[i]["end_pin"].is_number())
+            {
+                int end_pin_id = links[i]["end_pin"].as_int();
+                end_pin = end_node->pin(end_pin_id);
+            }
+            else if (links[i]["end_pin"].is_string())
+            {
+                end_pin = end_node->pin(links[i]["end_pin"].as_string().c_str());
+            }
+
+            // TODO:
+            if (!begin_pin || !end_pin)
+                continue;
 
             out_graph->try_add_link(begin_pin, end_pin);
         }
@@ -233,6 +264,8 @@ FlowGraph* flow_graph::load(const JsonObject& root)
 void flow_graph::save(FlowGraph* graph, JsonObject& root)
 {
     root.set_empty_object();
+
+    root["version"].set_string(flow_graph_file_version);
 
     /// Links pointing from first pin to second pin
     typedef std::pair<FlowPin*, FlowPin*> Link;
@@ -282,8 +315,8 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         link["begin_node"].set_string(guid::to_string(l.first->owner()->node_id()));
         link["end_node"].set_string(guid::to_string(l.second->owner()->node_id()));
 
-        link["begin_pin"].set_int(l.first->pin_id());
-        link["end_pin"].set_int(l.second->pin_id());
+        link["begin_pin"].set_string(l.first->name());
+        link["end_pin"].set_string(l.second->name());
     }
 }
 FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)

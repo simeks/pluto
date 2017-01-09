@@ -134,7 +134,8 @@ void QtFlowNode::paint_pins(QPainter* painter)
         }
 
         painter->setPen(style.pin_text_color);
-        painter->drawText(text_pos, QString::fromStdString(pin->pin()->name()));
+
+        painter->drawText(text_pos, FlowUIStyle::stylize_text(pin->name()));
 
         painter->setBrush(pin->color());
         painter->setPen(pin->outline_color());

@@ -38,6 +38,8 @@ struct FlowUIStyle
 
     static const FlowUIStyle& default_style();
 
+    static QString stylize_text(const char* txt);
+
 private:
     static FlowUIStyle* s_default;
 };

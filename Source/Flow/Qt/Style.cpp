@@ -35,3 +35,21 @@ const FlowUIStyle& FlowUIStyle::default_style()
     }
     return *s_default;
 }
+QString FlowUIStyle::stylize_text(const char* txt)
+{
+    QString qname = "";
+    qname[0] = toupper((int)txt[0]);
+    for (int i = 1; i < strlen(txt); ++i)
+    {
+        if (txt[i] == '_')
+        {
+            ++i;
+            qname.append(toupper((int)txt[i]));
+        }
+        else
+        {
+            qname.append(txt[i]);
+        }
+    }
+    return qname;
+}

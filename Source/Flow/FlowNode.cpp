@@ -108,7 +108,8 @@ FlowPin* FlowNode::pin(const char* name) const
 {
     for (auto& p : _pins)
     {
-        if (strcmp(p->name(), name) == 0)
+        // Case-insensitive comparison
+        if (_stricmp(p->name(), name) == 0)
         {
             return p;
         }

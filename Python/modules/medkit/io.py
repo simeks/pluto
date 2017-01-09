@@ -70,13 +70,13 @@ def format_to_sitk(fmt):
         return sitk.sitkVectorFloat64, 4
 
 @node('Read', 'MedKit')
-def read(File):
+def read(file):
     """
     Returns:
     Image : Loaded image
     """
     reader = sitk.ImageFileReader()
-    reader.SetFileName(File)
+    reader.SetFileName(file)
     itk_img = reader.Execute()
 
     if itk_img == None:
@@ -93,15 +93,15 @@ def read(File):
     return img
 
 @node('Write', 'MedKit')
-def write(Image, File):
+def write(image, file):
     writer = sitk.ImageFileWriter()
-    writer.SetFileName(str(File))
+    writer.SetFileName(str(file))
 
-    _, n = format_to_sitk(Image.pixel_type())
+    _, n = format_to_sitk(image.pixel_type())
 
-    out = sitk.GetImageFromArray(Image.array(), isVector=n!=1)
+    out = sitk.GetImageFromArray(image.array(), isVector=n!=1)
 
-    out.SetSpacing(Image.spacing())
-    out.SetOrigin(Image.origin())
+    out.SetSpacing(image.spacing())
+    out.SetOrigin(image.origin())
 
     writer.Execute(out)
