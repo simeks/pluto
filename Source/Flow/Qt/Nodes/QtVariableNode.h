@@ -6,7 +6,7 @@
 class QtVariableNode : public QtSinglePinNode
 {
 public:
-    QtVariableNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
+    QtVariableNode(FlowNode* node, QGraphicsItem* parent = nullptr);
     virtual ~QtVariableNode();
 
     virtual void node_updated() OVERRIDE;

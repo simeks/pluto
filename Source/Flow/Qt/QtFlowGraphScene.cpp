@@ -7,6 +7,7 @@
 #include "QtFlowLink.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+#include "QtNoteItem.h"
 
 #include "Nodes/QtConstantNode.h"
 #include "Nodes/QtGraphInputNode.h"
@@ -35,6 +36,7 @@ QtFlowGraphScene::~QtFlowGraphScene()
 
     _nodes.clear();
     _links.clear();
+    _notes.clear();
 
     clear();
 }
@@ -69,6 +71,22 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
     removeItem(node);
 
     _flow_graph->remove_node(node->node());
+}
+void QtFlowGraphScene::add_note(QtNoteItem* note)
+{
+    if (std::find(_notes.begin(), _notes.end(), note) != _notes.end())
+        return;
+
+    addItem(note);
+    _notes.push_back(note);
+}
+void QtFlowGraphScene::remove_note(QtNoteItem* note)
+{
+    auto it = std::find(_notes.begin(), _notes.end(), note);
+    if (it != _notes.end())
+        _notes.erase(it);
+
+    removeItem(note);
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
@@ -216,10 +234,15 @@ QtFlowNode* QtFlowGraphScene::node(const Guid& id) const
 
     return nullptr;
 }
+const std::vector<QtNoteItem*>& QtFlowGraphScene::notes() const
+{
+    return _notes;
+}
 void QtFlowGraphScene::clear_scene()
 {
     _nodes.clear();
     _links.clear();
+    _notes.clear();
 
     clear();
 }

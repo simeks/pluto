@@ -9,6 +9,7 @@ class QtFlowGraphScene;
 class QtFlowLink;
 class QtFlowNode;
 class QtFlowPin;
+class QtNoteItem;
 class QtFlowGraphView : public QGraphicsView
 {
     Q_OBJECT
@@ -64,6 +65,7 @@ private:
     };
 
     QMenu* _node_menu;
+    QAction* _note_action;
 
     QtFlowGraphScene* _scene;
 
@@ -96,6 +98,7 @@ signals:
 
     void node_create(QtFlowNode* node);
     void link_create(QtFlowLink* link);
+    void note_create(QtNoteItem* note);
 
     void selection_move(const QPointF& old_pos, const QPointF& new_pos);
     void selection_destroy();

@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtSinglePinNode::QtSinglePinNode(FlowNode* node, QGraphicsWidget* parent) :
+QtSinglePinNode::QtSinglePinNode(FlowNode* node, QGraphicsItem* parent) :
     QtFlowNode(node, parent)
 {
     _text = "";

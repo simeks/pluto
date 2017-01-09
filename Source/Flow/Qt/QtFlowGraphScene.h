@@ -9,6 +9,7 @@ class FlowNode;
 class QtFlowNode;
 class QtFlowLink;
 class QtFlowPin;
+class QtNoteItem;
 class QtFlowGraphScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -22,6 +23,9 @@ public:
     
     void add_node(QtFlowNode* node);
     void remove_node(QtFlowNode* node);
+
+    void add_note(QtNoteItem* note);
+    void remove_note(QtNoteItem* note);
     
     /// Called whenever a node template is reloaded.
     /// This reloads all nodes belonging to the node class associated with the template
@@ -47,6 +51,8 @@ public:
     
     QtFlowNode* node(const Guid& id) const;
 
+    const std::vector<QtNoteItem*>& notes() const;
+
 private:
     void clear_scene();
 
@@ -62,6 +68,7 @@ private:
 
     std::map<Guid, QtFlowNode*> _nodes;
     std::vector<QtFlowLink*> _links;
+    std::vector<QtNoteItem*> _notes;
 
 signals:
     void graph_changed();

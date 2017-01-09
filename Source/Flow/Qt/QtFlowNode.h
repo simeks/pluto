@@ -11,9 +11,9 @@ class QWidget;
 class QtFlowNode : public QGraphicsItem
 {
 public:
-    enum { Type = UserType + 8 };
+    enum { Type = UserType + 1 };
 
-    QtFlowNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
+    QtFlowNode(FlowNode* node, QGraphicsItem* parent = nullptr);
     virtual ~QtFlowNode();
 
     void setup();

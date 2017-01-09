@@ -9,6 +9,7 @@
 #include "QtFlowGraphView.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+#include "QtNoteItem.h"
 #include "Style.h"
 
 #include <QGraphicsItem>
@@ -22,6 +23,7 @@ Q_DECLARE_METATYPE(FlowNode*);
 QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     : QGraphicsView(parent),
     _node_menu(nullptr),
+    _note_action(nullptr),
     _mode(Mode_Nothing),
     _run_status(RunStatus_Idle),
     _temp_link(nullptr),
@@ -53,6 +55,7 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
 
     connect(this, SIGNAL(node_create(QtFlowNode*)), this, SIGNAL(graph_changed()));
     connect(this, SIGNAL(link_create(QtFlowLink*)), this, SIGNAL(graph_changed()));
+    connect(this, SIGNAL(note_create(QtNoteItem*)), this, SIGNAL(graph_changed()));
     connect(this, SIGNAL(selection_move(const QPointF&, const QPointF&)), this, SIGNAL(graph_changed()));
     connect(this, SIGNAL(selection_destroy()), this, SIGNAL(graph_changed()));
 }
@@ -131,30 +134,41 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
                     {
                         emit flow_node_selected(nullptr);
 
-                        if (item->type() == QtFlowNode::Type)
-                        {
-                            _scene->clearSelection();
-                            _scene->clearFocus();
+                        _scene->clearSelection();
+                        _scene->clearFocus();
 
-                            node->setSelected(true);
+                        node->setSelected(true);
 
-                            emit flow_node_selected((QtFlowNode*)node);
+                        emit flow_node_selected((QtFlowNode*)node);
 
-                            _mode = Mode_Move;
-                            _move_start = item->pos();
-                        }
-                        else if (item->type() == QtFlowLink::Type)
-                        {
-                            _scene->clearSelection();
-                            _scene->clearFocus();
-                            item->setSelected(true);
-                        }
+                        _mode = Mode_Move;
+                        _move_start = item->pos();
                     }
                     else
                     {
                         _mode = Mode_Move;
                         _move_start = _scene->selectedItems()[0]->pos();
                     }
+                }
+            }
+            else if (item->type() == QtNoteItem::Type)
+            {
+                if (!_scene->selectedItems().contains(item))
+                {
+                    emit flow_node_selected(nullptr);
+
+                    _scene->clearSelection();
+                    _scene->clearFocus();
+
+                    item->setSelected(true);
+
+                    _mode = Mode_Move;
+                    _move_start = item->pos();
+                }
+                else
+                {
+                    _mode = Mode_Move;
+                    _move_start = _scene->selectedItems()[0]->pos();
                 }
             }
         }
@@ -195,6 +209,11 @@ void QtFlowGraphView::mouseMoveEvent(QMouseEvent* mouse_event)
             {
                 QPointF delta = mapToScene(mouse_event->pos()) - mapToScene(_last_mouse_pos);
                 ((QtFlowNode*)item)->move_node(item->pos() + delta);
+            }
+            else if (item->type() == QtNoteItem::Type)
+            {
+                QPointF delta = mapToScene(mouse_event->pos()) - mapToScene(_last_mouse_pos);
+                item->setPos(item->pos() + delta);
             }
         }
         break;
@@ -390,10 +409,19 @@ void QtFlowGraphView::draw_background_grid(QPainter* painter, int grid_step)
 }
 void QtFlowGraphView::build_node_menu()
 {
+    if (!_node_menu)
+        _node_menu = new QMenu(this);
+    else
+        _node_menu->clear();
+
+    if (!_note_action)
+        _note_action = new QAction("Note");
+    _node_menu->addAction(_note_action);
+    _node_menu->addSeparator();
+
     std::vector<FlowNode*> nodes = FlowModule::instance().node_templates();
     if (!nodes.empty())
     {
-        _node_menu = new QMenu(this);
         std::map<std::string, QMenu*> sub_menus;
         sub_menus[""] = _node_menu;
 
@@ -483,14 +511,23 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
         QAction* action = _node_menu->exec(global_pt);
         if (action)
         {
-            FlowNode* template_node = action->data().value<FlowNode*>();
-            if (template_node)
+            if (action == _note_action)
             {
-                FlowNode* node = object_cast<FlowNode>(object_clone(template_node));
-                node->set_node_id(guid::create_guid());
-                
-                QtFlowNode* n = _scene->create_node(node, mapToScene(pt));
-                emit node_create(n);
+                QtNoteItem* note = new QtNoteItem();
+                note->setPos(mapToScene(pt));
+                emit note_create(note);
+            }
+            else
+            {
+                FlowNode* template_node = action->data().value<FlowNode*>();
+                if (template_node)
+                {
+                    FlowNode* node = object_cast<FlowNode>(object_clone(template_node));
+                    node->set_node_id(guid::create_guid());
+
+                    QtFlowNode* n = _scene->create_node(node, mapToScene(pt));
+                    emit node_create(n);
+                }
             }
         }
     }

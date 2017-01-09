@@ -6,7 +6,7 @@
 class QtPrintNode : public QtSinglePinNode
 {
 public:
-    QtPrintNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
+    QtPrintNode(FlowNode* node, QGraphicsItem* parent = nullptr);
     virtual ~QtPrintNode();
 
     virtual void node_finished() OVERRIDE;

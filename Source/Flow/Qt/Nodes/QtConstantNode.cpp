@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsWidget* parent) :
+QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsItem* parent) :
     QtSinglePinNode(node, parent)
 {
     _text = _node->attribute<const char*>("value");

@@ -14,7 +14,7 @@
 #include <QGraphicsSceneMoveEvent>
 #include <QPainter>
 
-QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsWidget* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1), _status(Idle)
+QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsItem* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1), _status(Idle)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);

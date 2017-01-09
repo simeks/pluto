@@ -5,6 +5,7 @@
 
 class QtFlowGraphScene;
 class QtFlowNode;
+class QtNoteItem;
 
 class NodeCreateCommand : public QUndoCommand
 {
@@ -31,6 +32,20 @@ private:
     QtFlowGraphScene* _scene;
     QtFlowLink* _link;
 };
+
+class NoteCreateCommand : public QUndoCommand
+{
+public:
+    NoteCreateCommand(QtNoteItem* note, QtFlowGraphScene* scene, QUndoCommand *parent = 0);
+
+    void undo() OVERRIDE;
+    void redo() OVERRIDE;
+
+private:
+    QtFlowGraphScene* _scene;
+    QtNoteItem* _note;
+};
+
 
 class SelectionDestroyCommand : public QUndoCommand
 {

@@ -15,6 +15,7 @@ class QtFlowLink;
 class QtFlowNode;
 class QtFlowWindow;
 class QtNodePropertyWidget;
+class QtNoteItem;
 class QUndoStack;
 class QtFlowGraphRunner : public QObject
 {
@@ -93,6 +94,7 @@ private slots:
 
     void node_create(QtFlowNode* node);
     void link_create(QtFlowLink* link);
+    void note_create(QtNoteItem* note);
 
     void selection_move(const QPointF& old_pos, const QPointF& new_pos);
     void selection_destroy();

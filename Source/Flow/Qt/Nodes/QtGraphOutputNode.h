@@ -6,7 +6,7 @@
 class QtGraphOutputNode : public QtSinglePinNode
 {
 public:
-    QtGraphOutputNode(FlowNode* node, QGraphicsWidget* parent = nullptr);
+    QtGraphOutputNode(FlowNode* node, QGraphicsItem* parent = nullptr);
     virtual ~QtGraphOutputNode();
 
     virtual void node_updated() OVERRIDE;

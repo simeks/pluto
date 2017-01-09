@@ -4,6 +4,7 @@
 #include "QtFlowLink.h"
 #include "QtFlowNode.h"
 #include "QtFlowUndoStack.h"
+#include "QtNoteItem.h"
 
 NodeCreateCommand::NodeCreateCommand(
     QtFlowNode* node,
@@ -41,6 +42,24 @@ void LinkCreateCommand::redo()
     _scene->try_add_link(_link);
 }
 
+NoteCreateCommand::NoteCreateCommand(
+    QtNoteItem* note,
+    QtFlowGraphScene* scene,
+    QUndoCommand *parent) :
+    QUndoCommand(parent),
+    _scene(scene),
+    _note(note)
+{
+}
+void NoteCreateCommand::undo()
+{
+    _scene->remove_note(_note);
+}
+void NoteCreateCommand::redo()
+{
+    _scene->add_note(_note);
+}
+
 SelectionDestroyCommand::SelectionDestroyCommand(
     QtFlowGraphScene* scene,
     QUndoCommand *parent) :
@@ -76,6 +95,10 @@ void SelectionDestroyCommand::undo()
         {
             _scene->try_add_link((QtFlowLink*)i);
         }
+        else if (i->type() == QtNoteItem::Type)
+        {
+            _scene->add_note((QtNoteItem*)i);
+        }
     }
 }
 void SelectionDestroyCommand::redo()
@@ -89,6 +112,10 @@ void SelectionDestroyCommand::redo()
         else if (i->type() == QtFlowLink::Type)
         {
             _scene->remove_link((QtFlowLink*)i);
+        }
+        else if (i->type() == QtNoteItem::Type)
+        {
+            _scene->remove_note((QtNoteItem*)i);
         }
     }
 }
@@ -114,9 +141,13 @@ void SelectionMoveCommand::undo()
 
         if (ni->type() == QtFlowNode::Type)
             static_cast<QtFlowNode*>(ni)->move_node(_old_pos + offset);
+        else if (ni->type() == QtNoteItem::Type)
+            ni->setPos(_old_pos + offset);
     }
     if (n0->type() == QtFlowNode::Type)
         static_cast<QtFlowNode*>(n0)->move_node(_old_pos);
+    else if (n0->type() == QtNoteItem::Type)
+        n0->setPos(_old_pos);
 }
 void SelectionMoveCommand::redo()
 {
@@ -128,7 +159,11 @@ void SelectionMoveCommand::redo()
 
         if (ni->type() == QtFlowNode::Type)
             static_cast<QtFlowNode*>(ni)->move_node(_new_pos + offset);
+        else if (ni->type() == QtNoteItem::Type)
+            ni->setPos(_new_pos + offset);
     }
     if (n0->type() == QtFlowNode::Type)
         static_cast<QtFlowNode*>(n0)->move_node(_new_pos);
+    else if (n0->type() == QtNoteItem::Type)
+        n0->setPos(_new_pos);
 }
