@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QMainWindow>
 
+#include <Core/Python/PythonCommon.h>
 
 class FlowContext;
 class FlowGraph;
@@ -22,6 +23,9 @@ class QtFlowGraphRunner : public QObject
 public:
     QtFlowGraphRunner(QtFlowWindow* window);
     ~QtFlowGraphRunner();
+
+    /// Note: Assumes the caller is on the kernel thread
+    Dict run(FlowGraph* graph, const Tuple& args, const Dict& kw);
 
 public slots:
     void run(FlowGraph* graph);
@@ -54,6 +58,7 @@ public:
     FlowGraph* graph();
 
     void run_graph();
+    Dict run_graph(const Tuple& args, const Dict& kw);
 
     
 public slots:

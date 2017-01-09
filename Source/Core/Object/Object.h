@@ -18,6 +18,9 @@
 #define OBJECT_PYTHON_ADD_METHOD(TClass, Name, Doc) \
     type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS, Doc);
 
+#define OBJECT_PYTHON_ADD_KEYWORD_METHOD(TClass, Name, Doc) \
+    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, Doc);
+
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
     type->add_attr(Name, python_convert::to_python(Value));
 

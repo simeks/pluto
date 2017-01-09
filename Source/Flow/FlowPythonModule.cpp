@@ -181,13 +181,19 @@ Dict FlowPythonModule::run(const Tuple& args, const Dict& kw)
         }
     }
 
-    context->run();
+    if (!context->run())
+        return Dict();
 
     Dict ret;
     for (auto& it : context->outputs())
     {
         if (context->output(it.first.c_str()))
             ret.set(it.first.c_str(), context->output(it.first.c_str()));
+        else
+        {
+            Py_INCREF(Py_None);
+            ret.set(it.first.c_str(), Py_None);
+        }
     }
     return ret;
 }

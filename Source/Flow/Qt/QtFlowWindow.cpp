@@ -59,6 +59,53 @@ QtFlowGraphRunner::~QtFlowGraphRunner()
     if (_context)
         _context->release();
 }
+Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
+{
+    emit run_started();
+
+    PYTHON_STDOUT("Running graph...\n");
+
+    if (!_context)
+    {
+        _context = object_new<FlowContext>(graph);
+
+        if (kw.valid())
+        {
+            for (auto& it : _context->inputs())
+            {
+                _context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
+            }
+        }
+    }
+
+    QtFlowGraphRunnerCallback cb(this);
+    if (!_context->run(&cb))
+    {
+        emit run_failed(_context->error());
+        return Dict();
+    }
+
+    Dict ret;
+    for (auto& it : _context->outputs())
+    {
+        if (_context->output(it.first.c_str()))
+            ret.set(it.first.c_str(), _context->output(it.first.c_str()));
+        else
+        {
+            Py_INCREF(Py_None);
+            ret.set(it.first.c_str(), Py_None);
+        }
+    }
+
+    // If the run was sucessful we destroy the context, 
+    // If not we save the state for future re-runs
+    _context->release();
+    _context = nullptr;
+
+    emit run_ended();
+    return ret;
+
+}
 void QtFlowGraphRunner::run(FlowGraph* graph)
 {
     emit run_started();
@@ -151,20 +198,13 @@ void QtFlowWindow::run_graph()
     if (!graph())
         return;
     
-    // Use runner if we are on UI thread to avoid UI stalling
-    if (thread() == QThread::currentThread())
-        QMetaObject::invokeMethod(_graph_runner, "run", Q_ARG(FlowGraph*, graph()));
-    else
-    {
-        run_graph_started();
-
-        FlowContext* ctx = object_new<FlowContext>(graph());
-        ctx->run();
-        ctx->release();
-
-        run_graph_ended();
-    }
-
+    QMetaObject::invokeMethod(_graph_runner, "run", Q_ARG(FlowGraph*, graph()));
+}
+Dict QtFlowWindow::run_graph(const Tuple& args, const Dict& kw)
+{
+    if (!graph())
+        return Dict();
+    return _graph_runner->run(graph(), args, kw);
 }
 void QtFlowWindow::new_graph()
 {

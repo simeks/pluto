@@ -28,7 +28,7 @@ public:
     void set_graph(FlowGraph* graph);
     void clear();
 
-    void run();
+    Dict run(const Tuple& args, const Dict& kw);
 
 private:
     QtFlowWindow* _window;
