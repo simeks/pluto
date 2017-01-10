@@ -24,7 +24,7 @@ QtNoteItem::QtNoteItem(GraphNote* note, QGraphicsWidget* parent) : QGraphicsObje
     _text_edit->setWindowFlags(Qt::FramelessWindowHint);
     _text_edit->setAttribute(Qt::WA_TranslucentBackground);
     _text_edit->setStyleSheet("background: transparent; border: none; color: white; font-size:9pt;");
-    _text_edit->setFixedSize(190, 90);
+    _text_edit->setFixedSize(190, 50);
 
     connect(_text_edit, SIGNAL(textChanged()), this, SLOT(text_changed()));
 
@@ -45,7 +45,7 @@ QtNoteItem::QtNoteItem(QGraphicsWidget* parent) : QGraphicsObject(parent)
     _text_edit->setWindowFlags(Qt::FramelessWindowHint);
     _text_edit->setAttribute(Qt::WA_TranslucentBackground);
     _text_edit->setStyleSheet("background: transparent; border: none; color: white; font-size:9pt;");
-    _text_edit->setFixedSize(190, 90);
+    _text_edit->setFixedSize(190, 50);
 
     connect(_text_edit, SIGNAL(textChanged()), this, SLOT(text_changed()));
 
@@ -60,7 +60,7 @@ QtNoteItem::~QtNoteItem()
 }
 QRectF QtNoteItem::boundingRect() const
 {
-    return QRectF(-10, -10, 210, 110);
+    return QRectF(-10, -10, 210, 70);
 }
 void QtNoteItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
@@ -78,7 +78,7 @@ void QtNoteItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         pen.setColor(QColor::fromRgba(qRgba(180, 180, 180, 200)));
     
     painter->setPen(pen);
-    painter->drawRect(QRectF(0, 0, 200, 100));
+    painter->drawRect(QRectF(0, 0, 200, 60));
 
     painter->setBrush(QColor::fromRgba(qRgba(0, 122, 204, 255)));
     painter->setPen(QColor::fromRgba(qRgba(0, 80, 180, 255)));
