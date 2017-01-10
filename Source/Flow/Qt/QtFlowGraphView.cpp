@@ -547,6 +547,7 @@ void QtFlowGraphView::node_template_removed(FlowNode*)
 }
 void QtFlowGraphView::node_template_reloaded(FlowNode* tpl)
 {
+    build_node_menu();
     _scene->node_template_reloaded(tpl);
 }
 void QtFlowGraphView::node_copy()
