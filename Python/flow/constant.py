@@ -7,7 +7,8 @@ class ConstantNode(flow.Node):
         flow.Pin('Out', flow.Pin.Out)
     ]
     properties = [
-        flow.Property('value', '')
+        flow.Property('value', ''),
+        flow.Property('type', 'str'),
     ]
 
     def __init__(self):
@@ -17,7 +18,16 @@ class ConstantNode(flow.Node):
         self.category = 'Flow'
 
     def run(self, ctx):
-        ctx.write_pin('Out', self.value)
+        if self.type.lower() == 'str':
+            v = self.value
+        elif self.type.lower() == 'int':
+            v = int(self.value)
+        elif self.type.lower() == 'float':
+            v = float(self.value)
+        else:
+            raise ValueError('Unsupported type: \'%s\'' % self.type)
+
+        ctx.write_pin('Out', v)
 
 
 flow.install_node_template(ConstantNode())

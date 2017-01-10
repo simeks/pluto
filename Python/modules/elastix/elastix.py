@@ -76,7 +76,7 @@ class ElastixNode(flow.Node):
 
         fp = ctx.read_pin('FixedLandmarks')
         mp = ctx.read_pin('MovingLandmarks')
-        if (fp[i] != None and type(fp[i]) != str) or (mp[i] != None and type(mp[i]) != str):
+        if (fp != None and type(fp) != str) or (mp != None and type(mp) != str):
             raise ValueError('Wrong values for landmarks, expected string')
 
         t0 = ctx.read_pin('T0')
