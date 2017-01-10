@@ -18,6 +18,9 @@
 #include <QMouseEvent>
 #include <QTimer>
 
+std::vector<QtFlowNode*> QtFlowGraphView::s_node_clipboard;
+
+
 Q_DECLARE_METATYPE(FlowNode*);
 
 QtFlowGraphView::QtFlowGraphView(QWidget *parent)
@@ -548,22 +551,22 @@ void QtFlowGraphView::node_template_reloaded(FlowNode* tpl)
 }
 void QtFlowGraphView::node_copy()
 {
-    _node_clipboard.clear();
+    s_node_clipboard.clear();
     for (auto& i : _scene->selectedItems())
     {
         if (i->type() == QtFlowNode::Type)
         {
-            _node_clipboard.push_back((QtFlowNode*)i);
+            s_node_clipboard.push_back((QtFlowNode*)i);
         }
     }
 }
 void QtFlowGraphView::node_paste()
 {
-    if (!_node_clipboard.empty() && underMouse())
+    if (!s_node_clipboard.empty() && underMouse())
     {
         QPointF mouse_pos = mapToScene(mapFromGlobal(QCursor::pos()));
-        QPointF origin = _node_clipboard[0]->scenePos();
-        for (auto i : _node_clipboard)
+        QPointF origin = s_node_clipboard[0]->scenePos();
+        for (auto i : s_node_clipboard)
         {
             QPointF offset = i->scenePos() - origin;
             FlowNode* copy = object_clone(i->node());
