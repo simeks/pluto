@@ -106,7 +106,7 @@ void GraphFileLoader::load(const QString& path)
         if (!node->load_graph(class_name.c_str(), path.toUtf8().constData()))
         {
             node->release();
-            PYTHON_ERROR(IOError, "Failed to load graph file");
+            return;
         }
         node->set_attribute("title", title.toUtf8().constData());
         node->set_attribute("category", category.toUtf8().constData());

@@ -227,11 +227,10 @@ FlowGraph* flow_graph::load(const JsonObject& root)
 {
     // TODO: Validation and error handling
 
-    if (root["version"].as_string() != flow_graph_file_version)
+    if (!root["version"].is_string() || root["version"].as_string() != flow_graph_file_version)
     {
         std::cout << "FlowGraph: Expected version '" 
-            << flow_graph_file_version << "', got '" 
-            << root["version"].as_string() << "'" << std::endl;
+            << flow_graph_file_version << "'" << std::endl;
         return nullptr;
     }
 
