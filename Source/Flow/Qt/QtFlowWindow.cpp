@@ -89,8 +89,12 @@ Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
     Dict ret;
     for (auto& it : _context->outputs())
     {
-        if (_context->output(it.first.c_str()))
-            ret.set(it.first.c_str(), _context->output(it.first.c_str()));
+        PyObject* obj = _context->output(it.first.c_str());
+        if (obj)
+        {
+            Py_INCREF(obj);
+            ret.set(it.first.c_str(), obj);
+        }
         else
         {
             Py_INCREF(Py_None);

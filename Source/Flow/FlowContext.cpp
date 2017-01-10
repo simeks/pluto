@@ -217,7 +217,10 @@ PyObject* FlowContext::read_pin(const char* name)
         {
             auto it = _state.find(pin->links()[0]);
             if (it != _state.end())
+            {
+                Py_XINCREF(it->second);
                 return it->second;
+            }
         }
         // else TODO: Error
     }

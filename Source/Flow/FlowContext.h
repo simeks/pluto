@@ -48,7 +48,9 @@ public:
     const std::map<std::string, PyObject*>& inputs() const;
     const std::map<std::string, PyObject*>& outputs() const;
 
+    /// Returns a borrowed reference
     PyObject* input(const char* name) const;
+    /// Returns a borrowed reference
     PyObject* output(const char* name) const;
 
     void set_input(const char* name, PyObject* value);

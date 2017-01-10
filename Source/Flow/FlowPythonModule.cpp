@@ -187,8 +187,12 @@ Dict FlowPythonModule::run(const Tuple& args, const Dict& kw)
     Dict ret;
     for (auto& it : context->outputs())
     {
-        if (context->output(it.first.c_str()))
-            ret.set(it.first.c_str(), context->output(it.first.c_str()));
+        PyObject* obj = context->output(it.first.c_str());
+        if (obj)
+        {
+            Py_INCREF(obj);
+            ret.set(it.first.c_str(), obj);
+        }
         else
         {
             Py_INCREF(Py_None);
