@@ -4,4 +4,5 @@ from flow.debug_nodes import *
 from flow.variable import *
 from flow.constant import *
 from flow.print_node import *
+from flow.util import *
 

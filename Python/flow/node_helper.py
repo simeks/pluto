@@ -71,8 +71,7 @@ class FunctionNode(flow.Node):
             args.append(ctx.read_pin(a))
         
         returns = self.func(*args)
-
-        if returns:
+        if returns is not None:
             if len(self.returns) > 1:
                 if len(returns) != len(self.returns):
                     raise ValueError('Not enough return arguments')

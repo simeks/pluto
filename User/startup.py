@@ -53,10 +53,10 @@ for m in os.listdir(pluto.module_dir()):
     else:
         print('Import module: %s' % m)    
 
-if image:
+if 'image' in sys.modules:
     Image = image.Image
 
-if medkit:
+if 'medkit' in sys.modules:
     imread = medkit.read
     imwrite = medkit.write
 
