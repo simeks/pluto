@@ -2,6 +2,7 @@
 #define __QT_FLOW_DIAGRAM_VIEW_H__
 
 #include <QGraphicsView>
+#include <QTime>
 
 class FlowNode;
 class QMenu;
@@ -50,6 +51,8 @@ protected:
     void paintEvent(QPaintEvent *e);
 
     void drawBackground(QPainter * painter, const QRectF & rect);
+
+    QString format_time(const QTime& time);
 private:
     enum Mode
     {
@@ -78,6 +81,7 @@ private:
     RunStatus _run_status;
     QString _status_text;
     QTimer* _running_text_timer;
+    QTime _run_start_time;
 
     QtFlowLink* _temp_link;
     QtFlowPin* _highlight_pin;

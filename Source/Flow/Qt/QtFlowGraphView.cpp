@@ -612,6 +612,7 @@ void QtFlowGraphView::run_graph_started()
         reset_nodes();
 
     _run_status = RunStatus_Running;
+    _run_start_time.restart();
 
     emit flow_node_selected(nullptr);
     _scene->clearSelection();
@@ -619,7 +620,7 @@ void QtFlowGraphView::run_graph_started()
     _mode = Mode_Nothing;
 
     _status_text = "Running";
-    _running_text_timer->start(1000);
+    _running_text_timer->start(100);
 }
 void QtFlowGraphView::run_graph_failed(const QString& error)
 {
@@ -634,7 +635,7 @@ void QtFlowGraphView::run_graph_ended()
     _run_status = RunStatus_Idle;
     update_nodes();
 
-    _status_text = "Successful";
+    _status_text = QString("Successful, Elapsed: %1").arg(format_time(_run_start_time));
     _running_text_timer->stop();
 }
 void QtFlowGraphView::run_graph_reset()
@@ -681,18 +682,47 @@ void QtFlowGraphView::paintEvent(QPaintEvent *e)
 }
 void QtFlowGraphView::running_text_anim()
 {
-    static int dot_count = 1;
+    //static int dot_count = 1;
 
-    _status_text = "Running";
-    for (int i = 0; i < dot_count; ++i)
+    _status_text = QString("Running, Elapsed: %1").arg(format_time(_run_start_time));
+    /*for (int i = 0; i < dot_count; ++i)
     {
         _status_text.append(".");
     }
     ++dot_count;
     if (dot_count > 3)
         dot_count = 0;
-
+*/
     resetCachedContent();
     update();
 }
-
+QString QtFlowGraphView::format_time(const QTime& time)
+{
+    int s = time.elapsed() / 1000;
+    if (s < 60)
+    {
+        return QString("%1 s").arg(s);
+    }
+    else if (s < 3600)
+    {
+        int m = s / 60;
+        s = s % 60;
+        if (s == 0)
+            return QString("%1 m").arg(m);
+        else
+            return QString("%1 m %2 s").arg(m).arg(s);
+    }
+    else
+    {
+        int m = s / 60;
+        int h = m / 60;
+        m = m % 60;
+        s = s % 60;
+        if (s == 0 && m == 0)
+            return QString("%1 h").arg(h);
+        else if (s == 0)
+            return QString("%1 h %2 m").arg(h).arg(m);
+        else
+            return QString("%1 h %2 m %3 s").arg(h).arg(m).arg(s);
+    }
+}
