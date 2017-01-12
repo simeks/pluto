@@ -69,7 +69,7 @@ def format_to_sitk(fmt):
     elif fmt == image.PixelType_Vec4d:
         return sitk.sitkVectorFloat64, 4
 
-@node('Read', 'MedKit')
+@node('Read', 'Image/IO')
 def read(file):
     """
     Returns:
@@ -92,10 +92,13 @@ def read(file):
 
     return img
 
-@node('Write', 'MedKit')
+@node('Write', 'Image/IO')
 def write(image, file):
     writer = sitk.ImageFileWriter()
     writer.SetFileName(str(file))
+
+    if image is None:
+        raise ValueError('Image object can not be None')
 
     _, n = format_to_sitk(image.pixel_type())
 
