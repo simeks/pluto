@@ -188,6 +188,8 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
     connect(_graph_runner, SIGNAL(node_started(FlowNode*)), _graph_view, SLOT(node_started(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_finished(FlowNode*)), _graph_view, SLOT(node_finished(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_failed(FlowNode*)), _graph_view, SLOT(node_failed(FlowNode*)));
+
+    crash_check();
 }
 
 QtFlowWindow::~QtFlowWindow()
@@ -231,6 +233,7 @@ void QtFlowWindow::new_graph()
         scene->new_graph();
 
     set_current_file("");
+    set_graph_changed(false);
 
     _graph_view->reset_view();
 }
@@ -338,6 +341,96 @@ void QtFlowWindow::update_title()
             setWindowTitle(_title_prefix + "New - Flow Editor");
         }
     }
+}
+void QtFlowWindow::perform_backup()
+{
+    // The backup actions should be silent and avoid modifiying the recent files list
+
+    if (!_changed)
+        return;
+
+    QSettings settings;
+    settings.beginGroup("flowwindow");
+    settings.setValue("last_file", _current_file);
+    settings.endGroup();
+
+    JsonObject obj;
+    flow_graph::save(graph(), obj);
+
+    JsonWriter writer;
+    std::string backup_file = PlutoCore::instance().user_dir();
+    backup_file += "/";
+    backup_file += "backup.flow";
+    if (!writer.write_file(obj, backup_file, true))
+    {
+        QMessageBox::warning(this, tr("Flow"), tr("Cannot write file %1.").arg(QDir::toNativeSeparators(backup_file.c_str())));
+        return;
+    }
+    set_graph_changed(false);
+}
+void QtFlowWindow::reset_backup()
+{
+    std::string backup_file = PlutoCore::instance().user_dir();
+    backup_file += "/";
+    backup_file += "backup.flow";
+
+    QFile f(QString::fromStdString(backup_file));
+    if (f.exists())
+    {
+        f.remove();
+    }
+}
+void QtFlowWindow::crash_check()
+{
+    // The backup actions should be silent and avoid modifiying the recent files list
+
+    std::string backup_file = PlutoCore::instance().user_dir();
+    backup_file += "/";
+    backup_file += "backup.flow";
+    QFile f(QString::fromStdString(backup_file));
+    if (f.exists())
+    {
+        const QMessageBox::StandardButton ret
+            = QMessageBox::question(this, tr("Flow Editor"),
+                tr("Crash backup detected.\n"
+                    "Do you want restore the backup?"),
+                QMessageBox::Yes | QMessageBox::No);
+
+        if (ret != QMessageBox::Yes)
+        {
+            reset_backup();
+            return;
+        }
+
+        JsonObject obj;
+        JsonReader reader;
+        if (!reader.read_file(backup_file, obj))
+        {
+            QMessageBox::warning(this, tr("Flow"), tr("Cannot read file %1:\n%2.").arg(QDir::toNativeSeparators(backup_file.c_str()), reader.error_message().c_str()));
+            reset_backup();
+            return;
+        }
+
+        FlowGraph* graph = flow_graph::load(obj);
+        if (!graph)
+        {
+            QMessageBox::warning(this, tr("Flow"), tr("Failed to parse flow file."));
+            reset_backup();
+            return;
+        }
+
+        set_graph(graph);
+
+        QSettings settings;
+        settings.beginGroup("flowwindow");
+        set_current_file(settings.value("last_file").toString());
+        settings.endGroup();
+
+        set_graph_changed(true);
+
+        _graph_view->reset_view();
+    }
+    reset_backup();
 }
 void QtFlowWindow::_set_graph(FlowGraph* graph)
 {
@@ -555,6 +648,8 @@ void QtFlowWindow::closeEvent(QCloseEvent* e)
         return;
     }
 
+    reset_backup();
+
     QSettings settings;
     settings.beginGroup("flowwindow");
 
@@ -651,10 +746,12 @@ void QtFlowWindow::on_save_as()
 }
 void QtFlowWindow::on_run()
 {
+    perform_backup();
     run_graph();
 }
 void QtFlowWindow::on_full_run()
 {
+    perform_backup();
     _graph_view->run_graph_reset();
     _graph_runner->reset();
     run_graph();

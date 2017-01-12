@@ -114,6 +114,14 @@ private:
     void set_graph_changed(bool changed);
     void update_title();
 
+    /// Writes a backup of the current graph
+    void perform_backup();
+    /// Resets the backup, this should be called before performing a (clean) exit of the application
+    void reset_backup();
+
+    /// Checks if latest run resulted in a crash, in that case ask users if it wants to restore any existing backup
+    void crash_check();
+
     /// Asks if the user wants to save
     /// Returns true if the user saved or wants to discard the changes, 
     ///         false if it wants to cancel the current action
