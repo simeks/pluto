@@ -15,20 +15,21 @@ INLINE size_t Image::offset(int x, int y, int z) const
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
     assert(z >= 0 && z < _size.z);
-    return x * step(0) + y * step(1) + z * step(2);
+    return x * _step[0] + y * _step[1] + z * _step[2];
 }
 INLINE size_t Image::offset(int x, int y) const
 {
     assert(_ndims >= 2);
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
-    return x * step(0) + y * step(1);
+
+    return x * _step[0] + y * _step[1];
 }
 INLINE size_t Image::offset(int x) const
 {
     assert(_ndims >= 1);
     assert(x >= 0 && x < _size.x);
-    return x * step(0);
+    return x * _step[0];
 }
 INLINE Image::operator bool() const
 {
@@ -117,7 +118,7 @@ T ImageTpl<T>::at(int x, int y, int z, image::BorderMode border) const
         z = std::min(z, _size.z - 1);
     }
 
-    return *((T*)(_data_ptr + offset(x, y, z)));
+    return *((T*)(ptr() + offset(x, y, z)));
 }
 template<typename T>
 T ImageTpl<T>::at(const Vec3i& v, image::BorderMode border) const
@@ -176,15 +177,16 @@ const T& ImageTpl<T>::operator[](int64_t index) const
     assert(valid());
     assert(index < (int64_t)pixel_count());
     // TODO: Assumes continuous memory
-    return ((T*)_data_ptr)[index];
+    return ((T*)ptr())[index];
 }
 template<typename T>
 T& ImageTpl<T>::operator[](int64_t index)
 {
     assert(valid());
     assert(index < (int64_t)pixel_count());
-    // TODO: Assumes continuous memory
-    return ((T*)_data_ptr)[index];
+    assert(_data.is_contiguous());
+    // TODO: Assumes contiguous memory
+    return ((T*)ptr())[index];
 }
 template<typename T>
 const T& ImageTpl<T>::operator()(int x, int y, int z) const
@@ -193,7 +195,7 @@ const T& ImageTpl<T>::operator()(int x, int y, int z) const
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
     assert(z >= 0 && z < _size.z);
-    return *((T*)(_data_ptr + offset(x, y, z)));
+    return *((T*)(ptr() + offset(x, y, z)));
 }
 template<typename T>
 T& ImageTpl<T>::operator()(int x, int y, int z)
@@ -202,7 +204,7 @@ T& ImageTpl<T>::operator()(int x, int y, int z)
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
     assert(z >= 0 && z < _size.z);
-    return *((T*)(_data_ptr + offset(x, y, z)));
+    return *((T*)(ptr() + offset(x, y, z)));
 }
 template<typename T>
 const T& ImageTpl<T>::operator()(int x, int y) const
@@ -210,7 +212,7 @@ const T& ImageTpl<T>::operator()(int x, int y) const
     assert(valid());
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
-    return *((T*)(_data_ptr + offset(x, y)));
+    return *((T*)(ptr() + offset(x, y)));
 }
 template<typename T>
 T& ImageTpl<T>::operator()(int x, int y)
@@ -218,7 +220,7 @@ T& ImageTpl<T>::operator()(int x, int y)
     assert(valid());
     assert(x >= 0 && x < _size.x);
     assert(y >= 0 && y < _size.y);
-    return *((T*)(_data_ptr + offset(x, y)));
+    return *((T*)(ptr() + offset(x, y)));
 }
 template<typename T>
 const T& ImageTpl<T>::operator()(const Vec3i& p) const
@@ -227,7 +229,7 @@ const T& ImageTpl<T>::operator()(const Vec3i& p) const
     assert(p.x >= 0 && p.x < _size.x);
     assert(p.y >= 0 && p.y < _size.y);
     assert(p.z >= 0 && p.z < _size.z);
-    return *((T*)(_data_ptr + offset(p.x, p.y, p.z)));
+    return *((T*)(ptr() + offset(p.x, p.y, p.z)));
 }
 template<typename T>
 T& ImageTpl<T>::operator()(const Vec3i& p)
@@ -236,5 +238,5 @@ T& ImageTpl<T>::operator()(const Vec3i& p)
     assert(p.x >= 0 && p.x < _size.x);
     assert(p.y >= 0 && p.y < _size.y);
     assert(p.z >= 0 && p.z < _size.z);
-    return *((T*)(_data_ptr + offset(p.x, p.y, p.z)));
+    return *((T*)(ptr() + offset(p.x, p.y, p.z)));
 }

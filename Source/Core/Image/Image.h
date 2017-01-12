@@ -59,8 +59,6 @@ public:
     size_t offset(int x, int y) const;
     size_t offset(int x) const;
 
-    size_t step(int i) const;
-
     /// Copies the content of this image to the specified destination.
     /// The caller is self responsible for making sure dest is large enough.
     void copy_to(uint8_t* dest) const;
@@ -81,6 +79,7 @@ protected:
     NumpyArray _data;
     int _ndims;
     Vec3i _size;
+    size_t _step[3];
 
     Vec3d _origin;
     Vec3d _spacing;

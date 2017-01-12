@@ -31,12 +31,20 @@ void Image::create(int ndims, const Vec3i& size, int pixel_type, const uint8_t* 
     numpy_shape(ndims, size, pixel_type, npy_ndims, npy_dims);
 
     _data = NumpyArray(npy_ndims, npy_dims, npy_type);
+
     _ndims = ndims;
     _size = size;
+    _pixel_type = pixel_type;
+    _step[0] = 0; _step[1] = 0; _step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        _step[i] = _data.stride(_ndims - 1 - i);
 
-    /// Assume memory allocated by numpy is contiguous
-    size_t num_bytes = _size.x * _size.y * _size.z * pixel_size();
-    memcpy(_data.data(), data, num_bytes);
+    if (data)
+    {
+        /// Assume memory allocated by numpy is contiguous
+        size_t num_bytes = _size.x * _size.y * _size.z * pixel_size();
+        memcpy(_data.data(), data, num_bytes);
+    }
 }
 void Image::set(int ndims, const Vec3i& size, int pixel_type, const NumpyArray& data)
 {
@@ -44,11 +52,15 @@ void Image::set(int ndims, const Vec3i& size, int pixel_type, const NumpyArray& 
     _size = size;
     _pixel_type = pixel_type;
     _data = data;
+    _step[0] = 0; _step[1] = 0; _step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        _step[i] = _data.stride(_ndims - 1 - i);
 }
 void Image::release()
 {
     _pixel_type = image::PixelType_Unknown;
     _data = NumpyArray();
+    _step[0] = 0; _step[1] = 0; _step[2] = 0;
 }
 
 void Image::set_origin(const Vec3d& origin)
@@ -96,6 +108,11 @@ Image Image::clone() const
     img._ndims = _ndims;
     img._size = _size;
     img._data = _data.copy();
+    assert(_data.is_contiguous());
+    img._step[0] = 0; img._step[1] = 0; img._step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        img._step[i] = _data.stride(_ndims - 1 - i);
+    img._pixel_type = _pixel_type;
     img._spacing = _spacing;
     img._origin = _origin;
     
@@ -117,11 +134,6 @@ uint8_t* Image::ptr()
     assert(valid());
     return (uint8_t*)_data.data();
 }
-size_t Image::step(int i) const
-{
-    assert(valid());
-    return _data.stride(i);;
-}
 void Image::copy_to(uint8_t* dest) const
 {
     assert(valid());
@@ -142,6 +154,10 @@ Image Image::convert_to(int type) const
 
     Image r = *this;
     r._data = _data.cast(numpy::pixel_type_to_numpy(type));
+    r._pixel_type = type;
+    r._step[0] = 0; r._step[1] = 0; r._step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        r._step[i] = _data.stride(_ndims - 1 - i);
     return r;
 }
 
@@ -154,6 +170,9 @@ _origin(other._origin),
 _spacing(other._spacing),
 _pixel_type(other._pixel_type)
 {
+    _step[0] = 0; _step[1] = 0; _step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        _step[i] = _data.stride(_ndims - 1 - i);
 }
 Image& Image::operator=(const Image& other)
 {
@@ -163,6 +182,10 @@ Image& Image::operator=(const Image& other)
     _origin = other._origin;
     _spacing = other._spacing;
     _pixel_type = other._pixel_type;
+
+    _step[0] = 0; _step[1] = 0; _step[2] = 0;
+    for (int i = 0; i < _ndims; ++i)
+        _step[i] = _data.stride(_ndims - 1 - i);
 
     return *this;
 }
