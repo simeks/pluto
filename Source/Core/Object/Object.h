@@ -28,6 +28,9 @@
     namespace python_convert { \
         template<> \
         API TClass* from_python(PyObject* obj) { \
+            if (obj == Py_None) { \
+                return nullptr; \
+            } \
             if (TClass::static_class()->check_type(obj)) { \
                 Object* ret = python_object::object(obj); \
                 if (ret->is_a(TClass::static_class())) { \

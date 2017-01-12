@@ -17,7 +17,7 @@ namespace numpy
     CORE_API bool check_type(PyObject* obj);
 }
 
-class NumpyArray
+class CORE_API NumpyArray
 {
 public:
     NumpyArray();

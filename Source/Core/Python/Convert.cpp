@@ -44,8 +44,12 @@
     { \
         if (PySequence_Check(obj) && PySequence_Size(obj)) \
         { \
-            PyObject *x = PySequence_GetItem(obj, 0), *y = PySequence_GetItem(obj, 1), *z = PySequence_GetItem(obj, 2); \
-            return Vec3<T>(from_python<T>(x), from_python<T>(y), from_python<T>(z)); \
+            Vec3<T> v; \
+            for (int i = 0; i < std::max<Py_ssize_t>(PySequence_Size(obj), 3); ++i) \
+            { \
+                v[i] = from_python<T>(PySequence_GetItem(obj, 0)); \
+            } \
+            return v; \
         } \
         PyErr_SetString(PyExc_ValueError, "Failed to convert value to Vec3i"); \
         return Vec3<T>(); \
