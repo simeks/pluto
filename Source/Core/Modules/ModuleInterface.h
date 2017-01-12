@@ -8,14 +8,14 @@
     }
 
 
-class ModuleInterface
+class CORE_API ModuleInterface
 {
 public:
     virtual ~ModuleInterface() {}
 
     /// Called right after the module has been loaded
-    virtual void install() = 0;
-    virtual void uninstall() = 0;
+    virtual void install() {};
+    virtual void uninstall() {};
 
     /// Called after the core has been initialized 
     virtual void init() {}

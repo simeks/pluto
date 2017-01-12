@@ -1,0 +1,11 @@
+from waflib.Configure import conf
+
+def build(bld): 
+    bld.shlib(
+        features='pyembed',
+        target='Registration',
+        source=bld.find_files(['**/*.cpp']), 
+        includes='. .. ../../External/gco-v3.0',
+        use='Core Flow',
+    )
+
