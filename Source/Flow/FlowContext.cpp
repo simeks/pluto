@@ -11,6 +11,7 @@
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowContext, write_pin, const char*, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, read_pin, const char*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, is_pin_linked, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowContext, run);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_node_dir);
@@ -19,6 +20,7 @@ OBJECT_INIT_TYPE_FN(FlowContext)
 {
     OBJECT_PYTHON_ADD_METHOD(FlowContext, write_pin, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, read_pin, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowContext, is_pin_linked, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, run, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_dir, "");
     OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_node_dir, "");
@@ -225,6 +227,12 @@ PyObject* FlowContext::read_pin(const char* name)
         // else TODO: Error
     }
     Py_RETURN_NONE;
+}
+bool FlowContext::is_pin_linked(const char* name)
+{
+    if (_current_node)
+        return _current_node->is_pin_linked(name);
+    return false;
 }
 bool FlowContext::has_env_var(const char* key) const
 {

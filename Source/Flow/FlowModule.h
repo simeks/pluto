@@ -1,6 +1,8 @@
 #ifndef __FLOW_MODULE_H__
 #define __FLOW_MODULE_H__
 
+#include "API.h"
+
 #include <Core/Modules/ModuleInterface.h>
 #include <Core/Python/PythonModule.h>
 
@@ -10,7 +12,7 @@ class FlowPythonModule;
 class FlowWindow;
 class QtFlowUI;
 struct FlowNodeDef;
-class FlowModule : public ModuleInterface
+class FLOW_API FlowModule : public ModuleInterface
 {
 public:
     FlowModule();

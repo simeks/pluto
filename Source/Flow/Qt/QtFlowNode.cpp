@@ -191,6 +191,14 @@ const QString& QtFlowNode::title() const
 {
     return _title;
 }
+QtFlowNode::Status QtFlowNode::status() const
+{
+    return _status;
+}
+void QtFlowNode::set_status(Status status)
+{
+    _status = status;
+}
 
 void QtFlowNode::setup()
 {

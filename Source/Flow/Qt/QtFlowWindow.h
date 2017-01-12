@@ -28,6 +28,8 @@ public:
     /// Note: Assumes the caller is on the kernel thread
     Dict run(FlowGraph* graph, const Tuple& args, const Dict& kw);
 
+    bool failed() const;
+
 public slots:
     void run(FlowGraph* graph);
     
@@ -59,8 +61,11 @@ public:
     FlowGraph* graph();
 
     void run_graph();
-    Dict run_graph(const Tuple& args, const Dict& kw);
 
+    Dict run_graph(const Tuple& args, const Dict& kw);
+  
+    /// Do we have a failed run that is waiting?
+    bool run_pending();
     
 public slots:
     void new_graph();
@@ -71,6 +76,9 @@ public slots:
     void run_graph_started();
     void run_graph_failed(const QString& error);
     void run_graph_ended();
+
+    /// Reset the run in case previous failed
+    void reset_run();
 
 protected:
     void closeEvent(QCloseEvent* e);

@@ -29,6 +29,7 @@ public:
     void clear();
 
     Dict run(const Tuple& args, const Dict& kw);
+    Dict resume();
 
 private:
     QtFlowWindow* _window;

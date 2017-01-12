@@ -186,6 +186,8 @@ FlowGraph* QtFlowGraphScene::graph() const
 }
 void QtFlowGraphScene::set_graph(FlowGraph* graph)
 {
+    std::map<Guid, QtFlowNode*> old_nodes = _nodes;
+
     clear_scene();
     graph->addref();
     _flow_graph->release();
@@ -198,6 +200,11 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     {
         FlowNode* node = n.second;
         QtFlowNode* ui_node = _create_node(node);
+
+        auto old_node = old_nodes.find(node->node_id());
+        if (old_node != old_nodes.end())
+            ui_node->set_status(old_node->second->status());
+
         ui_node->move_node(QPointF(node->ui_pos().x, node->ui_pos().y));
         addItem(ui_node);
 

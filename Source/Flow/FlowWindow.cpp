@@ -12,6 +12,7 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, save, const char*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowWindow, graph);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, set_graph, FlowGraph*);
 PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT_RETURN(FlowWindow, run);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowWindow, resume);
 
 OBJECT_INIT_TYPE_FN(FlowWindow)
 {
@@ -22,6 +23,7 @@ OBJECT_INIT_TYPE_FN(FlowWindow)
     OBJECT_PYTHON_ADD_METHOD(FlowWindow, graph, "");
     OBJECT_PYTHON_ADD_METHOD(FlowWindow, set_graph, "");
     OBJECT_PYTHON_ADD_KEYWORD_METHOD(FlowWindow, run, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowWindow, resume, "");
 }
 
 IMPLEMENT_OBJECT(FlowWindow, "FlowWindow", FLOW_API);
@@ -74,6 +76,15 @@ Dict FlowWindow::run(const Tuple& args, const Dict& kw)
     if (args.size() != 0)
         PYTHON_ERROR_R(ValueError, Dict(), "run takes only keyword arguments");
 
+    if (_window->run_pending())
+        _window->reset_run();
+
     return _window->run_graph(args, kw);
+}
+Dict FlowWindow::resume()
+{
+    if (_window->run_pending())
+        return _window->run_graph(Tuple(), Dict());
+    PYTHON_ERROR_R(ValueError, Dict(), "no run pending");
 }
 

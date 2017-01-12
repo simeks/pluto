@@ -111,6 +111,10 @@ Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
     return ret;
 
 }
+bool QtFlowGraphRunner::failed() const
+{
+    return _context != nullptr;
+}
 void QtFlowGraphRunner::run(FlowGraph* graph)
 {
     emit run_started();
@@ -211,6 +215,15 @@ Dict QtFlowWindow::run_graph(const Tuple& args, const Dict& kw)
         return Dict();
     return _graph_runner->run(graph(), args, kw);
 }
+void QtFlowWindow::reset_run()
+{
+    _graph_runner->reset();
+}
+bool QtFlowWindow::run_pending()
+{
+    return _graph_runner->failed();
+}
+
 void QtFlowWindow::new_graph()
 {
     QtFlowGraphScene* scene = _graph_view->scene();
@@ -329,8 +342,8 @@ void QtFlowWindow::update_title()
 void QtFlowWindow::_set_graph(FlowGraph* graph)
 {
     QtFlowGraphScene* scene = _graph_view->scene();
-    if (scene)
-        scene->set_graph(graph);
+    scene->set_graph(graph);
+    _graph_view->reset_nodes();
 }
 void QtFlowWindow::_clear_graph()
 {
@@ -476,8 +489,13 @@ void QtFlowWindow::setup_ui()
         action_full_run->setStatusTip("Runs the current graph from start");
         connect(action_full_run, &QAction::triggered, this, &QtFlowWindow::on_full_run);
 
+        QAction* action_reset = new QAction(tr("Reset"), this);
+        action_reset->setStatusTip("Resets the graph");
+        connect(action_reset, &QAction::triggered, this, &QtFlowWindow::reset_run);
+
         menu_run->addAction(action_run);
         menu_run->addAction(action_full_run);
+        menu_run->addAction(action_reset);
     }
 
     {

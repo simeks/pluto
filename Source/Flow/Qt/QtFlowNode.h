@@ -11,6 +11,14 @@ class QWidget;
 class QtFlowNode : public QGraphicsItem
 {
 public:
+    enum Status
+    {
+        Idle,
+        Running,
+        Finished,
+        Failed
+    };
+
     enum { Type = UserType + 1 };
 
     QtFlowNode(FlowNode* node, QGraphicsItem* parent = nullptr);
@@ -42,16 +50,12 @@ public:
 
     const QString& title() const;
 
+    Status status() const;
+    void set_status(Status status);
+
     int type() const;
 
 protected:
-    enum Status 
-    {
-        Idle,
-        Running,
-        Finished,
-        Failed
-    };
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
 
