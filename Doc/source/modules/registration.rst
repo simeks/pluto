@@ -1,0 +1,5 @@
+Registration
+------------
+
+.. automodule:: registration
+   :members:
