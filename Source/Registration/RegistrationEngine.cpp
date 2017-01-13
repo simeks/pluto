@@ -173,14 +173,36 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
     return result;
 }
 
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, set_constraints, ImageObject*, ImageObject*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(RegistrationEngine, set_starting_guess, ImageObject*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, execute, Tuple, Tuple);
 
 OBJECT_INIT_TYPE_FN(RegistrationEngine)
 {
-    OBJECT_PYTHON_NO_METHODS();
+    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, set_constraints, 
+        "set_constraints(values, mask=None)\n"
+        "--\n"
+        "Args:\n"
+        "    value (Image) : Image of Vec3d containing displacement vectors\n"
+        "    mask (Image) : Binary image specifying which voxels to constrain\n"
+        "");
+    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, set_starting_guess,
+        "set_starting_guess(values)\n"
+        "--\n"
+        "Args:\n"
+        "    value (Image) : Image of Vec3d with the initial deformation field\n"
+        "");
+    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, execute, "");
 }
 
 #define NO_API 
-IMPLEMENT_OBJECT(RegistrationEngine, "RegistrationEngine", NO_API);
+IMPLEMENT_OBJECT_DOC(RegistrationEngine, "RegistrationEngine", NO_API,
+    "RegistrationEngine(optimizer, image_type, settings=None)\n\n\
+    Args:\n\
+        optimizer (str) : Name of the optimizer method to use (e.g. blocked_graph_cut') \n\
+        image_type (int) : Image type of the image, see image.PixelType_* \n\
+        settings (dict) : Dictionary of all settings for the engine \n\
+    ");
 IMPLEMENT_OBJECT_CONSTRUCTOR(RegistrationEngine, Object);
 
 RegistrationEngine::~RegistrationEngine()
@@ -212,6 +234,10 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
         optimizer_name = args.get<const char*>(0);
         image_type = args.get<image::PixelType>(1);
     }
+    else
+    {
+        PYTHON_ERROR(ValueError, "Expected at least two arguments");
+    }
     if (args.size() >= 3)
     {
         settings = python_convert::from_python<Dict>(args.get(2));
@@ -227,8 +253,19 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
         _normalize_images = settings.get<bool>("normalize_images");
 
 }
-void RegistrationEngine::set_constraints(ImageObject* mask, ImageObject* values)
+void RegistrationEngine::set_constraints(ImageObject* values, ImageObject* mask)
 {
+    if (values)
+    {
+        if (values->pixel_type() != image::PixelType_Vec3d)
+            PYTHON_ERROR(ValueError, "Constraint value image needs to be of Vec3d type!");
+
+        _constraint_pyramid[0] = values->image();
+    }
+    else
+    {
+        _constraint_pyramid[0] = ImageVec3d();
+    }
     if (mask)
     {
         if (mask->pixel_type() != image::PixelType_UInt8)
@@ -241,17 +278,6 @@ void RegistrationEngine::set_constraints(ImageObject* mask, ImageObject* values)
         _constraint_mask_pyramid[0] = ImageUInt8();
     }
 
-    if (values)
-    {
-        if (values->pixel_type() != image::PixelType_Vec3d)
-            PYTHON_ERROR(ValueError, "Constraint value image needs to be of Vec3d type!");
-
-        _constraint_pyramid[0] = values->image();
-    }
-    else
-    {
-        _constraint_pyramid[0] = ImageVec3d();
-    }
 }
 void RegistrationEngine::set_starting_guess(ImageObject* starting_guess)
 {
@@ -267,7 +293,7 @@ void RegistrationEngine::set_starting_guess(ImageObject* starting_guess)
         _deformation_pyramid[0] = ImageVec3d();
     }
 }
-ImageObject* RegistrationEngine::execute(const Params& params)
+ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
 {
     _fixed_pyramid.clear();
     _moving_pyramid.clear();
@@ -276,9 +302,12 @@ ImageObject* RegistrationEngine::execute(const Params& params)
     _constraint_mask_pyramid.clear();
     _constraint_pyramid.clear();
 
-    _image_pair_count = (int)params.fixed.size();
+    if (fixed.size() != moving.size())
+        PYTHON_ERROR_R(ValueError, nullptr, "Expected an equal number of fixed- and moving images");
+        
+    _image_pair_count = (int)fixed.size();
     if (_image_pair_count == 0)
-        PYTHON_ERROR_R(ValueError, nullptr, "Invalid number of image pairs!");
+        PYTHON_ERROR_R(ValueError, nullptr, "invalid number of image pairs");
 
     _fixed_pyramid.resize(_pyramid_level_max);
     _moving_pyramid.resize(_pyramid_level_max);
@@ -289,11 +318,14 @@ ImageObject* RegistrationEngine::execute(const Params& params)
 
     for (int i = 0; i < _image_pair_count; ++i)
     {
-        int pixel_type = params.fixed[i].pixel_type();
+        ImageObject* fixed_img = fixed.get<ImageObject*>(i);
+        ImageObject* moving_img = moving.get<ImageObject*>(i);
 
-        if (params.fixed[i].pixel_type() != params.moving[i].pixel_type() ||
-            params.fixed[i].size() != params.moving[i].size())
-            PYTHON_ERROR_R(ValueError, nullptr, "Image pairs needs to have the same size and pixel type!");
+        int pixel_type = fixed_img->pixel_type();
+
+        if (fixed_img->pixel_type() != moving_img->pixel_type() ||
+            fixed_img->size() != moving_img->size())
+            PYTHON_ERROR_R(ValueError, nullptr, "Image pairs needs to have the same size and pixel type");
 
         _fixed_pyramid[0].resize(_image_pair_count);
         _moving_pyramid[0].resize(_image_pair_count);
@@ -301,20 +333,20 @@ ImageObject* RegistrationEngine::execute(const Params& params)
         if (_normalize_images && pixel_type == image::PixelType_Float32)
         {
             PYTHON_STDOUT("Normalizes image pair...\n");
-            _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(params.fixed[i]);
-            _moving_pyramid[0][i] = normalize_image<ImageFloat32>(params.moving[i]);
+            _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(fixed_img->image());
+            _moving_pyramid[0][i] = normalize_image<ImageFloat32>(moving_img->image());
         }
         else if (_normalize_images && pixel_type == image::PixelType_Float64)
         {
             PYTHON_STDOUT("Normalizes image pair...\n");
-            _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(params.fixed[i]);
-            _moving_pyramid[0][i] = normalize_image<ImageFloat64>(params.moving[i]);
+            _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(fixed_img->image());
+            _moving_pyramid[0][i] = normalize_image<ImageFloat64>(moving_img->image());
         }
         else
         {
             // We don't normalize non-float images
-            _fixed_pyramid[0][i] = params.fixed[i];
-            _moving_pyramid[0][i] = params.moving[i];
+            _fixed_pyramid[0][i] = fixed_img->image();
+            _moving_pyramid[0][i] = moving_img->image();
         }
     }
 

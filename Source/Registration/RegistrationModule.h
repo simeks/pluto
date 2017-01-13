@@ -9,7 +9,7 @@ public:
     RegistrationModule();
     ~RegistrationModule();
 
-    void init() OVERRIDE;
+    void install() OVERRIDE;
 };
 
 #endif // __REGISTRATION_MODULE_H__

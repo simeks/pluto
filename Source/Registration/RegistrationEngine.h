@@ -28,10 +28,10 @@ public:
     void object_init() OVERRIDE;
     void object_python_init(const Tuple&, const Dict&) OVERRIDE;
 
-    void set_constraints(ImageObject* mask, ImageObject* values);
+    void set_constraints(ImageObject* values, ImageObject* mask);
     void set_starting_guess(ImageObject* starting_guess);
 
-    ImageObject* execute(const Params& params);
+    ImageObject* execute(const Tuple& fixed, const Tuple& moving);
 
 private:
     Optimizer* create_optimizer(const char* name, 
