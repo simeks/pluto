@@ -1,7 +1,9 @@
 #include <Core/Common.h>
 #include <Core/Image/Image.h>
+#include <Core/Image/ImageObject.h>
 #include <Core/Python/PythonCommon.h>
 
+#include "BlockedGraphCutOptimizer.h"
 #include "Optimizer.h"
 #include "RegistrationEngine.h"
 #include "Resample.h"
@@ -172,19 +174,100 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
 }
 
 
-RegistrationEngine::RegistrationEngine(Optimizer* optimizer) :
-    _optimizer(optimizer), 
-    _pyramid_levels(6),
-    _pyramid_max_level(0),
-    _image_pair_count(0),
-    _normalize_images(true)
+OBJECT_INIT_TYPE_FN(RegistrationEngine)
 {
-}
-RegistrationEngine::~RegistrationEngine()
-{
+    OBJECT_PYTHON_NO_METHODS();
 }
 
-ImageVec3d RegistrationEngine::execute(const Params& params)
+#define NO_API 
+IMPLEMENT_OBJECT(RegistrationEngine, "RegistrationEngine", NO_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(RegistrationEngine, Object);
+
+RegistrationEngine::~RegistrationEngine()
+{
+    delete _optimizer;
+}
+void RegistrationEngine::object_init()
+{
+    _optimizer = nullptr;
+    _pyramid_level_min = 0;
+    _pyramid_level_max = 6;
+    _image_pair_count = 0;
+    _normalize_images = true;
+}
+void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
+{
+    _optimizer = nullptr;
+    _pyramid_level_min = 0;
+    _pyramid_level_max = 6;
+    _image_pair_count = 0;
+    _normalize_images = true;
+
+    const char* optimizer_name = 0;
+    image::PixelType image_type = image::PixelType_Unknown;
+    Dict settings;
+
+    if (args.size() >= 2)
+    {
+        optimizer_name = args.get<const char*>(0);
+        image_type = args.get<image::PixelType>(1);
+    }
+    if (args.size() >= 3)
+    {
+        settings = python_convert::from_python<Dict>(args.get(2));
+    }
+
+    _optimizer = create_optimizer(optimizer_name, image_type, settings);
+
+    if (settings.has_key("pyramid_level_min"))
+        _pyramid_level_min = settings.get<int>("pyramid_level_min");
+    if (settings.has_key("pyramid_level_max"))
+        _pyramid_level_max = settings.get<int>("pyramid_level_max");
+    if (settings.has_key("normalize_images"))
+        _normalize_images = settings.get<bool>("normalize_images");
+
+}
+void RegistrationEngine::set_constraints(ImageObject* mask, ImageObject* values)
+{
+    if (mask)
+    {
+        if (mask->pixel_type() != image::PixelType_UInt8)
+            PYTHON_ERROR(ValueError, "Constraint mask needs to be of UInt8 type!");
+
+        _constraint_mask_pyramid[0] = mask->image();
+    }
+    else
+    {
+        _constraint_mask_pyramid[0] = ImageUInt8();
+    }
+
+    if (values)
+    {
+        if (values->pixel_type() != image::PixelType_Vec3d)
+            PYTHON_ERROR(ValueError, "Constraint value image needs to be of Vec3d type!");
+
+        _constraint_pyramid[0] = values->image();
+    }
+    else
+    {
+        _constraint_pyramid[0] = ImageVec3d();
+    }
+}
+void RegistrationEngine::set_starting_guess(ImageObject* starting_guess)
+{
+    if (starting_guess)
+    {
+        if (starting_guess->pixel_type() != image::PixelType_Vec3d)
+            PYTHON_ERROR(ValueError, "Starting guess needs to be of Vec3d type!");
+
+        _deformation_pyramid[0] = starting_guess->image();
+    }
+    else
+    {
+        _deformation_pyramid[0] = ImageVec3d();
+    }
+}
+ImageObject* RegistrationEngine::execute(const Params& params)
 {
     _fixed_pyramid.clear();
     _moving_pyramid.clear();
@@ -195,14 +278,14 @@ ImageVec3d RegistrationEngine::execute(const Params& params)
 
     _image_pair_count = (int)params.fixed.size();
     if (_image_pair_count == 0)
-        PYTHON_ERROR_R(ValueError, ImageVec3d(), "Invalid number of image pairs!");
+        PYTHON_ERROR_R(ValueError, nullptr, "Invalid number of image pairs!");
 
-    _fixed_pyramid.resize(_pyramid_levels);
-    _moving_pyramid.resize(_pyramid_levels);
-    _deformation_pyramid.resize(_pyramid_levels);
-    _residual_pyramid.resize(_pyramid_levels-1);
-    _constraint_mask_pyramid.resize(_pyramid_levels);
-    _constraint_pyramid.resize(_pyramid_levels);
+    _fixed_pyramid.resize(_pyramid_level_max);
+    _moving_pyramid.resize(_pyramid_level_max);
+    _deformation_pyramid.resize(_pyramid_level_max);
+    _residual_pyramid.resize(_pyramid_level_max -1);
+    _constraint_mask_pyramid.resize(_pyramid_level_max);
+    _constraint_pyramid.resize(_pyramid_level_max);
 
     for (int i = 0; i < _image_pair_count; ++i)
     {
@@ -210,7 +293,7 @@ ImageVec3d RegistrationEngine::execute(const Params& params)
 
         if (params.fixed[i].pixel_type() != params.moving[i].pixel_type() ||
             params.fixed[i].size() != params.moving[i].size())
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Image pairs needs to have the same size and pixel type!");
+            PYTHON_ERROR_R(ValueError, nullptr, "Image pairs needs to have the same size and pixel type!");
 
         _fixed_pyramid[0].resize(_image_pair_count);
         _moving_pyramid[0].resize(_image_pair_count);
@@ -235,43 +318,23 @@ ImageVec3d RegistrationEngine::execute(const Params& params)
         }
     }
 
-    if (params.starting_guess)
-    {
-        if (params.starting_guess.pixel_type() != image::PixelType_Vec3d)
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Starting guess needs to be of Vec3d type!");
+    // Confirm that all images are of same size
 
-        if (params.starting_guess.size() != _fixed_pyramid[0][0].size())
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Starting guess needs to be of same size as the image pair.");
+    if (_deformation_pyramid[0].valid() && _deformation_pyramid[0].size() != _fixed_pyramid[0][0].size())
+        PYTHON_ERROR_R(ValueError, nullptr, "Starting guess needs to be of same size as the image pair.");
 
-        _deformation_pyramid[0] = params.starting_guess;
-    }
+    if (_constraint_mask_pyramid[0].valid() && _constraint_mask_pyramid[0].size() != _fixed_pyramid[0][0].size())
+        PYTHON_ERROR_R(ValueError, nullptr, "Constraint mask needs to be of same size as the image pair.");
 
-    if (params.constraint_mask)
-    {
-        if (params.constraint_mask.pixel_type() != image::PixelType_UInt8)
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Constraint mask needs to be of UInt8 type!");
+    if (_constraint_pyramid[0].valid() && _constraint_pyramid[0].size() != _fixed_pyramid[0][0].size())
+        PYTHON_ERROR_R(ValueError, nullptr, "Constraint value image needs to be of same size as the image pair.");
 
-        if (params.constraint_mask.size() != _fixed_pyramid[0][0].size())
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Constraint mask needs to be of same size as the image pair.");
-
-        _constraint_mask_pyramid[0] = params.constraint_mask;
-    }
-    if (params.constraint_values)
-    {
-        if (params.constraint_values.pixel_type() != image::PixelType_Vec3d)
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Constraint value image needs to be of Vec3d type!");
-
-        if (params.constraint_values.size() != _fixed_pyramid[0][0].size())
-            PYTHON_ERROR_R(ValueError, ImageVec3d(), "Constraint value image needs to be of same size as the image pair.");
-
-        _constraint_pyramid[0] = params.constraint_values;
-    }
 
     build_pyramid();
 
-    for (int l = _pyramid_levels - 1; l >= 0; l--) 
+    for (int l = _pyramid_level_max - 1; l >= 0; l--)
     {
-        if (l >= _pyramid_max_level) 
+        if (l >= _pyramid_level_min)
         {
             _optimizer->execute(&_fixed_pyramid[l][0], &_moving_pyramid[l][0], _image_pair_count, _constraint_mask_pyramid[l], _constraint_pyramid[l], _deformation_pyramid[l]);
         }
@@ -281,7 +344,7 @@ ImageVec3d RegistrationEngine::execute(const Params& params)
             image::upsample_vectorfield(_deformation_pyramid[l], 2.0, _residual_pyramid[l - 1], _deformation_pyramid[l - 1]);
         }
     }
-    return _deformation_pyramid[0];
+    return object_new<ImageObject>(_deformation_pyramid[0]);
 }
 
 void RegistrationEngine::build_pyramid()
@@ -291,7 +354,7 @@ void RegistrationEngine::build_pyramid()
     if (!_constraint_mask_pyramid[0].valid())
         _constraint_mask_pyramid[0] = ImageUInt8(_fixed_pyramid[0][0].ndims(), _fixed_pyramid[0][0].size(), uint8_t(0));
 
-    for (int l = 0; l < _pyramid_levels - 1; ++l) 
+    for (int l = 0; l < _pyramid_level_max - 1; ++l)
     {
         _fixed_pyramid[l+1].resize(_image_pair_count);
         _moving_pyramid[l+1].resize(_image_pair_count);
@@ -315,7 +378,7 @@ void RegistrationEngine::build_pyramid()
     if (!_deformation_pyramid[0].valid()) // Has no starting guess
         _deformation_pyramid[0] = ImageVec3d(_fixed_pyramid[0][0].ndims(), _fixed_pyramid[0][0].size(), Vec3d(0, 0, 0));
 
-    for (int l = 0; l < _pyramid_levels-1; l++)
+    for (int l = 0; l < _pyramid_level_max -1; l++)
     {
         _deformation_pyramid[l + 1] = image::downsample_vectorfield(_deformation_pyramid[l], 0.5, _residual_pyramid[l]);
     }
@@ -329,4 +392,24 @@ double RegistrationEngine::unit_sigma(const Image& img)
     min_spacing = std::min(min_spacing, spacing.y);
     min_spacing = std::min(min_spacing, spacing.z);
     return min_spacing;
+}
+Optimizer* RegistrationEngine::create_optimizer(const char* name, 
+    image::PixelType image_type,
+    const Dict& settings) const
+{
+    if (strcmp(name, "blocked_graph_cut") == 0)
+    {
+        switch (image_type)
+        {
+        case image::PixelType_Float32:
+            return new BlockedGraphCutOptimizer<ImageFloat32>(settings);
+        case image::PixelType_Float64:
+            return new BlockedGraphCutOptimizer<ImageFloat64>(settings);
+        case image::PixelType_Vec4f:
+            return new BlockedGraphCutOptimizer<ImageColorf>(settings);
+        default:
+            PYTHON_ERROR_R(NotImplementedError, nullptr, "Image type %s not implemented", image::pixel_type_to_string(image_type));
+        }
+    }
+    PYTHON_ERROR_R(ValueError, nullptr, "No optimizer with name '%s' found", name);
 }

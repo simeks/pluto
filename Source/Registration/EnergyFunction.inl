@@ -1,8 +1,8 @@
 
 template<typename TImage>
-EnergyFunction<TImage>::EnergyFunction(double alpha) :
-_alpha(alpha),
-_pair_count(0)
+EnergyFunction<TImage>::EnergyFunction() :
+    _regulariation_weight(0.05),
+    _pair_count(0)
 {
 }
 
@@ -16,7 +16,7 @@ INLINE double EnergyFunction<TImage>::unary_term(const Vec3i& p, const Vec3d& de
             _moving_image[i].linear_at(Vec3d(p) + def)), 2);
     }
 
-    return (1 - _alpha)*dataterm;
+    return (1 - _regulariation_weight)*dataterm;
 }
 template<typename TImage>
 INLINE double EnergyFunction<TImage>::binary_term(const Vec3d& def1, const Vec3d& def2, const Vec3i& step)
@@ -24,7 +24,7 @@ INLINE double EnergyFunction<TImage>::binary_term(const Vec3d& def1, const Vec3d
     Vec3d diff = (def1 - def2) * _moving_spacing;
 
     double n = (step * _fixed_spacing).length_squared();
-    return _alpha*diff.length_squared() / n; // TODO: Spacing?
+    return _regulariation_weight*diff.length_squared() / n; // TODO: Spacing?
 }
 template<typename TImage>
 void EnergyFunction<TImage>::set_images(const Image* fixed_image, const Image* moving_image, int pair_count)
@@ -45,7 +45,11 @@ void EnergyFunction<TImage>::set_images(const Image* fixed_image, const Image* m
     _fixed_spacing = _fixed_image[0].spacing();
     _moving_spacing = _moving_image[0].spacing();
 }
-
+template <typename TImage>
+INLINE void EnergyFunction<TImage>::set_regularization_weight(double alpha)
+{
+    _regulariation_weight = alpha;
+}
 template<>
 INLINE double EnergyFunction<ImageColorf>::unary_term(const Vec3i& p, const Vec3d& def)
 {
@@ -57,5 +61,5 @@ INLINE double EnergyFunction<ImageColorf>::unary_term(const Vec3i& p, const Vec3
         dataterm += diff.r*diff.r + diff.g*diff.g + diff.b*diff.b + diff.a*diff.a;
     }
 
-    return (1 - _alpha)*dataterm;
+    return (1 - _regulariation_weight)*dataterm;
 }

@@ -9,14 +9,6 @@
 #include "RegistrationEngine.h"
 #include "Registration.h"
 
-template<typename TImage>
-static ImageVec3d exec_registration(const RegistrationEngine::Params& params)
-{
-    BlockedGraphCutOptimizer<TImage> optimizer;
-    RegistrationEngine engine(&optimizer);
-    return engine.execute(params);
-}
-
 void registration::registration_node(FlowContext* ctx)
 {
     RegistrationEngine::Params params;
@@ -132,20 +124,20 @@ void registration::registration_node(FlowContext* ctx)
     }
 
     Image def;
-    switch (pixel_type)
-    {
-    case image::PixelType_Float32:
-        def = exec_registration<ImageFloat32>(params);
-        break;
-    case image::PixelType_Float64:
-        def = exec_registration<ImageFloat64>(params);
-        break;
-    case image::PixelType_Vec4f:
-        def = exec_registration<ImageColorf>(params);
-        break;
-    default:
-        PYTHON_ERROR(ValueError, "RegistrationNode: Could not register image pair.");
-    }
+    //switch (pixel_type)
+    //{
+    //case image::PixelType_Float32:
+    //    def = exec_registration<ImageFloat32>(params);
+    //    break;
+    //case image::PixelType_Float64:
+    //    def = exec_registration<ImageFloat64>(params);
+    //    break;
+    //case image::PixelType_Vec4f:
+    //    def = exec_registration<ImageColorf>(params);
+    //    break;
+    //default:
+    //    PYTHON_ERROR(ValueError, "RegistrationNode: Could not register image pair.");
+    //}
 
     if (def)
     {

@@ -4,11 +4,12 @@
 #include "EnergyFunction.h"
 #include "Optimizer.h"
 
+
 template<typename TImage>
 class BlockedGraphCutOptimizer : public Optimizer
 {
 public:
-    BlockedGraphCutOptimizer();
+    BlockedGraphCutOptimizer(const Dict& settings);
     ~BlockedGraphCutOptimizer();
 
     void execute(
@@ -29,7 +30,8 @@ private:
         ImageVec3d& def);
 
     Vec3i _neighbors[6];
-    double _epsilon;
+    Vec3i _block_size;
+    double _step_size;
 
     EnergyFunction<TImage> _energy;
 };

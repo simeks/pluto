@@ -11,15 +11,17 @@ template<typename TImage>
 class EnergyFunction
 {
 public:
-    EnergyFunction(double alpha);
+    EnergyFunction();
 
     double unary_term(const Vec3i& p, const Vec3d& def);
     double binary_term(const Vec3d& def1, const Vec3d& def2, const Vec3i& step);
 
     void set_images(const Image* fixed, const Image* moving, int pair_count);
 
+    void set_regularization_weight(double alpha);
+
 private:
-    double _alpha;
+    double _regulariation_weight;
 
     Vec3d _fixed_spacing;
     Vec3d _moving_spacing;

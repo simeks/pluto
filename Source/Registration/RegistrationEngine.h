@@ -2,10 +2,14 @@
 #define __REGISTRATION_ENGINE_H__
 
 #include <Core/Image/Image.h>
+#include <Core/Object/Object.h>
 
+class ImageObject;
 class Optimizer;
-class RegistrationEngine
+class RegistrationEngine : public Object
 {
+    DECLARE_OBJECT(RegistrationEngine, Object);
+
 public:
     struct Params
     {
@@ -18,19 +22,28 @@ public:
         ImageVec3d starting_guess;
     };
 
-    RegistrationEngine(Optimizer* optimizer);
+    DECLARE_OBJECT_CONSTRUCTOR(RegistrationEngine);
     ~RegistrationEngine();
 
-    ImageVec3d execute(const Params& params);
+    void object_init() OVERRIDE;
+    void object_python_init(const Tuple&, const Dict&) OVERRIDE;
+
+    void set_constraints(ImageObject* mask, ImageObject* values);
+    void set_starting_guess(ImageObject* starting_guess);
+
+    ImageObject* execute(const Params& params);
 
 private:
+    Optimizer* create_optimizer(const char* name, 
+        image::PixelType image_type, const Dict& settings) const;
+
     void build_pyramid();
     double unit_sigma(const Image& img);
 
     Optimizer* _optimizer;
 
-    int _pyramid_levels;
-    int _pyramid_max_level;
+    int _pyramid_level_min;
+    int _pyramid_level_max;
 
     std::vector<std::vector<Image>> _fixed_pyramid;
     std::vector<std::vector<Image>> _moving_pyramid;

@@ -2,11 +2,30 @@
 #include "BlockChangeFlags.h"
 #include "GraphCut.h"
 
-template<typename TImage>
-BlockedGraphCutOptimizer<TImage>::BlockedGraphCutOptimizer() : 
-_epsilon(0.5),
-_energy(0.05)
+
+
+// Default parameters
+namespace
 {
+    const double default_step_size = 0.5;
+    const double default_regularization_weight = 0.05;
+    const Vec3i default_block_size = Vec3i(12, 12, 12);
+}
+
+
+template<typename TImage>
+BlockedGraphCutOptimizer<TImage>::BlockedGraphCutOptimizer(const Dict& settings) :
+    _step_size(default_step_size)
+{
+    _energy.set_regularization_weight(default_regularization_weight);
+
+    if (settings.has_key("step_size"))
+        _step_size = settings.get<double>("step_size");
+    if (settings.has_key("regularization_weight"))
+        _energy.set_regularization_weight(settings.get<double>("regularization_weight"));
+    if (settings.has_key("block_size"))
+        _block_size = settings.get<Vec3i>("block_size");
+
 }
 template<typename TImage>
 BlockedGraphCutOptimizer<TImage>::~BlockedGraphCutOptimizer()
@@ -31,7 +50,7 @@ void BlockedGraphCutOptimizer<TImage>::execute(
     int ndims = def.ndims();
     Vec3i dims = def.size();
 
-    Vec3i block_dims = Vec3i(12, 12, 12);
+    Vec3i block_dims = _block_size;
     if (block_dims.x == 0)
         block_dims.x = dims.x;
     if (block_dims.y == 0)
@@ -158,7 +177,7 @@ void BlockedGraphCutOptimizer<TImage>::execute(
                     bool block_changed = false;
                     for (int n = 0; n < n_count; ++n)
                     {
-                        Vec3d delta = _epsilon * Vec3d(
+                        Vec3d delta = _step_size * Vec3d(
                             moving_spacing_inv.x * _neighbors[n].x,
                             moving_spacing_inv.y * _neighbors[n].y,
                             moving_spacing_inv.z * _neighbors[n].z
