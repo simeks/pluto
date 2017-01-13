@@ -13,7 +13,7 @@ class Parameters:
 def read(File):
     """
     Returns:
-    Params
+        Params
     """
     if type(File) != str:
         raise ValueError('Unexpected arguments')

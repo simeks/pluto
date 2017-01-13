@@ -6,12 +6,12 @@ from image import Image
 def color_split_channels(ctx):
     """
     Arguments:
-    Image
+        Image
     Returns:
-    R
-    G
-    B
-    A
+        R
+        G
+        B
+        A
     """
     if not ctx.is_pin_linked('Image'):
         return
@@ -34,4 +34,3 @@ def color_split_channels(ctx):
 
     if (ctx.is_pin_linked('A')):
         ctx.write_pin('A', Image(arr[::,::,3], dtype))
-        

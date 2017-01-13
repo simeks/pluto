@@ -5,7 +5,7 @@ from flow import node
 def equal(x1, x2):
     """
     Returns:
-    Out
+        Out
     """
     return np.equal(x1, x2)
 
@@ -13,6 +13,6 @@ def equal(x1, x2):
 def logical_and(x1, x2):
     """
     Returns:
-    Out
+        Out
     """
     return np.logical_and(x1, x2)

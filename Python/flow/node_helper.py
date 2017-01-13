@@ -8,38 +8,64 @@ def parse_args_from_fn(fn):
     return inspect.getargspec(fn).args
 
 def parse_returns(fn):
+    """
+    Looks for returns in the given functions docstring.
+    
+    For this function to be successful the docstring is required according to: 
+    http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+    """
+
     doc = fn.__doc__
     if doc == None:
         return []
-    lines = [l.strip() for l in doc.split('\n')]
-    begin = lines.index('Returns:')
-    
+    lines = doc.split('\n')
+    begin = -1
+    end = len(lines)
+    for i, l in enumerate(lines):
+        if re.match('( {4}|\t)Returns:', l):
+            begin = i
+        if begin != -1 and re.match('(( {4}|\t)(Arguments:)|(Args:))|(\w*$)', l):
+            end = i
+
+    if begin == -1:
+        return []
+
     returns = []
-    for i in range(begin+1, len(lines)):
-        if lines[i] == '' or lines[i].startswith('Arguments:'):
-            break
-        m = re.match('(\S+)', lines[i])
+    for i in range(begin+1, end):
+        m = re.match('( {8}|\t\t)(\S+)', lines[i])
         if m:
-            returns.append(m.group(1))
+            returns.append(m.group(2))
 
     return returns
 
 def parse_args(fn):
+    """
+    Looks for arguments in the given functions docstring.
+    
+    For this function to be successful the docstring is required according to: 
+    http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+    """
+
     doc = fn.__doc__
     if doc == None:
         return []
-    lines = [l.strip() for l in doc.split('\n')]
-    begin = lines.index('Arguments:')
-    
-    args = []
-    for i in range(begin+1, len(lines)):
-        if lines[i] == '' or lines[i].startswith('Returns:'):
-            break
-        m = re.match('(\S+)', lines[i])
-        if m:
-            args.append(m.group(1))
+    lines = doc.split('\n')
+    begin = -1
+    end = len(lines)
+    for i, l in enumerate(lines):
+        if re.match('( {4}|\t)(Arguments:)|(Args:):', l):
+            begin = i
+        if begin != -1 and re.match('(( {4}|\t)Returns:)|(\w*$)', l):
+            end = i
 
-    return args
+    if begin == -1:
+        return []
+
+    returns = []
+    for i in range(begin+1, end):
+        m = re.match('( {8}|\t\t)(\S+)', lines[i])
+        if m:
+            returns.append(m.group(2))
 
 @pluto_class
 class FunctionNode(flow.Node):
@@ -88,8 +114,9 @@ class ContextFunctionNode(flow.Node):
         super(ContextFunctionNode, self).__init__()
 
         self.args = parse_args(fn)
-        for a in self.args:
-            self.add_pin(a, flow.Pin.In)
+        if self.args:
+            for a in self.args:
+                self.add_pin(a, flow.Pin.In)
 
         self.returns = parse_returns(fn)
         for a in self.returns:

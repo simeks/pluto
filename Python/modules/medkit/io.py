@@ -73,7 +73,7 @@ def format_to_sitk(fmt):
 def read(file):
     """
     Returns:
-    Image : Loaded image
+        Image : Loaded image
     """
     reader = sitk.ImageFileReader()
     reader.SetFileName(file)
