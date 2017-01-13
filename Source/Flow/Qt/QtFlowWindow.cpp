@@ -159,6 +159,7 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
     _recent_menu(nullptr),
     _changed(false)
 {
+    setWindowIcon(QIcon(":/res/icon.ico"));
     _undo_stack = new QUndoStack(this);
 
     setMinimumSize(800, 600);

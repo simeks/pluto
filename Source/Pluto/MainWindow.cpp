@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) :
 QMainWindow(parent),
 _console_widget(nullptr)
 {
+    setWindowIcon(QIcon(":/res/icon.ico"));
+
     setMinimumSize(400, 300);
 
     QCoreApplication::setOrganizationName("Simon");

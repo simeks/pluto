@@ -15,7 +15,7 @@ def build(bld):
 	bld.program(
 		features='qt5 pyembed',
 		target='Pluto',
-		source=bld.find_files('**/(*.cpp)') + ['resources.qrc'], 
+		source=bld.find_files('**/(*.cpp)') + ['resources.qrc'] + ['pluto.rc'], 
 		moc=[
 			'Console/ConsoleWidget.h',
 			'MainWindow.h',
