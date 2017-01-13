@@ -16,10 +16,10 @@
 #define OBJECT_PYTHON_NO_METHODS() type;
 
 #define OBJECT_PYTHON_ADD_METHOD(TClass, Name, Doc) \
-    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS, Doc);
+    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_KEYWORD_METHOD(TClass, Name, Doc) \
-    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, Doc);
+    type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
     type->add_attr(Name, python_convert::to_python(Value));
@@ -61,7 +61,7 @@
     virtual Object* clone();
 
 
-#define IMPLEMENT_OBJECT(TClass, Name, API) \
+#define IMPLEMENT_OBJECT_DOC(TClass, Name, API, Doc) \
     OBJECT_CONVERTER_FROM_PYTHON(TClass, API); \
     OBJECT_CONVERTER_TO_PYTHON(TClass, API); \
     Object* TClass::create_object(PyObject* pyobj, PythonClass* cls) \
@@ -74,7 +74,7 @@
         static PythonClass* type = nullptr; \
         if (!type) \
         { \
-            type = new PythonClass(Name, sizeof(TClass), TClass::create_object, OBJECT_INIT_TYPE_FN_NAME(TClass)); \
+            type = new PythonClass(Name, sizeof(TClass), TClass::create_object, OBJECT_INIT_TYPE_FN_NAME(TClass), PyDoc_STR(Doc)); \
             if (type != TClass::Super::static_class()) \
             { \
                 type->set_super(TClass::Super::static_class()); \
@@ -92,6 +92,7 @@
         return new TClass(*this); \
     }
 
+#define IMPLEMENT_OBJECT(TClass, Name, API) IMPLEMENT_OBJECT_DOC(TClass, Name, API, "")
 
 #define DECLARE_OBJECT_CONSTRUCTOR(TClass) \
     TClass(PyObject*, PythonClass* cls = TClass::static_class());

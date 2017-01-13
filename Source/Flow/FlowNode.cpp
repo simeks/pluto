@@ -15,13 +15,25 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowNode, is_pin_linked, const char*)
 
 OBJECT_INIT_TYPE_FN(FlowNode)
 {
-    OBJECT_PYTHON_ADD_METHOD(FlowNode, run, "");
+    OBJECT_PYTHON_ADD_METHOD(FlowNode, run, 
+        "run(ctx)\n"
+        "--\n"
+        "\n"
+        "Args:\n"
+        "   ctx : FlowContext\n");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, add_pin, "");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, node_id, "");
     OBJECT_PYTHON_ADD_METHOD(FlowNode, is_pin_linked, "");
 }
 
-IMPLEMENT_OBJECT(FlowNode, "FlowNode", FLOW_API);
+IMPLEMENT_OBJECT_DOC(FlowNode, "FlowNode", FLOW_API, 
+    "FlowNode\n"
+    "Base class for nodes\n"
+    "\n"
+    "Attributes:\n"
+    "   node_class (str): Unique class name for this type of node.\n"
+    "   title (str): Title visible in the UI\n"
+    "   category (str): Category of the form 'Category/Subcategory'\n");
 IMPLEMENT_OBJECT_CONSTRUCTOR(FlowNode, Object);
 
 void FlowNode::object_init()

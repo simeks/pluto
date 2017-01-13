@@ -152,7 +152,7 @@ static PyTypeObject py_blank_type_object = {
 
 PythonClass* PythonClass::_head = nullptr;
 
-PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn) :
+PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn, const char* doc) :
     Class(name, size),
     _creator(creator),
     _initfn(initfn),
@@ -176,7 +176,7 @@ PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator, 
     _type->tp_name = name;
     _type->tp_basicsize = sizeof(PyPlutoObject);
     _type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-    _type->tp_doc = "PythonType";
+    _type->tp_doc = doc;
 
     PyMethodDef meth_sentinel = { 0, 0, 0, 0 };
     _methods.push_back(meth_sentinel); // Add sentinel

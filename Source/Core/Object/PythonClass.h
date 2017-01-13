@@ -23,7 +23,7 @@ public:
     typedef Object* (*CreateObjectFn)(PyObject*, PythonClass*);
     typedef void (*InitClassFn)(PythonClass*);
 
-    PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn);
+    PythonClass(const char* name, size_t size, CreateObjectFn creator, InitClassFn initfn, const char* doc = 0);
     PythonClass(const char* name, PyTypeObject* type, PythonClass* super);
     ~PythonClass();
 
