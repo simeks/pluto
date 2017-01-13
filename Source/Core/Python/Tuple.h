@@ -15,9 +15,7 @@ public:
     size_t size() const;
 
     PyObject* get(size_t idx) const;
-    
     void set(size_t idx, PyObject* obj);
-    void set(size_t idx, Object* obj);
 
     bool valid() const;
 
@@ -25,6 +23,18 @@ public:
 
     Tuple(const Tuple& other);
     Tuple& operator=(const Tuple& other);
+
+    template<typename T>
+    T get(size_t idx) const
+    {
+        return python_convert::from_python<T>(get(idx));
+    }
+
+    template<typename T>
+    void set(size_t idx, T value)
+    {
+        set(idx, python_convert::to_python(value));
+    }
 
 private:
     PyObject* _t;

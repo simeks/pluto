@@ -28,10 +28,6 @@ void Tuple::set(size_t idx, PyObject* obj)
 {
     PyTuple_SetItem(_t, idx, obj);
 }
-void Tuple::set(size_t idx, Object* obj)
-{
-    PyTuple_SetItem(_t, idx, obj->python_object());
-}
 PyObject* Tuple::get(size_t idx) const
 {
     return PyTuple_GetItem(_t, idx);
