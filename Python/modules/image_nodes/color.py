@@ -5,7 +5,7 @@ from image import Image
 @context_node('SplitChannels', 'Image')
 def color_split_channels(ctx):
     """
-    Arguments:
+    Args:
         Image
     Returns:
         R
