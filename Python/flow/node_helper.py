@@ -4,82 +4,115 @@ import inspect
 import re
 from pluto import pluto_class
 
-def parse_args_from_fn(fn):
-    return inspect.getargspec(fn).args
+class Iter(object):
+    def __init__(self, lst):
+        self.lst = lst
+        self.idx = 0
 
-def parse_returns(fn):
+    def next(self):
+        ret = self.lst[self.idx]
+        self.idx += 1
+        return ret
+
+    def peek(self):
+        return self.lst[self.idx]
+
+    def end(self):
+        return (self.idx >= len(self.lst))
+
+
+class NodeDocstringParse(object):
     """
-    Looks for returns in the given functions docstring.
-    
-    For this function to be successful the docstring is required according to: 
-    http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+    Parses docstring for a node function.
+
+    Node docstrings are expected to follow this structure:
+    Args:
+        InputPinA : Some comment
+        InputPinB(type) : Inputs may also specify an expected type
+
+    Returns:
+        OutputPinA(str) : Output pin
+
     """
 
-    doc = fn.__doc__
-    if doc == None:
-        return []
-    lines = doc.split('\n')
-    begin = -1
-    end = len(lines)
-    for i, l in enumerate(lines):
-        if re.match('( {4}|\t)Returns:', l):
-            begin = i
-        if begin != -1 and re.match('(( {4}|\t)(Arguments:)|(Args:))|(\w*$)', l):
-            end = i
+    field_regex = re.compile(r'\s*(\w+)')
 
-    if begin == -1:
-        return []
+    def __init__(self, docstring):
+        self.docstring = docstring.splitlines()
+        self.docstring = [l.rstrip() for l in self.docstring]
+        self.iter = Iter(self.docstring)
+        self.inputs = []
+        self.outputs = []
+        self.sections = {'args': self.parse_inputs, 'returns': self.parse_outputs}
+        self.parse()
 
-    returns = []
-    for i in range(begin+1, end):
-        m = re.match('( {8}|\t\t)(\S+)', lines[i])
+    def line_indent(self, line):
+        return len(line) - len(line.lstrip())
+
+    def parse(self):
+        while not self.iter.end():
+            line = self.iter.next().strip().strip(':')
+            if line.lower() in self.sections:
+                self.sections[line.lower()]()
+
+    def parse_field(self):
+        line = self.iter.next()
+        indent = self.line_indent(line)
+
+        name = None
+        m = self.field_regex.match(line)
         if m:
-            returns.append(m.group(2))
+            name = m.group(1)
 
-    return returns
+        # Parse multi-line description
+        next_line = self.iter.peek()
+        while self.line_indent(next_line) > indent:
+            self.iter.next()
+            next_line = self.iter.peek()
+            
+        return name
 
-def parse_args(fn):
-    """
-    Looks for arguments in the given functions docstring.
-    
-    For this function to be successful the docstring is required according to: 
-    http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
-    """
+    def parse_fields(self):
+        ret = []
+        while not self.section_end():
+            name = self.parse_field()
+            ret.append(name)
+        return ret
 
-    doc = fn.__doc__
-    if doc == None:
-        return []
-    lines = doc.split('\n')
-    begin = -1
-    end = len(lines)
-    for i, l in enumerate(lines):
-        if re.match('( {4}|\t)(Arguments:)|(Args:):', l):
-            begin = i
-        if begin != -1 and re.match('(( {4}|\t)Returns:)|(\w*$)', l):
-            end = i
+    def parse_inputs(self):
+        self.inputs.extend(self.parse_fields())
 
-    if begin == -1:
-        return []
+    def parse_outputs(self):
+        self.outputs.extend(self.parse_fields())
 
-    returns = []
-    for i in range(begin+1, end):
-        m = re.match('( {8}|\t\t)(\S+)', lines[i])
-        if m:
-            returns.append(m.group(2))
+    def section_end(self):
+        if self.iter.end():
+            return True
+
+        l = self.iter.peek().strip()
+        if l == '':
+            return True
+        elif l.strip(':').lower() in self.sections:
+            return True
+        return False 
+
 
 @pluto_class
 class FunctionNode(flow.Node):
     def __init__(self, fn, title=None, category=None):
         super(FunctionNode, self).__init__()
 
-        self.args = parse_args_from_fn(fn)
-        if self.args:
-            for a in self.args:
-                self.add_pin(a, flow.Pin.In)
+        self.args = inspect.getargspec(fn).args
+        if self.args is not None:
+            for i in self.args:
+                self.add_pin(i, flow.Pin.In)
 
-        self.returns = parse_returns(fn)
-        for a in self.returns:
-            self.add_pin(a, flow.Pin.Out)
+        if fn.__doc__ is not None:
+            ndoc = NodeDocstringParse(fn.__doc__)
+
+            self.returns = ndoc.outputs
+            for o in self.returns:
+                self.add_pin(o, flow.Pin.Out)
 
         self.func = fn
         self.node_class = fn.__module__ + '.' + fn.__name__
@@ -113,14 +146,12 @@ class ContextFunctionNode(flow.Node):
     def __init__(self, fn, title=None, category=None):
         super(ContextFunctionNode, self).__init__()
 
-        self.args = parse_args(fn)
-        if self.args:
-            for a in self.args:
-                self.add_pin(a, flow.Pin.In)
-
-        self.returns = parse_returns(fn)
-        for a in self.returns:
-            self.add_pin(a, flow.Pin.Out)
+        if fn.__doc__ is not None:
+            ndoc = NodeDocstringParse(fn.__doc__)
+            for i in ndoc.inputs:
+                self.add_pin(i, flow.Pin.In)
+            for o in ndoc.outputs:
+                self.add_pin(o, flow.Pin.Out)
 
         self.func = fn
         self.node_class = fn.__module__ + '.' + fn.__name__
