@@ -47,7 +47,7 @@
             Vec3<T> v; \
             for (int i = 0; i < std::max<Py_ssize_t>(PySequence_Size(obj), 3); ++i) \
             { \
-                v[i] = from_python<T>(PySequence_GetItem(obj, 0)); \
+                v[i] = from_python<T>(PySequence_GetItem(obj, i)); \
             } \
             return v; \
         } \
@@ -122,8 +122,9 @@ namespace python_convert
     {
         if(PyTuple_Check(obj))
             return Tuple(obj);
-        PyErr_SetString(PyExc_ValueError, "Expected tuple");
-        return Tuple();
+        Tuple t(1);
+        t.set(0, obj);
+        return t;
     }
 
     template<>
