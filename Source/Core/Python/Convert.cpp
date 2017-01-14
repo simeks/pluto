@@ -2,6 +2,7 @@
 #include "Convert.h"
 #include "Dict.h"
 #include "PythonModule.h"
+#include "Sequence.h"
 #include "Tuple.h"
 
 #include "Image/Types.h"
@@ -45,7 +46,7 @@
         if (PySequence_Check(obj) && PySequence_Size(obj)) \
         { \
             Vec3<T> v; \
-            for (int i = 0; i < std::max<Py_ssize_t>(PySequence_Size(obj), 3); ++i) \
+            for (int i = 0; i < std::min<Py_ssize_t>(PySequence_Size(obj), 3); ++i) \
             { \
                 v[i] = from_python<T>(PySequence_GetItem(obj, i)); \
             } \
@@ -120,8 +121,10 @@ namespace python_convert
     template<>
     CORE_API Tuple from_python(PyObject* obj)
     {
-        if(PyTuple_Check(obj))
+        if (PySequence_Check(obj) || PyTuple_Check(obj))
+        {
             return Tuple(obj);
+        }
         Tuple t(1);
         t.set(0, obj);
         return t;

@@ -11,10 +11,10 @@ Tuple::Tuple(size_t size)
 {
     _t = PyTuple_New(size);
 }
-Tuple::Tuple(PyObject* t) : _t(t)
+Tuple::Tuple(PyObject* t)
 {
-    assert(PyTuple_Check(t));
-    Py_XINCREF(_t);
+    _t = PySequence_Tuple(t);
+    assert(_t);
 }
 Tuple::~Tuple()
 {
