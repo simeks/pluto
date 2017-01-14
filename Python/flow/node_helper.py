@@ -132,8 +132,8 @@ class FunctionNode(flow.Node):
         returns = self.func(*args)
         if returns is not None:
             if len(self.returns) > 1:
-                if len(returns) != len(self.returns):
-                    raise ValueError('Not enough return arguments')
+                if len(returns) > len(self.returns):
+                    raise ValueError('To many return arguments')
 
                 for i in range(0, len(returns)):
                     ctx.write_pin(self.returns[i], returns[i])

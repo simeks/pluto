@@ -11,13 +11,13 @@ settings = {
 }
 
 e = registration.RegistrationEngine('blocked_graph_cut', image.PixelType_Float32, settings)
-i = imread('fat500001__arms_00.mhd')
-#ir = imageutils.split_channels(i)[0]
+i = imread('chess.png')
+ir = imageutils.split_channels(i)[0]
 
-i2 = imread('fat500005__arms_00.mhd')
-#i2r = imageutils.split_channels(i2)[0]
+i2 = imread('chess2.png')
+i2r = imageutils.split_channels(i2)[0]
 
-df = e.execute(i, i2)
+df = e.execute(ir, i2r)
 
 out = registration.transform(i, df)
-imwrite(out, 'out.mhd')
+imwrite(out, 'out.png')

@@ -32,7 +32,15 @@ class RegistrationNode(flow.Node):
         self.category = 'Registration'
 
     def run(self, ctx):
-        eng = RegistrationEngine('blocked_graph_cut', image.PixelType_Float32)
+        settings = {
+            'step_size': 0.5,
+            'regularization_weight': 0.05,
+            'block_size': (12, 12, 12),
+            'pyramid_level_min': 0,
+            'pyramid_level_max': 6,
+        }
+
+        eng = RegistrationEngine('blocked_graph_cut', image.PixelType_Float32, settings)
 
         if self.is_pin_linked('ConstraintValues') or self.is_pin_linked('ConstraintMask'):
             eng.set_contraints(ctx.read_pin('ConstraintValues'), ctx.read_pin('ConstraintMask'))
@@ -47,7 +55,6 @@ class RegistrationNode(flow.Node):
                 fixed.append(ctx.read_pin('Fixed'+str(i)))
                 moving.append(ctx.read_pin('Moving'+str(i)))
 
-        print(fixed,moving)
         df = eng.execute(fixed, moving)
         ctx.write_pin('Deformation', df)
 

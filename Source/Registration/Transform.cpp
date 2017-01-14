@@ -42,8 +42,7 @@ ImageObject* transform::transform(ImageObject* image_obj, ImageObject* deformati
         ImageObject* result = nullptr;
         if (image_obj->pixel_type() == image::PixelType_UInt8)
         {
-            // Convert image to float32, transform, then convert back
-            ImageUInt8 img = transform::transform_image<ImageFloat32>(image_obj->image(), deformation);
+            ImageUInt8 img = transform::transform_image<ImageUInt8>(image_obj->image(), deformation);
             result = object_new<ImageObject>(img);
         }
         else if (image_obj->pixel_type() == image::PixelType_Float32)
@@ -63,7 +62,7 @@ ImageObject* transform::transform(ImageObject* image_obj, ImageObject* deformati
         }
         else if (image_obj->pixel_type() == image::PixelType_Vec3f)
         {
-            Image img = transform::transform_image<ImageVec3u8>(image_obj->image(), deformation);
+            Image img = transform::transform_image<ImageVec3f>(image_obj->image(), deformation);
             result = object_new<ImageObject>(img);
         }
         else if (image_obj->pixel_type() == image::PixelType_Vec4u8)

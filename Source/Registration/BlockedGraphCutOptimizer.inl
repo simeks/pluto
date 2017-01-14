@@ -15,7 +15,8 @@ namespace
 
 template<typename TImage>
 BlockedGraphCutOptimizer<TImage>::BlockedGraphCutOptimizer(const Dict& settings) :
-    _step_size(default_step_size)
+    _step_size(default_step_size),
+    _block_size(default_block_size)
 {
     _energy.set_regularization_weight(default_regularization_weight);
 
