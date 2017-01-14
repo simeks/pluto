@@ -15,19 +15,34 @@ public:
     RegistrationPythonModule() {}
     ~RegistrationPythonModule() {}
 
-    void post_init() OVERRIDE
-    {
-        add_type("RegistrationEngine", RegistrationEngine::static_class());
-    }
+    void post_init() OVERRIDE;
+
+    ImageObject* transform(ImageObject* img, ImageObject* def);
 
     static const char* name()
     {
         return "registration";
     }
 
-private:
-
 };
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, ImageObject*, ImageObject*);
+
+void RegistrationPythonModule::post_init()
+{
+    add_type("RegistrationEngine", RegistrationEngine::static_class());
+
+    MODULE_ADD_PYTHON_FUNCTION(RegistrationPythonModule, transform,
+        "transform(image, deformation)\n"
+        "--\n"
+        "Args:\n"
+        "   image(Image) : Image to transform\n"
+        "   deformation(Image) : Deformation field to apply\n");
+}
+
+ImageObject* RegistrationPythonModule::transform(ImageObject* img, ImageObject* def)
+{
+    return transform::transform(img, def);
+}
 
 
 PLUTO_IMPLEMENT_MODULE(RegistrationModule);

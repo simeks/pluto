@@ -32,18 +32,21 @@ namespace transform
     }
 }
 
-void transform::transform_node(FlowContext* ctx)
+ImageObject* transform::transform(ImageObject* image_obj, ImageObject* deformation_obj)
 {
-    ImageObject* image_obj = ctx->read_pin<ImageObject*>("Source");
-    ImageObject* deformation_obj = ctx->read_pin<ImageObject*>("Deformation");
-    
     if (image_obj && deformation_obj)
     {
         ImageVec3d deformation = deformation_obj->image();
         assert(deformation.size() == image_obj->size());
 
         ImageObject* result = nullptr;
-        if (image_obj->pixel_type() == image::PixelType_Float32)
+        if (image_obj->pixel_type() == image::PixelType_UInt8)
+        {
+            // Convert image to float32, transform, then convert back
+            ImageUInt8 img = transform::transform_image<ImageFloat32>(image_obj->image(), deformation);
+            result = object_new<ImageObject>(img);
+        }
+        else if (image_obj->pixel_type() == image::PixelType_Float32)
         {
             Image img = transform::transform_image<ImageFloat32>(image_obj->image(), deformation);
             result = object_new<ImageObject>(img);
@@ -75,8 +78,9 @@ void transform::transform_node(FlowContext* ctx)
         }
         else
         {
-            PYTHON_ERROR(ValueError, "Unsupported image format (%s)", image::pixel_type_to_string(image_obj->pixel_type()));
+            PYTHON_ERROR_R(ValueError, nullptr, "Unsupported image format (%s)", image::pixel_type_to_string(image_obj->pixel_type()));
         }
-        ctx->write_pin("Out", result);
+        return result;
     }
+    return nullptr;
 }

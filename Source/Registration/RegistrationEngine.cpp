@@ -175,7 +175,7 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, set_constraints, ImageObject*, ImageObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(RegistrationEngine, set_starting_guess, ImageObject*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, execute, Tuple, Tuple);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationEngine, execute, Tuple, Tuple);
 
 OBJECT_INIT_TYPE_FN(RegistrationEngine)
 {
@@ -212,6 +212,7 @@ RegistrationEngine::~RegistrationEngine()
 void RegistrationEngine::object_init()
 {
     _optimizer = nullptr;
+    _image_type = image::PixelType_Unknown;
     _pyramid_level_min = 0;
     _pyramid_level_max = 6;
     _image_pair_count = 0;
@@ -226,13 +227,13 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
     _normalize_images = true;
 
     const char* optimizer_name = 0;
-    image::PixelType image_type = image::PixelType_Unknown;
+    _image_type = image::PixelType_Unknown;
     Dict settings;
 
     if (args.size() >= 2)
     {
         optimizer_name = args.get<const char*>(0);
-        image_type = args.get<image::PixelType>(1);
+        _image_type = args.get<image::PixelType>(1);
     }
     else
     {
@@ -243,7 +244,7 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
         settings = python_convert::from_python<Dict>(args.get(2));
     }
 
-    _optimizer = create_optimizer(optimizer_name, image_type, settings);
+    _optimizer = create_optimizer(optimizer_name, _image_type, settings);
 
     if (settings.has_key("pyramid_level_min"))
         _pyramid_level_min = settings.get<int>("pyramid_level_min");
@@ -321,8 +322,6 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
         ImageObject* fixed_img = fixed.get<ImageObject*>(i);
         ImageObject* moving_img = moving.get<ImageObject*>(i);
 
-        int pixel_type = fixed_img->pixel_type();
-
         if (fixed_img->pixel_type() != moving_img->pixel_type() ||
             fixed_img->size() != moving_img->size())
             PYTHON_ERROR_R(ValueError, nullptr, "Image pairs needs to have the same size and pixel type");
@@ -330,17 +329,31 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
         _fixed_pyramid[0].resize(_image_pair_count);
         _moving_pyramid[0].resize(_image_pair_count);
 
-        if (_normalize_images && pixel_type == image::PixelType_Float32)
+        if (_image_type == image::PixelType_Float32)
         {
-            PYTHON_STDOUT("Normalizes image pair...\n");
-            _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(fixed_img->image());
-            _moving_pyramid[0][i] = normalize_image<ImageFloat32>(moving_img->image());
+            if (_normalize_images)
+            {
+                _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(fixed_img->image());
+                _moving_pyramid[0][i] = normalize_image<ImageFloat32>(moving_img->image());
+            }
+            else
+            {
+                _fixed_pyramid[0][i] = ImageFloat32(fixed_img->image());
+                _moving_pyramid[0][i] = ImageFloat32(moving_img->image());
+            }
         }
-        else if (_normalize_images && pixel_type == image::PixelType_Float64)
+        else if (_image_type == image::PixelType_Float64)
         {
-            PYTHON_STDOUT("Normalizes image pair...\n");
-            _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(fixed_img->image());
-            _moving_pyramid[0][i] = normalize_image<ImageFloat64>(moving_img->image());
+            if (_normalize_images)
+            {
+                _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(fixed_img->image());
+                _moving_pyramid[0][i] = normalize_image<ImageFloat64>(moving_img->image());
+            }
+            else
+            {
+                _fixed_pyramid[0][i] = ImageFloat64(fixed_img->image());
+                _moving_pyramid[0][i] = ImageFloat64(moving_img->image());
+            }
         }
         else
         {

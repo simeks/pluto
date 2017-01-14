@@ -5,7 +5,7 @@
 
 namespace transform
 {
-    void transform_node(FlowContext* ctx);
+    ImageObject* transform(ImageObject* image, ImageObject* def);
 }
 
 #endif // __REGISTRATION_TRANSFORM_H__

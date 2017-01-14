@@ -41,6 +41,7 @@ private:
     double unit_sigma(const Image& img);
 
     Optimizer* _optimizer;
+    image::PixelType _image_type;
 
     int _pyramid_level_min;
     int _pyramid_level_max;
