@@ -62,7 +62,6 @@ class ElastixNode(flow.Node):
         self.node_class = 'elastix.Elastix'
         self.title = 'Elastix'
         self.category = 'Elastix'
-        self.value = ''
 
     def run(self, ctx):
         fixed = []

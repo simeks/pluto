@@ -321,6 +321,8 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
     {
         ImageObject* fixed_img = fixed.get<ImageObject*>(i);
         ImageObject* moving_img = moving.get<ImageObject*>(i);
+        if (!fixed_img || !moving_img)
+            PYTHON_ERROR_R(ValueError, nullptr, "Missing image");
 
         if (fixed_img->pixel_type() != moving_img->pixel_type() ||
             fixed_img->size() != moving_img->size())

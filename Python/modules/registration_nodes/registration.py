@@ -1,30 +1,54 @@
-import numpy as np
-from flow import context_node
-from image import Image
+import flow
+import image
+from pluto import pluto_class
 
 from registration import RegistrationEngine
 
-@context_node('Registration', 'Registration')
-def run_registration(ctx):
-    """
-    Args:
-        Fixed0
-        Moving0
+@pluto_class
+class RegistrationNode(flow.Node):
+    pins = [
+        flow.Pin('Fixed0', flow.Pin.In),
+        flow.Pin('Moving0', flow.Pin.In),
+        flow.Pin('Fixed1', flow.Pin.In),
+        flow.Pin('Moving1', flow.Pin.In),
+        flow.Pin('Fixed2', flow.Pin.In),
+        flow.Pin('Moving2', flow.Pin.In),
 
-        Fixed1
-        Moving1
-        
-        Fixed2
-        Moving2
-        
-        ConstraintMask
-        ConstraintValues
-        
-        StartingGuess
-    
-    Returns:
-        Deformation
-    
-    """
-    pass
-    #eng = RegistrationEngine('blocked_graph_cut', image.PixelType_Float32)
+        flow.Pin('ConstraintMask', flow.Pin.In),
+        flow.Pin('ConstraintValues', flow.Pin.In),
+
+        flow.Pin('StartingGuess', flow.Pin.In),
+
+        flow.Pin('Deformation', flow.Pin.Out),
+    ]
+    properties = [
+        flow.Property('param_file', '')
+    ]
+
+    def __init__(self):
+        super(RegistrationNode, self).__init__()
+        self.node_class = 'registration.Registration' 
+        self.title = 'Registration'
+        self.category = 'Registration'
+
+    def run(self, ctx):
+        eng = RegistrationEngine('blocked_graph_cut', image.PixelType_Float32)
+
+        if self.is_pin_linked('ConstraintValues') or self.is_pin_linked('ConstraintMask'):
+            eng.set_contraints(ctx.read_pin('ConstraintValues'), ctx.read_pin('ConstraintMask'))
+
+        if self.is_pin_linked('StartingGuess'):
+            eng.set_starting_guess(ctx.read_pin('StartingGuess'))
+
+        fixed = []
+        moving = []
+        for i in range(0, 3):
+            if self.is_pin_linked('Fixed'+str(i)) or self.is_pin_linked('Moving'+str(i)):
+                fixed.append(ctx.read_pin('Fixed'+str(i)))
+                moving.append(ctx.read_pin('Moving'+str(i)))
+
+        print(fixed,moving)
+        df = eng.execute(fixed, moving)
+        ctx.write_pin('Deformation', df)
+
+flow.install_node_template(RegistrationNode())

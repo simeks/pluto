@@ -6,7 +6,6 @@
 
 #include "RegistrationEngine.h"
 #include "RegistrationModule.h"
-#include "Registration.h"
 #include "Transform.h"
 
 class RegistrationPythonModule : public PythonModuleHelper<RegistrationPythonModule>
