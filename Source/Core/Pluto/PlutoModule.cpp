@@ -11,6 +11,7 @@ PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, user_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, python_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, module_dir);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, print_html, std::string);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, run_file, std::string);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(PlutoModule, register_class, PyObject*);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, classes);
 PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_RETURN(PlutoModule, create_object);
@@ -29,6 +30,7 @@ void PlutoModule::post_init()
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, python_dir, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, module_dir, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, run_file, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "");
     MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "");
@@ -50,6 +52,10 @@ const char* PlutoModule::python_dir()
 const char* PlutoModule::module_dir()
 {
     return PlutoCore::instance().module_dir();
+}
+void PlutoModule::run_file(const std::string& file)
+{
+    PlutoCore::instance().kernel()->run_file(file);
 }
 void PlutoModule::print_html(const std::string& txt)
 {

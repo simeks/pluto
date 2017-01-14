@@ -16,6 +16,8 @@ public:
     const char* python_dir();
     const char* module_dir();
 
+    void run_file(const std::string& file);
+
     void print_html(const std::string& txt);
 
     PyObject* register_class(PyObject* cls);
