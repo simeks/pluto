@@ -94,10 +94,10 @@ public:
     typedef T TPixelType;
 
     ImageTpl();
-    ImageTpl(int ndims, const Vec3i& size, const T* data = nullptr);
+    explicit ImageTpl(int ndims, const Vec3i& size, const T* data = nullptr);
     
     /// Fills the image with the specified value.
-    ImageTpl(int ndims, const Vec3i& size, const T& value);
+    explicit ImageTpl(int ndims, const Vec3i& size, const T& value);
 
     ImageTpl(const Image& other);
     ImageTpl& operator=(const Image& other);

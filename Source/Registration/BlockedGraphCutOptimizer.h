@@ -1,7 +1,7 @@
 #ifndef __REGISTRATION_BLOCKED_GRAPHCUT_OPTIMIZER_H__
 #define __REGISTRATION_BLOCKED_GRAPHCUT_OPTIMIZER_H__
 
-#include "EnergyFunction.h"
+#include "EnergyFunctionMulti.h"
 #include "Optimizer.h"
 
 
@@ -29,11 +29,13 @@ private:
         const ImageUInt8& constraint_mask,
         ImageVec3d& def);
 
+    double calculate_energy(ImageVec3d& def, const Vec3i& dims);
+
     Vec3i _neighbors[6];
     Vec3i _block_size;
     double _step_size;
 
-    EnergyFunction<TImage> _energy;
+    EnergyFunctionMulti<TImage> _energy;
 };
 
 #include "BlockedGraphCutOptimizer.inl"

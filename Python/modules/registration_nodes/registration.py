@@ -20,6 +20,8 @@ def parse_settings_old(file):
                     settings['step_size'] = float(value)
                 elif key == 'regularization_weight':
                     settings['regularization_weight'] = float(value)
+                elif key == 'regularization_weights':
+                    settings['regularization_weights'] = [float(v) for v in value.split(' ')]
                 elif key == 'normalize_images':
                     settings['normalize_images'] = bool(int(value))
                 elif key == 'block_size':
@@ -59,6 +61,7 @@ class RegistrationNode(flow.Node):
         settings = {
             'step_size': 0.5,
             'regularization_weight': 0.05,
+            'regularization_weights': (0.05, 0.05, 0.05, 0.05),
             'block_size': (12, 12, 12),
             'pyramid_level_min': 0,
             'pyramid_level_max': 6,

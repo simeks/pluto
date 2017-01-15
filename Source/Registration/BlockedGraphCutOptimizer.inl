@@ -2,7 +2,7 @@
 #include "BlockChangeFlags.h"
 #include "GraphCut.h"
 
-
+#include <iomanip>
 
 // Default parameters
 namespace
@@ -23,7 +23,15 @@ BlockedGraphCutOptimizer<TImage>::BlockedGraphCutOptimizer(const Dict& settings)
     if (settings.has_key("step_size"))
         _step_size = settings.get<double>("step_size");
     if (settings.has_key("regularization_weight"))
+    {
         _energy.set_regularization_weight(settings.get<double>("regularization_weight"));
+    }
+    if (settings.has_key("regularization_weights"))
+    {
+        Tuple rw = settings.get<Tuple>("regularization_weights");
+        for (int i = 0; i < rw.size(); ++i)
+            _energy.set_regularization_weight(i, rw.get<double>(i));
+    }
     if (settings.has_key("block_size"))
         _block_size = settings.get<Vec3i>("block_size");
 
@@ -199,11 +207,64 @@ void BlockedGraphCutOptimizer<TImage>::execute(
             }
         }
     }
-
-    //cout << "Energy: " << calculate_energy(l, deformation) << endl;
-
 }
 
+template<typename TImage>
+double BlockedGraphCutOptimizer<TImage>::calculate_energy(ImageVec3d& def, const Vec3i& dims)
+{
+    double cost = 0;
+    for (int gz = 0; gz < dims.z; gz++)
+    {
+        for (int gy = 0; gy < dims.y; gy++)
+        {
+            for (int gx = 0; gx < dims.x; gx++)
+            {
+                // Skip voxels outside volume
+                if (gx < 0 || gx >= dims.x ||
+                    gy < 0 || gy >= dims.y ||
+                    gz < 0 || gz >= dims.z)
+                {
+                    continue;
+                }
+
+                Vec3i p(gx, gy, gz);
+                Vec3d def1 = def(p);
+
+                double f0;
+                f0 = _energy.unary_term(p, def1);
+
+
+                cost += f0;
+
+                if (gx + 1 < dims.x)
+                {
+                    Vec3i step(1, 0, 0);
+                    Vec3d& def2 = def(p + step);
+                    double f_same = _energy.binary_term(p, def1, def2, step);
+
+                    cost += f_same;
+                }
+                if (gy + 1 < dims.y)
+                {
+                    Vec3i step(0, 1, 0);
+                    Vec3d& def2 = def(p + step);
+                    double f_same = _energy.binary_term(p, def1, def2, step);
+
+                    cost += f_same;
+                }
+                if (gz + 1 < dims.z)
+                {
+                    Vec3i step(0, 0, 1);
+                    Vec3d& def2 = def(p + step);
+                    double f_same = _energy.binary_term(p, def1, def2, step);
+
+                    cost += f_same;
+                }
+            }
+        }
+    }
+    return cost;
+}
 template<typename TImage>
 bool BlockedGraphCutOptimizer<TImage>::do_block(
     const Vec3i& block_p,
@@ -263,45 +324,45 @@ bool BlockedGraphCutOptimizer<TImage>::do_block(
                     {
                         Vec3i step(-1, 0, 0);
                         Vec3d& def2 = def(gx - 1, gy, gz);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
                     else if (sub_x == block_dims.x - 1 && gx < dims.x - 1)
                     {
                         Vec3i step(1, 0, 0);
                         Vec3d& def2 = def(gx + 1, gy, gz);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
 
                     if (sub_y == 0 && gy != 0)
                     {
                         Vec3i step(0, -1, 0);
                         Vec3d& def2 = def(gx, gy - 1, gz);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
                     else if (sub_y == block_dims.y - 1 && gy < dims.y - 1)
                     {
                         Vec3i step(0, 1, 0);
                         Vec3d& def2 = def(gx, gy + 1, gz);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
 
                     if (sub_z == 0 && gz != 0)
                     {
                         Vec3i step(0, 0, -1);
                         Vec3d& def2 = def(gx, gy, gz - 1);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
                     else if (sub_z == block_dims.z - 1 && gz < dims.z - 1)
                     {
                         Vec3i step(0, 0, 1);
                         Vec3d& def2 = def(gx, gy, gz + 1);
-                        f0 += _energy.binary_term(def1, def2, step);
-                        f1 += _energy.binary_term(def1 + delta, def2, step);
+                        f0 += _energy.binary_term(p, def1, def2, step);
+                        f1 += _energy.binary_term(p, def1 + delta, def2, step);
                     }
 
                     graph.add_term1(sub_x, sub_y, sub_z, f0, f1);
@@ -312,9 +373,9 @@ bool BlockedGraphCutOptimizer<TImage>::do_block(
                     {
                         Vec3i step(1, 0, 0);
                         Vec3d& def2 = def(p + step);
-                        double f_same = _energy.binary_term(def1, def2, step);
-                        double f01 = _energy.binary_term(def1, def2 + delta, step);
-                        double f10 = _energy.binary_term(def1 + delta, def2, step);
+                        double f_same = _energy.binary_term(p, def1, def2, step);
+                        double f01 = _energy.binary_term(p, def1, def2 + delta, step);
+                        double f10 = _energy.binary_term(p, def1 + delta, def2, step);
 
                         graph.add_term2(
                             sub_x, sub_y, sub_z,
@@ -327,9 +388,9 @@ bool BlockedGraphCutOptimizer<TImage>::do_block(
                     {
                         Vec3i step(0, 1, 0);
                         Vec3d& def2 = def(p + step);
-                        double f_same = _energy.binary_term(def1, def2, step);
-                        double f01 = _energy.binary_term(def1, def2 + delta, step);
-                        double f10 = _energy.binary_term(def1 + delta, def2, step);
+                        double f_same = _energy.binary_term(p, def1, def2, step);
+                        double f01 = _energy.binary_term(p, def1, def2 + delta, step);
+                        double f10 = _energy.binary_term(p, def1 + delta, def2, step);
 
                         graph.add_term2(
                             sub_x, sub_y, sub_z,
@@ -342,9 +403,9 @@ bool BlockedGraphCutOptimizer<TImage>::do_block(
                     {
                         Vec3i step(0, 0, 1);
                         Vec3d& def2 = def(p + step);
-                        double f_same = _energy.binary_term(def1, def2, step);
-                        double f01 = _energy.binary_term(def1, def2 + delta, step);
-                        double f10 = _energy.binary_term(def1 + delta, def2, step);
+                        double f_same = _energy.binary_term(p, def1, def2, step);
+                        double f01 = _energy.binary_term(p, def1, def2 + delta, step);
+                        double f10 = _energy.binary_term(p, def1 + delta, def2, step);
 
                         graph.add_term2(
                             sub_x, sub_y, sub_z,
@@ -361,6 +422,7 @@ bool BlockedGraphCutOptimizer<TImage>::do_block(
     double current_emin = graph.minimize();
 
     bool changed_flag = false;
+
     if (current_emin + 0.00001 < cost) //Accept solution
     {
         for (int sub_z = 0; sub_z < block_dims.z; sub_z++)
