@@ -85,13 +85,15 @@ static ImageUInt8 downsample_mask(const ImageUInt8& mask, double scale)
 
     Vec3i old_dims = mask.size();
     Vec3i new_dims(1, 1, 1);
+    Vec3d new_spacing(1, 1, 1);
     for (int i = 0; i < mask.ndims(); ++i)
     {
         new_dims[i] = (int)ceil(old_dims[i] * scale);
+        new_spacing[i] = mask.spacing()[i] * inv_scale;
     }
 
     ImageUInt8 result(mask.ndims(), new_dims, (uint8_t)0);
-    result.set_spacing(mask.spacing() * inv_scale);
+    result.set_spacing(new_spacing);
     result.set_origin(mask.origin());
 
 #pragma omp parallel for
@@ -135,13 +137,15 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
 
     Vec3i old_dims = values.size();
     Vec3i new_dims(1, 1, 1);
+    Vec3d new_spacing(1, 1, 1);
     for (int i = 0; i < values.ndims(); ++i)
     {
         new_dims[i] = (int)ceil(old_dims[i] * scale);
+        new_spacing[i] = mask.spacing()[i] * inv_scale;
     }
 
     ImageVec3d result(values.ndims(), new_dims, Vec3d(0, 0, 0));
-    result.set_spacing(values.spacing() * inv_scale);
+    result.set_spacing(new_spacing);
     result.set_origin(values.origin());
 
 #pragma omp parallel for
@@ -444,7 +448,7 @@ Optimizer* RegistrationEngine::create_optimizer(const char* name,
     image::PixelType image_type,
     const Dict& settings) const
 {
-    if (strcmp(name, "blocked_graph_cut") == 0)
+    if (strcmp(name, "blocked_graph_cut") == 0 || strcmp(name, "basic_gc_deformable") == 0)
     {
         switch (image_type)
         {

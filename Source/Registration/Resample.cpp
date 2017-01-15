@@ -21,7 +21,7 @@ static Image downsample_image_tpl(const TImage& img, double scale)
     Vec3d spacing(1,1,1);
     for (int i = 0; i < img.ndims(); ++i)
     {
-        spacing[i] = img.spacing()[0] * inv_scale;
+        spacing[i] = img.spacing()[i] * inv_scale;
     }
     result.set_spacing(spacing);
     result.set_origin(img.origin());
