@@ -61,7 +61,6 @@ class RegistrationNode(flow.Node):
         settings = {
             'step_size': 0.5,
             'regularization_weight': 0.05,
-            'regularization_weights': (0.05, 0.05, 0.05, 0.05),
             'block_size': (12, 12, 12),
             'pyramid_level_min': 0,
             'pyramid_level_max': 6,

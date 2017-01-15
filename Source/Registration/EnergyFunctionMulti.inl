@@ -69,7 +69,6 @@ void EnergyFunctionMulti<TImage>::create_lookup()
                 {
                     weight += _regularization_weights[i] * (_fixed_image[i](x, y, z) / sum);
                 }
-                std::cout << "Weight: " << weight << std::endl;
                 _reg_lookup(x, y, z) = weight;
             }
         }
