@@ -53,6 +53,7 @@ def configure_msvc_x64_release(conf):
 	v.CXXFLAGS += flags
 	v.DEFINES += ['NDEBUG', def_prefix+'BUILD_RELEASE']
 	v.CUDAFLAGS += ['-Xcompiler="'+' '.join(v.CXXFLAGS)+'"']
+	v.LINKFLAGS += ['/DEBUG']
 
 
 @conf
