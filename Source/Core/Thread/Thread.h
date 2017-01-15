@@ -42,7 +42,7 @@ public:
     virtual void run() = 0;
 };
 
-class SimpleThread
+class CORE_API SimpleThread
 {
 public:
     typedef void(*ThreadFunction)(void*);

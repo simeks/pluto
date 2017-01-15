@@ -39,7 +39,7 @@ struct WorkItem
 
 
 /// @brief Task scheduler
-class TaskScheduler
+class CORE_API TaskScheduler
 {
 public:
     TaskScheduler(int num_threads = MAX_WORKER_THREAD_COUNT);

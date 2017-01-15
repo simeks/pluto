@@ -3,10 +3,10 @@
 #ifndef __THREAD_LOCK_H__
 #define __THREAD_LOCK_H__
 
-#include "Platform/WindowsWrapper.h"
+#include <Core/Platform/WindowsWrapper.h>
 
 /// @brief Win32 specific mutex
-class Mutex
+class CORE_API Mutex
 {
 public:
     Mutex();
@@ -28,7 +28,7 @@ private:
 #ifdef PLUTO_PLATFORM_WINDOWS
 
 /// @brief Critical section lock for win32
-class CriticalSection
+class CORE_API CriticalSection
 {
 public:
     CriticalSection();

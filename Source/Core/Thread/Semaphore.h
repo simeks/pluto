@@ -5,7 +5,7 @@
 
 
 /// @brief Semaphore
-class Semaphore
+class CORE_API Semaphore
 {
 public:
     /// @brief Constructor
