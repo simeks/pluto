@@ -124,16 +124,6 @@ bool Image::valid() const
     return _data.valid();
 }
 
-const uint8_t* Image::ptr() const
-{
-    assert(valid());
-    return (uint8_t*)_data.data();
-}
-uint8_t* Image::ptr()
-{
-    assert(valid());
-    return (uint8_t*)_data.data();
-}
 void Image::copy_to(uint8_t* dest) const
 {
     assert(valid());

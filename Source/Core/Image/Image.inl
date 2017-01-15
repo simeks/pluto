@@ -1,4 +1,15 @@
 
+const uint8_t* Image::ptr() const
+{
+    assert(valid());
+    return (uint8_t*)_data.data();
+}
+uint8_t* Image::ptr()
+{
+    assert(valid());
+    return (uint8_t*)_data.data();
+}
+
 template<typename T>
 const T* Image::ptr() const
 {
@@ -170,7 +181,6 @@ T ImageTpl<T>::linear_at(const Vec3d& v, image::BorderMode border) const
 {
     return linear_at(v.x, v.y, v.z, border);
 }
-
 template<typename T>
 const T& ImageTpl<T>::operator[](int64_t index) const
 {

@@ -62,10 +62,6 @@ NumpyArray::~NumpyArray()
     Py_XDECREF(_arr);
 }
 
-void* NumpyArray::data() const
-{
-    return PyArray_DATA(_arr);
-}
 int NumpyArray::ndims() const
 {
     return PyArray_NDIM(_arr);

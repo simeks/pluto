@@ -46,8 +46,8 @@ public:
 
     bool valid() const;
 
-    const uint8_t* ptr() const;
-    uint8_t* ptr();
+    INLINE const uint8_t* ptr() const;
+    INLINE uint8_t* ptr();
 
     template<typename T>
     const T* ptr() const;
@@ -113,20 +113,20 @@ public:
     TPixelType at(int x, int y, int z, image::BorderMode border) const;
     TPixelType at(const Vec3i& v, image::BorderMode border) const;
 
-    TPixelType linear_at(double x, double y, double z, image::BorderMode border = image::Border_Constant) const;
-    TPixelType linear_at(const Vec3d& v, image::BorderMode border = image::Border_Constant) const;
+    INLINE TPixelType linear_at(double x, double y, double z, image::BorderMode border = image::Border_Constant) const;
+    INLINE TPixelType linear_at(const Vec3d& v, image::BorderMode border = image::Border_Constant) const;
 
     const TPixelType& operator[](int64_t index) const;
     TPixelType& operator[](int64_t index);
 
-    const TPixelType& operator()(int x, int y, int z) const;
-    TPixelType& operator()(int x, int y, int z);
+    INLINE const TPixelType& operator()(int x, int y, int z) const;
+    INLINE TPixelType& operator()(int x, int y, int z);
 
-    const TPixelType& operator()(int x, int y) const;
-    TPixelType& operator()(int x, int y);
+    INLINE const TPixelType& operator()(int x, int y) const;
+    INLINE TPixelType& operator()(int x, int y);
 
-    const TPixelType& operator()(const Vec3i& p) const;
-    TPixelType& operator()(const Vec3i& p);
+    INLINE const TPixelType& operator()(const Vec3i& p) const;
+    INLINE TPixelType& operator()(const Vec3i& p);
 };
 
 typedef ImageTpl<uint8_t> ImageUInt8;

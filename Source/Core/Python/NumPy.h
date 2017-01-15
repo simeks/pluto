@@ -25,7 +25,7 @@ public:
     explicit NumpyArray(PyArrayObject* arr);
     ~NumpyArray();
 
-    void* data() const;
+    INLINE void* data() const;
 
     int ndims() const;
     Py_intptr_t* dims() const;
@@ -66,5 +66,10 @@ private:
     PyArrayObject* _arr;
 
 };
+
+void* NumpyArray::data() const
+{
+    return PyArray_DATA(_arr);
+}
 
 #endif // __CORE_PYTHON_NUMPY_H__
