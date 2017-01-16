@@ -60,22 +60,38 @@ ConsoleWidget::~ConsoleWidget()
 void ConsoleWidget::append_text(const QString& text)
 {
     QTextCursor cursor = textCursor();
-    if (!isReadOnly())
-        cursor.setPosition(_prompt_position-_prompt.length());
-
-    cursor.movePosition(QTextCursor::End);
-    cursor.insertHtml(text.toHtmlEscaped());
-    _prompt_position = cursor.position() + _prompt.length();
+    if (isReadOnly()) // Read-only means no prompt
+    {
+        cursor.movePosition(QTextCursor::End);
+        cursor.insertHtml(text.toHtmlEscaped());
+        ensureCursorVisible();
+    }
+    else
+    {
+        // Otherwise we insert it before the prompt
+        cursor.setPosition(_prompt_position - _prompt.length());
+        cursor.insertHtml(text.toHtmlEscaped());
+        _prompt_position = cursor.position() + _prompt.length();
+    }
+    ensureCursorVisible();
 }
 void ConsoleWidget::append_html(const QString& text)
 {
     QTextCursor cursor = textCursor();
-    if (!isReadOnly())
-        cursor.setPosition(_prompt_position - _prompt.length());
-    else
+    if (isReadOnly()) // Read-only means no prompt
+    {
         cursor.movePosition(QTextCursor::End);
-    cursor.insertHtml(text);
-    _prompt_position = cursor.position() + _prompt.length();
+        cursor.insertHtml(text);
+        ensureCursorVisible();
+    }
+    else
+    {
+        // Otherwise we insert it before the prompt
+        cursor.setPosition(_prompt_position - _prompt.length());
+        cursor.insertHtml(text);
+        _prompt_position = cursor.position() + _prompt.length();
+    }
+    ensureCursorVisible();
 }
 QFont ConsoleWidget::get_font()
 {
@@ -107,6 +123,17 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::Paste))
         {
             paste();
+            return;
+        }
+        else if (e->key() == Qt::Key_Backspace)
+        {
+            if (textCursor().position() <= _prompt_position || textCursor().anchor() <= _prompt_position)
+            {
+                return;
+            }
+        }
+        else if (e->key() == Qt::Key_Delete)
+        {
             return;
         }
     }
@@ -158,7 +185,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
                 QTextCursor cursor = textCursor();
                 cursor.movePosition(QTextCursor::StartOfBlock);
                 cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
-                cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+                cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
                 cursor.insertText(cmd);
                 setTextCursor(cursor);
             }
@@ -176,7 +203,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
                 QTextCursor cursor = textCursor();
                 cursor.movePosition(QTextCursor::StartOfBlock);
                 cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
-                cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+                cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
                 cursor.insertText(cmd);
                 setTextCursor(cursor);
             }
@@ -254,8 +281,8 @@ void ConsoleWidget::hide_prompt()
     _prompt_temp = read_prompt();
 
     QTextCursor cursor = textCursor();
-    cursor.movePosition(QTextCursor::End);
-    cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+    cursor.setPosition(_prompt_position - _prompt.length());
+    cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
 }
 bool ConsoleWidget::cursor_in_prompt(const QTextCursor& cursor) const
@@ -265,9 +292,8 @@ bool ConsoleWidget::cursor_in_prompt(const QTextCursor& cursor) const
 QString ConsoleWidget::read_prompt() const
 {
     QTextCursor cursor = textCursor();
-    cursor.movePosition(QTextCursor::StartOfBlock);
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, _prompt.length());
-    cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+    cursor.setPosition(_prompt_position);
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
     return cursor.selection().toPlainText();
 }
 void ConsoleWidget::kernel_ready()
@@ -278,6 +304,7 @@ void ConsoleWidget::kernel_ready()
 void ConsoleWidget::kernel_busy()
 {
     hide_prompt();
+    setReadOnly(true);
 }
 void ConsoleWidget::kernel_output(const QString& text, bool html)
 {
