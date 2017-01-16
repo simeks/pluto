@@ -173,24 +173,25 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         }
         else
         {
+            QString prompt = read_prompt();
+
+            //QRegExp sep("[\t\n`!@#$^&*()=+[{]}|;'\",<>?]");
+            QRegExp sep("[\t\n']");
+
+            int end = textCursor().position() - _prompt_position;
+            int begin = sep.lastIndexIn(prompt)+1;
+            if (begin < 0)
+                begin = 0;
+
             QStringList cmds;
-            _completer.complete(read_prompt(), cmds);
-            if (cmds.size() == 1)
+            set_prompt_value(_completer.complete(read_prompt(), begin, end, cmds));
+
+            if (cmds.size() > 1)
             {
-                set_prompt_value(cmds[0]);
-            }
-            else if (cmds.size() > 1)
-            {
-                QString prefix = cmds[0];
                 int longest = 0;
                 for (const QString& cmd : cmds)
                 {
                     longest = std::max(cmd.length(), longest);
-
-                    while (!cmd.startsWith(prefix) && prefix != "")
-                    {
-                        prefix.remove(prefix.length() - 1, 1);
-                    }
                 }
                 longest += 5;
 
@@ -212,7 +213,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
                 }
                 list += "<br/><br/>";
 
-                set_prompt_value(prefix);
                 append_html(list);
             }
             return;

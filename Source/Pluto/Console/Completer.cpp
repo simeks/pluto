@@ -6,6 +6,7 @@
 
 #include "Completer.h"
 
+#include <QDir>
 #include <QRegExp>
 #include <QString>
 #include <QStringList>
@@ -16,7 +17,31 @@ Completer::Completer()
 Completer::~Completer()
 {
 }
-void Completer::complete(const QString& cmd, QStringList& out)
+QString Completer::complete(const QString& cmdline, int begin, int end, QStringList& out)
+{
+    QString cmd = cmdline.mid(begin, end - begin);
+    std::cout << cmdline.toStdString() << ", " << cmd.toStdString() << std::endl;
+
+    complete_python(cmd, out);
+    complete_file(cmd, out);
+
+    if (out.size())
+    {
+        QString common_prefix = out[0];
+        for (const QString& c : out)
+        {
+            while (!c.startsWith(common_prefix) && common_prefix != "")
+            {
+                common_prefix.remove(common_prefix.length() - 1, 1);
+            }
+        }
+        QString ret = cmdline.left(begin) + common_prefix + cmd.mid(end);
+        return ret;
+    }
+    return cmdline;
+}
+
+void Completer::complete_python(const QString& cmd, QStringList& out)
 {
     if (cmd.isEmpty())
         return;
@@ -69,6 +94,51 @@ void Completer::complete(const QString& cmd, QStringList& out)
             QString qkey = PyUnicode_AsUTF8(key);
             if (qkey.startsWith(cmd))
                 out.push_back(qkey);
+        }
+    }
+}
+void Completer::complete_file(const QString& cmd, QStringList& out)
+{
+    if (cmd.isEmpty())
+        return;
+
+    QString file = cmd;
+    file.replace('\\', '/');
+    if (cmd.contains("/"))
+    {
+        int i = file.lastIndexOf('/');
+        {
+            QString prefix = file.left(i+1);
+            QString suffix = file.mid(i+1);
+            
+            QDir dir(prefix);
+            for (auto& fi : dir.entryInfoList(QStringList() << suffix + "*", QDir::Dirs | QDir::Files | QDir::Drives | QDir::NoDotAndDotDot))
+            {
+                if (fi.isDir())
+                {
+                    out.push_back(prefix + fi.fileName() + '/');
+                }
+                else
+                {
+                    out.push_back(prefix + fi.fileName());
+                }
+            }
+        }
+
+    }
+    else
+    {
+        QDir dir;
+        for (auto& fi : dir.entryInfoList(QStringList() << cmd + "*", QDir::Dirs | QDir::Files | QDir::Drives | QDir::NoDotAndDotDot))
+        {
+            if (fi.isDir())
+            {
+                out.push_back(fi.fileName() + '/');
+            }
+            else
+            {
+                out.push_back(fi.fileName());
+            }
         }
     }
 }
