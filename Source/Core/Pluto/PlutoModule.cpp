@@ -59,7 +59,7 @@ void PlutoModule::run_file(const std::string& file)
 }
 void PlutoModule::print_html(const std::string& txt)
 {
-    PyStdStream* htmlout = object<PyStdStream>("htmlout");
+    PyStdStream* htmlout = object<PyStdStream*>("htmlout");
     if (htmlout)
         htmlout->write(txt.c_str());
 }

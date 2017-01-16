@@ -48,6 +48,8 @@ public:
     void set_stderr_callback(OutputCallback* fn, void* data);
     void set_htmlout_callback(OutputCallback* fn, void* data);
 
+    PythonModule* main_module();
+
 private:
     void perform_startup();
 

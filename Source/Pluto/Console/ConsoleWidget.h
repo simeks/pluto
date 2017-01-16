@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QTextEdit>
 
+#include "Completer.h"
 #include "ConsoleHistory.h"
 
 class ConsoleModule;
@@ -18,7 +19,6 @@ public:
     ~ConsoleWidget();
 
     /// Appends text before the prompt
-    void append_text(const QString& text);
     void append_html(const QString& text);
 
 private:
@@ -37,6 +37,7 @@ private:
     bool cursor_in_prompt(const QTextCursor& cursor) const;
 
     QString read_prompt() const;
+    void set_prompt_value(const QString& value);
 
     QString _prompt;
     int _prompt_position;
@@ -44,6 +45,7 @@ private:
     PlutoKernelProxy* _kernel_runner;
 
     ConsoleHistory _history;
+    Completer _completer;
 
     QString _prompt_temp; // Temp storage of prompt value while prompt is hidden
 

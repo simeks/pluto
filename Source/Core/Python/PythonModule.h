@@ -34,7 +34,7 @@ public:
     PyObject* object(const char* name) const;
 
     template<typename T>
-    T* object(const char* name) const;
+    T object(const char* name) const;
 
     const char* name() const;
 
@@ -102,9 +102,9 @@ T* pyobject_extract_instance(PyObject* self)
 }
 
 template<typename T>
-T* PythonModule::object(const char* name) const
+T PythonModule::object(const char* name) const
 {
-    return python_convert::from_python<T*>(object(name));
+    return python_convert::from_python<T>(object(name));
 }
 
 #endif // __CORE_PYTHON_MODULE_H__

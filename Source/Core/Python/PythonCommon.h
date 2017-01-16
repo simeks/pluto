@@ -3,6 +3,7 @@
 
 #include "PythonWrapper.h"
 
+#include "Convert.h"
 #include "Dict.h"
 #include "Sequence.h"
 #include "Tuple.h"

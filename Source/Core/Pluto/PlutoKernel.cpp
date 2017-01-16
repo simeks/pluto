@@ -157,6 +157,10 @@ void PlutoKernel::set_stderr_callback(OutputCallback* fn, void* data)
     if (_stderr)
         _stderr->set_callback(fn, data);
 }
+PythonModule* PlutoKernel::main_module()
+{
+    return _main_module;
+}
 void PlutoKernel::perform_startup()
 {
     print_banner();
