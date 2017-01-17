@@ -17,11 +17,8 @@ Completer::Completer()
 Completer::~Completer()
 {
 }
-QString Completer::complete(const QString& cmdline, int begin, int end, QStringList& out)
+QString Completer::complete(const QString& cmd, QStringList& out)
 {
-    QString cmd = cmdline.mid(begin, end - begin);
-    std::cout << cmdline.toStdString() << ", " << cmd.toStdString() << std::endl;
-
     complete_python(cmd, out);
     complete_file(cmd, out);
 
@@ -35,10 +32,9 @@ QString Completer::complete(const QString& cmdline, int begin, int end, QStringL
                 common_prefix.remove(common_prefix.length() - 1, 1);
             }
         }
-        QString ret = cmdline.left(begin) + common_prefix + cmd.mid(end);
-        return ret;
+        return common_prefix;
     }
-    return cmdline;
+    return cmd;
 }
 
 void Completer::complete_python(const QString& cmd, QStringList& out)

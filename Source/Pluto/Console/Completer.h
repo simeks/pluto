@@ -11,7 +11,7 @@ public:
     Completer();
     ~Completer();
 
-    QString complete(const QString& cmdline, int begin, int end, QStringList& out);
+    QString complete(const QString& cmd, QStringList& out);
 
 private:
     void complete_python(const QString& cmd, QStringList& out);

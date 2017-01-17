@@ -37,7 +37,6 @@ private:
     bool cursor_in_prompt(const QTextCursor& cursor) const;
 
     QString read_prompt() const;
-    void set_prompt_value(const QString& value);
 
     QString _prompt;
     int _prompt_position;

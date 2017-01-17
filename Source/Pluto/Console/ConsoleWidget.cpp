@@ -173,31 +173,39 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         }
         else
         {
-            QString prompt = read_prompt();
+            QString cmdline = read_prompt();
 
-            //QRegExp sep("[\t\n`!@#$^&*()=+[{]}|;'\",<>?]");
-            QRegExp sep("[\t\n']");
+            QRegExp sep("[\t\n\\(\\)\\[\\]'\"]");
 
             int end = textCursor().position() - _prompt_position;
-            int begin = sep.lastIndexIn(prompt)+1;
+            int begin = sep.lastIndexIn(cmdline, end-1)+1;
             if (begin < 0)
                 begin = 0;
 
+            QString cmd = cmdline;
+            cmd = cmd.mid(begin, end - begin);
+
             QStringList cmds;
-            set_prompt_value(_completer.complete(read_prompt(), begin, end, cmds));
+            cmd = _completer.complete(cmd, cmds);
+
+            QTextCursor cursor = textCursor();
+            cursor.setPosition(_prompt_position+begin);
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end - begin);
+            cursor.insertText(cmd);
+            setTextCursor(cursor);
 
             if (cmds.size() > 1)
             {
                 int longest = 0;
-                for (const QString& cmd : cmds)
+                for (const QString& c : cmds)
                 {
-                    longest = std::max(cmd.length(), longest);
+                    longest = std::max(c.length(), longest);
                 }
                 longest += 5;
 
                 QString list = "";
                 int n = 0;
-                for (const QString& cmd : cmds)
+                for (const QString& c : cmds)
                 {
                     if (++n >= 3)
                     {
@@ -205,8 +213,8 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
                         n = 0;
                     }
 
-                    list += cmd;
-                    for (int i = 0; i < longest - cmd.length(); ++i)
+                    list += c;
+                    for (int i = 0; i < longest - c.length(); ++i)
                     {
                         list += "&nbsp;";
                     }
@@ -334,14 +342,6 @@ QString ConsoleWidget::read_prompt() const
     cursor.setPosition(_prompt_position);
     cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
     return cursor.selection().toPlainText();
-}
-void ConsoleWidget::set_prompt_value(const QString& value)
-{
-    QTextCursor cursor = textCursor();
-    cursor.setPosition(_prompt_position);
-    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-    cursor.insertText(value);
-    setTextCursor(cursor);
 }
 void ConsoleWidget::kernel_ready()
 {
