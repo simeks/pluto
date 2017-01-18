@@ -221,6 +221,7 @@ Dict QtFlowWindow::run_graph(const Tuple& args, const Dict& kw)
 void QtFlowWindow::reset_run()
 {
     _graph_runner->reset();
+    _graph_view->reset_nodes();
 }
 bool QtFlowWindow::run_pending()
 {

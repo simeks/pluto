@@ -86,10 +86,6 @@ void QtFlowNode::paint_status_marker(QPainter* painter, const QPointF& pos)
 
     switch (_status)
     {
-    case Idle:
-        brush_color = style.node_background_0;
-        pen_color = style.node_background_0;
-        break;
     case Running:
         brush_color = Qt::yellow;
         pen_color = Qt::darkYellow;
@@ -101,6 +97,11 @@ void QtFlowNode::paint_status_marker(QPainter* painter, const QPointF& pos)
     case Failed:
         brush_color = Qt::red;
         pen_color = Qt::darkRed;
+        break;
+    //case Idle:
+    default:
+        brush_color = style.node_background_0;
+        pen_color = style.node_background_0;
         break;
     }
 
