@@ -22,6 +22,7 @@ void PlutoApplication::init()
 {
     ModuleManager::instance().load_module("Flow");
     ModuleManager::instance().load_module("Registration");
+    ModuleManager::instance().load_module("Visualization");
 
     PlutoCore::instance().init();
     _kernel = PlutoCore::instance().kernel_proxy();

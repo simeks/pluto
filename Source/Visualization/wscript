@@ -1,0 +1,24 @@
+from waflib.Configure import conf
+
+
+def build(bld):
+	use = 'NUMPY'
+
+	qt_use = 'QT5'
+	if bld.configuration == 'debug':
+		qt_use = 'QT5_DEBUG'
+
+	use = use + " " + qt_use
+
+	bld.shlib(
+		features='qt5 pyembed',
+		target='Visualization',
+		source=bld.find_files('**/(*.cpp)'), 
+		moc=[
+			'Qt/QtVisWindow.h'
+			],
+		includes='. ..',
+		defines='PLUTO_VIS_EXPORTS',
+		use='Core ' + use,
+	)
+

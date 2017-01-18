@@ -123,7 +123,10 @@ bool Image::valid() const
 {
     return _data.valid();
 }
-
+const size_t* Image::step() const
+{
+    return _step;
+}
 void Image::copy_to(uint8_t* dest) const
 {
     assert(valid());

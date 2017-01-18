@@ -60,6 +60,9 @@ if 'medkit' in sys.modules:
     imread = medkit.read
     imwrite = medkit.write
 
+import vis
+imshow = vis.show
+
 
 flow.add_graph_path(os.path.join(pluto.user_dir(), 'graphs'))
 

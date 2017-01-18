@@ -1,4 +1,4 @@
-SUBFOLDERS = ['Core', 'Pluto', 'Flow', 'Registration']
+SUBFOLDERS = ['Core', 'Pluto', 'Flow', 'Registration', 'Visualization']
 
 from waflib.Configure import conf
 

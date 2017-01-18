@@ -46,6 +46,8 @@ public:
 
     bool valid() const;
 
+    const size_t* step() const;
+
     INLINE const uint8_t* ptr() const;
     INLINE uint8_t* ptr();
 
