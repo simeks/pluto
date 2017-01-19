@@ -146,6 +146,10 @@ NumpyArray NumpyArray::cast(PyArray_Descr* desc) const
 {
     return NumpyArray((PyArrayObject*)PyArray_CastToType(_arr, desc, 0));
 }
+NumpyArray NumpyArray::contiguous() const
+{
+    return NumpyArray(PyArray_GETCONTIGUOUS(_arr));
+}
 NumpyArray::NumpyArray(const NumpyArray& other)
 {
     _arr = other._arr;

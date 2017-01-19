@@ -4,6 +4,7 @@
 #include <Core/Python/PythonModule.h>
 
 class Image;
+class QtVisWindow;
 class VisPythonModule : public PythonModuleHelper<VisPythonModule>
 {
 public:
@@ -16,6 +17,9 @@ public:
 
     static const char* name();
 
+
+private:
+    QtVisWindow* _current_window;
 };
 
 

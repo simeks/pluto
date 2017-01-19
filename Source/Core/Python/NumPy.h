@@ -58,6 +58,8 @@ public:
     NumpyArray cast(int type) const;
     NumpyArray cast(PyArray_Descr* desc) const;
 
+    NumpyArray contiguous() const;
+
     NumpyArray(const NumpyArray& other);
     NumpyArray& operator=(const NumpyArray& other);
 

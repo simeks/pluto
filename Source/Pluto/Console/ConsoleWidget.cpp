@@ -175,7 +175,7 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         {
             QString cmdline = read_prompt();
 
-            QRegExp sep("[\t\n\\(\\)\\[\\]'\"]");
+            QRegExp sep("[\t\n\\(\\)\\[\\]'\"=,;<> ]");
 
             int end = textCursor().position() - _prompt_position;
             int begin = sep.lastIndexIn(cmdline, end-1)+1;

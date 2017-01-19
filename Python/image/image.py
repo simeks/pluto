@@ -1,5 +1,5 @@
 import numpy as np
-import image.types
+from image.types import *
 
 class Image(np.ndarray):
     def __new__(cls, arr, pixel_type):
@@ -15,6 +15,27 @@ class Image(np.ndarray):
 
         self.spacing = getattr(obj, 'spacing', (1, 1, 1))
         self.origin = getattr(obj, 'origin', (0, 0, 0))
-        self.pixel_type = getattr(obj, 'pixel_type', image.types.PixelType_Unknown)
+        self.pixel_type = getattr(obj, 'pixel_type', PixelType_Unknown)
+
+        # Lets say we have I = ImageVec3d, if we do I[:,:,1]
+        if self.shape == obj.shape[:-1]:
+            if obj.shape[-1] == 3:
+                if self.pixel_type == PixelType_Vec3u8:
+                    self.pixel_type = PixelType_UInt8
+                elif self.pixel_type == PixelType_Vec3f:
+                    self.pixel_type = PixelType_Float32
+                elif self.pixel_type == PixelType_Vec3d:
+                    self.pixel_type = PixelType_Float64
+
+            elif obj.shape[-1] == 4:
+                if self.pixel_type == PixelType_Vec4u8:
+                    self.pixel_type = PixelType_UInt8
+                elif self.pixel_type == PixelType_Vec4f:
+                    self.pixel_type = PixelType_Float32
+                elif self.pixel_type == PixelType_Vec4d:
+                    self.pixel_type = PixelType_Float64
+
+
+
 
     

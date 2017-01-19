@@ -19,6 +19,9 @@ public:
 public slots:
     void set_image(const Image& img);
 
+protected:
+    virtual void resizeEvent(QResizeEvent* e) OVERRIDE;
+
 private:
     void setup_ui();
 
