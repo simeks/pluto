@@ -70,6 +70,10 @@ void Completer::complete_python(const QString& cmd, QStringList& out)
                         out.push_back(expr + "." + qkey);
                 }
             }
+            else
+            {
+                PyErr_Clear();
+            }
         }
     }
     else
