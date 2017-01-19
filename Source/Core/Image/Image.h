@@ -23,16 +23,16 @@ class CORE_API Image
 public:
     Image();
     Image(int ndims, const Vec3i& size, int pixel_type, const uint8_t* data = nullptr);
+    Image(const NumpyArray& data, int pixel_type);
     ~Image();
 
     void create(int ndims, const Vec3i& size, int pixel_type, const uint8_t* data = nullptr);
-    void set(int ndims, const Vec3i& size, int pixel_type, const NumpyArray& data);
-
     void release();
 
     void set_origin(const Vec3d& origin);
     void set_spacing(const Vec3d& spacing);
 
+    /// Returns width x height x depth
     const Vec3i& size() const;
     const Vec3d& origin() const;
     const Vec3d& spacing() const;
@@ -45,8 +45,6 @@ public:
     Image clone() const;
 
     bool valid() const;
-
-    const size_t* step() const;
 
     INLINE const uint8_t* ptr() const;
     INLINE uint8_t* ptr();
@@ -73,20 +71,19 @@ public:
 
     operator bool() const;
 
-    const NumpyArray& numpy_array() const;
+    const NumpyArray& data() const;
 
 protected:
     void numpy_shape(int ndims, const Vec3i& size, int pixel_type, int& npy_ndims, npy_intp* npy_dims) const;
 
     NumpyArray _data;
+    int _pixel_type;
+
     int _ndims;
     Vec3i _size;
-    size_t _step[3];
-
+    
     Vec3d _origin;
     Vec3d _spacing;
-
-    int _pixel_type;
 };
 
 template<typename T>

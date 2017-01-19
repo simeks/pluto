@@ -1,5 +1,4 @@
 #include <Core/Common.h>
-#include <Core/Image/ImageObject.h>
 #include <Core/Pluto/PlutoCore.h>
 #include <Core/Python/PythonFunction.h>
 #include <Core/Qt/WindowManager.h>
@@ -29,14 +28,7 @@ namespace
             return;
         }
 
-        if (ImageObject::static_class()->check_type(obj))
-        {
-            ImageObject* o = python_convert::from_python<ImageObject*>(obj);
-            PYTHON_STDOUT("ImageObject, type=%s, size=(%d, %d, %d)", 
-                image::pixel_type_to_string(o->pixel_type()),
-                o->size().x, o->size().y, o->size().z);
-        }
-        else if (Object::static_class()->check_type(obj))
+        if (Object::static_class()->check_type(obj))
         {
             Object* o = python_convert::from_python<Object*>(obj);
             PYTHON_STDOUT("Object, class=%s", o->get_class()->name());

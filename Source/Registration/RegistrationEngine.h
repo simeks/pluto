@@ -4,7 +4,6 @@
 #include <Core/Image/Image.h>
 #include <Core/Object/Object.h>
 
-class ImageObject;
 class Optimizer;
 class RegistrationEngine : public Object
 {
@@ -28,10 +27,10 @@ public:
     void object_init() OVERRIDE;
     void object_python_init(const Tuple&, const Dict&) OVERRIDE;
 
-    void set_constraints(ImageObject* values, ImageObject* mask);
-    void set_starting_guess(ImageObject* starting_guess);
+    void set_constraints(const Image& values, const Image& mask);
+    void set_starting_guess(const Image& starting_guess);
 
-    ImageObject* execute(const Tuple& fixed, const Tuple& moving);
+    Image execute(const Tuple& fixed, const Tuple& moving);
 
 private:
     Optimizer* create_optimizer(const char* name, 

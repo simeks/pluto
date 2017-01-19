@@ -47,6 +47,31 @@ bool numpy::check_type(PyObject* obj)
     return obj && PyArray_Check(obj) != 0;
 }
 
+namespace python_convert
+{
+    template<>
+    CORE_API NumpyArray from_python(PyObject* obj)
+    {
+        if (PyArray_Check(obj))
+        {
+            return NumpyArray((PyArrayObject*)obj);
+        }
+
+        PYTHON_ERROR_R(ValueError, NumpyArray(), "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
+    }
+
+    template<>
+    CORE_API PyObject* to_python(const NumpyArray& value)
+    {
+        PyObject* obj = value.object();
+        if (!obj)
+            Py_RETURN_NONE;
+
+        Py_INCREF(obj);
+        return obj;
+    }
+}
+
 NumpyArray::NumpyArray() : _arr(nullptr)
 {
 }
@@ -56,28 +81,13 @@ NumpyArray::NumpyArray(int ndims, Py_intptr_t* dims, int type)
 }
 NumpyArray::NumpyArray(PyArrayObject* arr) : _arr(arr)
 {
+    Py_INCREF(_arr);
 }
 NumpyArray::~NumpyArray()
 {
     Py_XDECREF(_arr);
 }
 
-int NumpyArray::ndims() const
-{
-    return PyArray_NDIM(_arr);
-}
-Py_intptr_t* NumpyArray::dims() const
-{
-    return PyArray_DIMS(_arr);
-}
-Py_intptr_t NumpyArray::stride(int i) const
-{
-    return PyArray_STRIDE(_arr, i);
-}
-Py_intptr_t* NumpyArray::strides() const
-{
-    return PyArray_STRIDES(_arr);
-}
 Py_intptr_t NumpyArray::nbytes() const
 {
     return PyArray_NBYTES(_arr);
@@ -146,9 +156,4 @@ NumpyArray& NumpyArray::operator=(const NumpyArray& other)
     _arr = other._arr;
     Py_XINCREF(_arr);
     return *this;
-}
-
-PyArrayObject* NumpyArray::object() const
-{
-    return _arr;
 }

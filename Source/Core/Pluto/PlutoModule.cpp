@@ -1,6 +1,5 @@
 #include "Common.h"
 
-#include "Image/ImageObject.h"
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"

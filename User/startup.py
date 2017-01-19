@@ -32,12 +32,12 @@ except ImportError as e:
 else:
     print('Import module: flow')
 
-try:
+#try:
     import image
-except ImportError as e:
-    print('Failed to import image:',e)
-else:
-    print('Import module: image')
+#except ImportError as e:
+#    print('Failed to import image:',e)
+#else:
+#    print('Import module: image')
 
 import console
 import importlib

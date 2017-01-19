@@ -87,8 +87,8 @@ def read(file):
         raise IOError('Unknown format (SimpleITK PixelID: '+str(itk_img.GetPixelID())+')')
 
     img = image.Image(sitk.GetArrayFromImage(itk_img), fmt)
-    img.set_spacing(itk_img.GetSpacing())
-    img.set_origin(itk_img.GetOrigin())
+    img.spacing = itk_img.GetSpacing()
+    img.origin = itk_img.GetOrigin()
 
     return img
 
@@ -100,11 +100,11 @@ def write(image, file):
     if image is None:
         raise ValueError('Image object can not be None')
 
-    _, n = format_to_sitk(image.pixel_type())
+    _, n = format_to_sitk(image.pixel_type)
 
-    out = sitk.GetImageFromArray(image.array(), isVector=n!=1)
+    out = sitk.GetImageFromArray(image, isVector=n!=1)
 
-    out.SetSpacing(image.spacing())
-    out.SetOrigin(image.origin())
+    out.SetSpacing(image.spacing)
+    out.SetOrigin(image.origin)
 
     writer.Execute(out)

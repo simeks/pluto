@@ -27,10 +27,11 @@ public:
 
     INLINE void* data() const;
 
-    int ndims() const;
-    Py_intptr_t* dims() const;
-    Py_intptr_t stride(int i) const;
-    Py_intptr_t* strides() const;
+    INLINE int ndims() const;
+    INLINE Py_intptr_t* shape() const;
+
+    INLINE Py_intptr_t stride(int i) const;
+    INLINE Py_intptr_t* strides() const;
 
     /// Returns the total number of bytes consumed by the array
     Py_intptr_t nbytes() const;
@@ -60,7 +61,7 @@ public:
     NumpyArray(const NumpyArray& other);
     NumpyArray& operator=(const NumpyArray& other);
 
-    PyArrayObject* object() const;
+    INLINE PyObject* object() const;
 
 private:
     PyArrayObject* _arr;
@@ -71,5 +72,27 @@ void* NumpyArray::data() const
 {
     return PyArray_DATA(_arr);
 }
+int NumpyArray::ndims() const
+{
+    return PyArray_NDIM(_arr);
+}
+Py_intptr_t* NumpyArray::shape() const
+{
+    return PyArray_SHAPE(_arr);
+}
+Py_intptr_t NumpyArray::stride(int i) const
+{
+    return PyArray_STRIDE(_arr, i);
+}
+Py_intptr_t* NumpyArray::strides() const
+{
+    return PyArray_STRIDES(_arr);
+}
+
+PyObject* NumpyArray::object() const
+{
+    return (PyObject*)_arr;
+}
+
 
 #endif // __CORE_PYTHON_NUMPY_H__

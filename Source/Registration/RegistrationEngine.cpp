@@ -1,6 +1,5 @@
 #include <Core/Common.h>
 #include <Core/Image/Image.h>
-#include <Core/Image/ImageObject.h>
 #include <Core/Python/PythonCommon.h>
 
 #include "BlockedGraphCutOptimizer.h"
@@ -177,8 +176,8 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
     return result;
 }
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, set_constraints, ImageObject*, ImageObject*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(RegistrationEngine, set_starting_guess, ImageObject*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, set_constraints, Image, Image);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(RegistrationEngine, set_starting_guess, Image);
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationEngine, execute, Tuple, Tuple);
 
 OBJECT_INIT_TYPE_FN(RegistrationEngine)
@@ -258,14 +257,14 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
         _normalize_images = settings.get<bool>("normalize_images");
 
 }
-void RegistrationEngine::set_constraints(ImageObject* values, ImageObject* mask)
+void RegistrationEngine::set_constraints(const Image& values, const Image& mask)
 {
     if (values)
     {
-        if (values->pixel_type() != image::PixelType_Vec3d)
+        if (values.pixel_type() != image::PixelType_Vec3d)
             PYTHON_ERROR(ValueError, "Constraint value image needs to be of Vec3d type!");
 
-        _constraint_pyramid[0] = values->image();
+        _constraint_pyramid[0] = values;
     }
     else
     {
@@ -273,10 +272,10 @@ void RegistrationEngine::set_constraints(ImageObject* values, ImageObject* mask)
     }
     if (mask)
     {
-        if (mask->pixel_type() != image::PixelType_UInt8)
+        if (mask.pixel_type() != image::PixelType_UInt8)
             PYTHON_ERROR(ValueError, "Constraint mask needs to be of UInt8 type!");
 
-        _constraint_mask_pyramid[0] = mask->image();
+        _constraint_mask_pyramid[0] = mask;
     }
     else
     {
@@ -284,21 +283,21 @@ void RegistrationEngine::set_constraints(ImageObject* values, ImageObject* mask)
     }
 
 }
-void RegistrationEngine::set_starting_guess(ImageObject* starting_guess)
+void RegistrationEngine::set_starting_guess(const Image& starting_guess)
 {
     if (starting_guess)
     {
-        if (starting_guess->pixel_type() != image::PixelType_Vec3d)
+        if (starting_guess.pixel_type() != image::PixelType_Vec3d)
             PYTHON_ERROR(ValueError, "Starting guess needs to be of Vec3d type!");
 
-        _deformation_pyramid[0] = starting_guess->image();
+        _deformation_pyramid[0] = starting_guess;
     }
     else
     {
         _deformation_pyramid[0] = ImageVec3d();
     }
 }
-ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
+Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
 {
     _fixed_pyramid.clear();
     _moving_pyramid.clear();
@@ -308,11 +307,11 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
     _constraint_pyramid.clear();
 
     if (fixed.size() != moving.size())
-        PYTHON_ERROR_R(ValueError, nullptr, "Expected an equal number of fixed- and moving images");
+        PYTHON_ERROR_R(ValueError, Image(), "Expected an equal number of fixed- and moving images");
         
     _image_pair_count = (int)fixed.size();
     if (_image_pair_count == 0)
-        PYTHON_ERROR_R(ValueError, nullptr, "invalid number of image pairs");
+        PYTHON_ERROR_R(ValueError, Image(), "invalid number of image pairs");
 
     _fixed_pyramid.resize(_pyramid_level_max);
     _moving_pyramid.resize(_pyramid_level_max);
@@ -323,14 +322,14 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
 
     for (int i = 0; i < _image_pair_count; ++i)
     {
-        ImageObject* fixed_img = fixed.get<ImageObject*>(i);
-        ImageObject* moving_img = moving.get<ImageObject*>(i);
+        Image fixed_img = fixed.get<Image>(i);
+        Image moving_img = moving.get<Image>(i);
         if (!fixed_img || !moving_img)
-            PYTHON_ERROR_R(ValueError, nullptr, "Missing image");
+            PYTHON_ERROR_R(ValueError, Image(), "Missing image");
 
-        if (fixed_img->pixel_type() != moving_img->pixel_type() ||
-            fixed_img->size() != moving_img->size())
-            PYTHON_ERROR_R(ValueError, nullptr, "Image pairs needs to have the same size and pixel type");
+        if (fixed_img.pixel_type() != moving_img.pixel_type() ||
+            fixed_img.size() != moving_img.size())
+            PYTHON_ERROR_R(ValueError, Image(), "Image pairs needs to have the same size and pixel type");
 
         _fixed_pyramid[0].resize(_image_pair_count);
         _moving_pyramid[0].resize(_image_pair_count);
@@ -339,46 +338,46 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
         {
             if (_normalize_images)
             {
-                _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(fixed_img->image());
-                _moving_pyramid[0][i] = normalize_image<ImageFloat32>(moving_img->image());
+                _fixed_pyramid[0][i] = normalize_image<ImageFloat32>(fixed_img);
+                _moving_pyramid[0][i] = normalize_image<ImageFloat32>(moving_img);
             }
             else
             {
-                _fixed_pyramid[0][i] = ImageFloat32(fixed_img->image());
-                _moving_pyramid[0][i] = ImageFloat32(moving_img->image());
+                _fixed_pyramid[0][i] = ImageFloat32(fixed_img);
+                _moving_pyramid[0][i] = ImageFloat32(moving_img);
             }
         }
         else if (_image_type == image::PixelType_Float64)
         {
             if (_normalize_images)
             {
-                _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(fixed_img->image());
-                _moving_pyramid[0][i] = normalize_image<ImageFloat64>(moving_img->image());
+                _fixed_pyramid[0][i] = normalize_image<ImageFloat64>(fixed_img);
+                _moving_pyramid[0][i] = normalize_image<ImageFloat64>(moving_img);
             }
             else
             {
-                _fixed_pyramid[0][i] = ImageFloat64(fixed_img->image());
-                _moving_pyramid[0][i] = ImageFloat64(moving_img->image());
+                _fixed_pyramid[0][i] = ImageFloat64(fixed_img);
+                _moving_pyramid[0][i] = ImageFloat64(moving_img);
             }
         }
         else
         {
             // We don't normalize non-float images
-            _fixed_pyramid[0][i] = fixed_img->image();
-            _moving_pyramid[0][i] = moving_img->image();
+            _fixed_pyramid[0][i] = fixed_img;
+            _moving_pyramid[0][i] = moving_img;
         }
     }
 
     // Confirm that all images are of same size
 
     if (_deformation_pyramid[0].valid() && _deformation_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR_R(ValueError, nullptr, "Starting guess needs to be of same size as the image pair.");
+        PYTHON_ERROR_R(ValueError, Image(), "Starting guess needs to be of same size as the image pair.");
 
     if (_constraint_mask_pyramid[0].valid() && _constraint_mask_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR_R(ValueError, nullptr, "Constraint mask needs to be of same size as the image pair.");
+        PYTHON_ERROR_R(ValueError, Image(), "Constraint mask needs to be of same size as the image pair.");
 
     if (_constraint_pyramid[0].valid() && _constraint_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR_R(ValueError, nullptr, "Constraint value image needs to be of same size as the image pair.");
+        PYTHON_ERROR_R(ValueError, Image(), "Constraint value image needs to be of same size as the image pair.");
 
 
     build_pyramid();
@@ -395,7 +394,7 @@ ImageObject* RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving
             image::upsample_vectorfield(_deformation_pyramid[l], 2.0, _residual_pyramid[l - 1], _deformation_pyramid[l - 1]);
         }
     }
-    return object_new<ImageObject>(_deformation_pyramid[0]);
+    return _deformation_pyramid[0];
 }
 
 void RegistrationEngine::build_pyramid()

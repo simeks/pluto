@@ -1,5 +1,5 @@
 #include <Core/Common.h>
-#include <Core/Image/ImageObject.h>
+#include <Core/Image/Image.h>
 
 #include "QtVisWindow.h"
 
@@ -15,14 +15,11 @@ QtVisWindow::QtVisWindow(QWidget *parent) : QMainWindow(parent), _view(nullptr)
 QtVisWindow::~QtVisWindow()
 {
 }
-void QtVisWindow::set_image(ImageObject* img)
+void QtVisWindow::set_image(const Image& image)
 {
-    if (!img)
+    if (!image.valid())
         return;
 
-    img->addref();
-
-    Image image = img->image();
     assert(image.ndims() == 2);
     //assert(image.pixel_type() == image::PixelType_UInt8);
     
@@ -35,7 +32,7 @@ void QtVisWindow::set_image(ImageObject* img)
         fmt = QImage::Format_RGBA8888;
     assert(fmt != QImage::Format_Invalid);
     
-    QImage qimage(image.ptr(), image.size().x, image.size().y, (int)(image.size().x * image.step()[0]), fmt);
+    QImage qimage(image.ptr(), image.size().x, image.size().y, (int)image.data().stride(0), fmt);
     QPixmap pixmap = QPixmap::fromImage(qimage);
 
     _view->scene()->clear();

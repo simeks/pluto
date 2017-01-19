@@ -1,7 +1,6 @@
 #include <Core/Common.h>
 
 #include <Flow/FlowContext.h>
-#include <Core/Image/ImageObject.h>
 #include <Core/Image/Image.h>
 
 #include "Transform.h"
@@ -32,54 +31,52 @@ namespace transform
     }
 }
 
-ImageObject* transform::transform(ImageObject* image_obj, ImageObject* deformation_obj)
+Image transform::transform(const Image& image, const Image& deformation)
 {
-    if (image_obj && deformation_obj)
+    if (image.valid() && deformation.valid())
     {
-        ImageVec3d deformation = deformation_obj->image();
-        assert(deformation.size() == image_obj->size());
+        assert(deformation.size() == image.size());
 
-        ImageObject* result = nullptr;
-        if (image_obj->pixel_type() == image::PixelType_UInt8)
+        if (image.pixel_type() == image::PixelType_UInt8)
         {
-            ImageUInt8 img = transform::transform_image<ImageUInt8>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageUInt8>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Float32)
+        else if (image.pixel_type() == image::PixelType_UInt16)
         {
-            Image img = transform::transform_image<ImageFloat32>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageUInt16>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Float64)
+        else if (image.pixel_type() == image::PixelType_UInt32)
         {
-            Image img = transform::transform_image<ImageFloat64>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageUInt32>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Vec3u8)
+        else if (image.pixel_type() == image::PixelType_Float32)
         {
-            Image img = transform::transform_image<ImageVec3u8>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageFloat32>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Vec3f)
+        else if (image.pixel_type() == image::PixelType_Float64)
         {
-            Image img = transform::transform_image<ImageVec3f>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageFloat64>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Vec4u8)
+        else if (image.pixel_type() == image::PixelType_Vec3u8)
         {
-            ImageRGBA32 img = transform::transform_image<ImageColorf>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageVec3u8>(image, deformation);
         }
-        else if (image_obj->pixel_type() == image::PixelType_Vec4f)
+        else if (image.pixel_type() == image::PixelType_Vec3f)
         {
-            Image img = transform::transform_image<ImageColorf>(image_obj->image(), deformation);
-            result = object_new<ImageObject>(img);
+            return transform::transform_image<ImageVec3f>(image, deformation);
+        }
+        else if (image.pixel_type() == image::PixelType_Vec4u8)
+        {
+            return transform::transform_image<ImageColorf>(image, deformation);
+        }
+        else if (image.pixel_type() == image::PixelType_Vec4f)
+        {
+            return transform::transform_image<ImageColorf>(image, deformation);
         }
         else
         {
-            PYTHON_ERROR_R(ValueError, nullptr, "Unsupported image format (%s)", image::pixel_type_to_string(image_obj->pixel_type()));
+            PYTHON_ERROR_R(ValueError, Image(), "Unsupported image format (%s)", image::pixel_type_to_string(image.pixel_type()));
         }
-        return result;
     }
-    return nullptr;
+    PYTHON_ERROR_R(ValueError, Image(), "Missing arguments");
 }

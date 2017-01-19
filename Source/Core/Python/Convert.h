@@ -15,6 +15,7 @@ namespace python_convert
     template<>
     INLINE PyObject* from_python(PyObject* value) { if (value) return value; else Py_RETURN_NONE; }
 
+    /// Converts the specified value and returns a new reference to the resulting PyObject
     template<typename T>
     PyObject* to_python(const T& value);
 

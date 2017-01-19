@@ -16,6 +16,12 @@
     if (PyErr_Occurred()) \
         return 0;
 
+#define PYTHON_FUNCTION_RETURN(Fn) \
+    PyObject* ret = python_convert::to_python(Fn); \
+    if (PyErr_Occurred()) \
+        return 0; \
+    return ret;
+
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(TClass, Fn) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
@@ -70,7 +76,7 @@
         PYTHON_FUNCTION_CHECK_ARGS(Fn, 0); \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
-        return python_convert::to_python(tself->Fn()); \
+        PYTHON_FUNCTION_RETURN(tself->Fn()); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(TClass, Fn, A) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
@@ -80,7 +86,7 @@
         A a; \
         python_helpers::parse_args(args, a); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
-        return python_convert::to_python(tself->Fn(a)); \
+        PYTHON_FUNCTION_RETURN(tself->Fn(a)); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(TClass, Fn, A, B) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
@@ -90,7 +96,7 @@
         A a; B b; \
         python_helpers::parse_args(args, a, b); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
-        return python_convert::to_python(tself->Fn(a, b)); \
+        PYTHON_FUNCTION_RETURN(tself->Fn(a, b)); \
     }
 #define PYTHON_FUNCTION_WRAPPER_CLASS_ARGS3_RETURN(TClass, Fn, A, B, C) \
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
@@ -100,7 +106,7 @@
         A a; B b; C c; \
         python_helpers::parse_args(args, a, b, c); \
         PYTHON_FUNCTION_CATCH_ERROR(); \
-        return python_convert::to_python(tself->Fn(a, b, c)); \
+        PYTHON_FUNCTION_RETURN(tself->Fn(a, b, c)); \
     }
 
 

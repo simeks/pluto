@@ -23,24 +23,25 @@ T* Image::ptr()
 
 INLINE size_t Image::offset(int x, int y, int z) const
 {
-    assert(x >= 0 && x < _size.x);
-    assert(y >= 0 && y < _size.y);
-    assert(z >= 0 && z < _size.z);
-    return x * _step[0] + y * _step[1] + z * _step[2];
+    assert(ndims() == 3);
+    assert(x >= 0 && x < _data.shape()[2]);
+    assert(y >= 0 && y < _data.shape()[1]);
+    assert(z >= 0 && z < _data.shape()[0]);
+    return x * _data.stride(2) + y * _data.stride(1) + z * _data.stride(0);
 }
 INLINE size_t Image::offset(int x, int y) const
 {
-    assert(_ndims >= 2);
-    assert(x >= 0 && x < _size.x);
-    assert(y >= 0 && y < _size.y);
+    assert(ndims() == 2);
+    assert(x >= 0 && x < _data.shape()[1]);
+    assert(y >= 0 && y < _data.shape()[0]);
 
-    return x * _step[0] + y * _step[1];
+    return x * _data.stride(1) + y * _data.stride(0);
 }
 INLINE size_t Image::offset(int x) const
 {
-    assert(_ndims >= 1);
-    assert(x >= 0 && x < _size.x);
-    return x * _step[0];
+    assert(ndims() == 1);
+    assert(x >= 0 && x < _data.shape()[0]);
+    return x * _data.stride(0);
 }
 INLINE Image::operator bool() const
 {

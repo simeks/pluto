@@ -1,8 +1,8 @@
 #include <Testing/Framework.h>
 
-#include <Core/Image/ImageObject.h>
 #include <Core/Object/Object.h>
 #include <Core/Python/Convert.h>
+#include <Core/Python/NumPy.h>
 
 using namespace testing;
 
@@ -42,13 +42,5 @@ TEST_CASE(from_python_object)
     Object* obj = object_new<Object>();
     ASSERT_EQUAL(python_convert::from_python<Object*>(obj->python_object()), obj);
     ASSERT_EXPR(PyErr_Occurred() == nullptr);
-    ASSERT_NOT_EQUAL(python_convert::from_python<ImageObject*>(obj->python_object()), obj);
-    PyErr_Print();
-    ASSERT_EXPR(PyErr_Occurred() == nullptr);
-
-    ImageObject* img = object_new<ImageObject>();
-    ASSERT_EQUAL(python_convert::from_python<Object*>(img->python_object()), img);
-    ASSERT_EXPR(PyErr_Occurred() == nullptr);
-    ASSERT_EQUAL(python_convert::from_python<ImageObject*>(img->python_object()), img);
-    ASSERT_EXPR(PyErr_Occurred() == nullptr);
+    
 }

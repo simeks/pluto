@@ -16,7 +16,7 @@ public:
 
     void post_init() OVERRIDE;
 
-    ImageObject* transform(ImageObject* img, ImageObject* def);
+    Image transform(const Image& img, const Image& def);
 
     static const char* name()
     {
@@ -24,7 +24,7 @@ public:
     }
 
 };
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, ImageObject*, ImageObject*);
+PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, Image, Image);
 
 void RegistrationPythonModule::post_init()
 {
@@ -38,7 +38,7 @@ void RegistrationPythonModule::post_init()
         "   deformation(Image) : Deformation field to apply\n");
 }
 
-ImageObject* RegistrationPythonModule::transform(ImageObject* img, ImageObject* def)
+Image RegistrationPythonModule::transform(const Image& img, const Image& def)
 {
     return transform::transform(img, def);
 }

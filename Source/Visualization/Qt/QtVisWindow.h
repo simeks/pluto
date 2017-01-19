@@ -5,7 +5,7 @@
 #include <QDialog>
 #include <QMainWindow>
 
-class ImageObject;
+class Image;
 class QGraphicsView;
 class VIS_API QtVisWindow : public QMainWindow
 {
@@ -17,7 +17,7 @@ public:
 
 
 public slots:
-    void set_image(ImageObject* img);
+    void set_image(const Image& img);
 
 private:
     void setup_ui();

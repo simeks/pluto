@@ -3,7 +3,7 @@
 
 #include <Core/Python/PythonModule.h>
 
-class ImageObject;
+class Image;
 class VisPythonModule : public PythonModuleHelper<VisPythonModule>
 {
 public:
@@ -12,7 +12,7 @@ public:
 
     void post_init() OVERRIDE;
 
-    void show(ImageObject* obj);
+    void show(const Image& obj);
 
     static const char* name();
 

@@ -5,7 +5,7 @@
 
 namespace transform
 {
-    ImageObject* transform(ImageObject* image, ImageObject* def);
+    Image transform(const Image& image, const Image& def);
 }
 
 #endif // __REGISTRATION_TRANSFORM_H__

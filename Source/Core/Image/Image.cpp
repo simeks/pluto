@@ -1,7 +1,74 @@
 #include "Common.h"
 
 #include "Image.h"
+#include "Python/PythonCommon.h"
+#include "Types.h"
 
+namespace
+{
+    PyObject* _image_py_type = nullptr;
+    PyObject* image_py_type()
+    {
+        if (!_image_py_type)
+        {
+            PyObject* img_mod = PyImport_ImportModule("image");
+            if (!img_mod)
+                return nullptr;
+
+            PyObject* image = PyObject_GetAttrString(img_mod, "Image");
+            if (!PyType_Check(image))
+                return nullptr;
+
+            _image_py_type = image;
+            Py_INCREF(_image_py_type);
+        }
+        return _image_py_type;
+    }
+}
+
+namespace python_convert
+{
+    template<>
+    CORE_API Image from_python(PyObject* obj)
+    {
+        if (PyObject_IsInstance(obj, image_py_type()))
+        {
+            image::PixelType pixel_type = image::PixelType_Unknown;
+            if (PyObject_HasAttrString(obj, "pixel_type"))
+                pixel_type = from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
+
+            Image img(from_python<NumpyArray>(obj), pixel_type);
+
+            if (PyObject_HasAttrString(obj, "origin"))
+                img.set_origin(from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+            if (PyObject_HasAttrString(obj, "spacing"))
+                img.set_spacing(from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
+            
+            return img;
+        }
+
+        PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
+    }
+
+    template<>
+    CORE_API PyObject* to_python(const Image& value)
+    {
+        if (!value.valid())
+            Py_RETURN_NONE;
+
+        PyObject* args = PyTuple_New(2);
+        PyTuple_SetItem(args, 0, to_python(value.data()));
+        PyTuple_SetItem(args, 1, to_python((image::PixelType)value.pixel_type()));
+
+        PyObject* imgobj = PyObject_Call(image_py_type(), args, nullptr);
+        Py_DECREF(args);
+
+        PyObject_SetAttrString(imgobj, "origin", to_python(value.origin()));
+        PyObject_SetAttrString(imgobj, "spacing", to_python(value.spacing()));
+
+        return imgobj;
+    }
+}
 
 Image::Image() : 
     _ndims(0),
@@ -11,10 +78,27 @@ Image::Image() :
 }
 Image::Image(int ndims, const Vec3i& size, int pixel_type, const uint8_t* data) :
     _ndims(0),
-    _spacing(1, 1, 1),
-    _pixel_type(image::PixelType_Unknown)
+    _pixel_type(image::PixelType_Unknown),
+    _origin(0, 0, 0),
+    _spacing(1, 1, 1)
 {
     create(ndims, size, pixel_type, data);
+}
+Image::Image(const NumpyArray& data, int pixel_type) :
+    _data(data),
+    _pixel_type(pixel_type),
+    _origin(0, 0, 0),
+    _spacing(1, 1, 1)
+{
+    _ndims = _data.ndims();
+    if (image::num_components(pixel_type) > 1)
+        --_ndims;
+
+    _size = Vec3i(1, 1, 1);
+    for (int i = 0; i < _ndims; ++i)
+        _size[i] = (int)_data.shape()[_ndims - i - 1];
+    _pixel_type = pixel_type;
+    _data = data;
 }
 Image::~Image()
 {
@@ -35,9 +119,6 @@ void Image::create(int ndims, const Vec3i& size, int pixel_type, const uint8_t* 
     _ndims = ndims;
     _size = size;
     _pixel_type = pixel_type;
-    _step[0] = 0; _step[1] = 0; _step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        _step[i] = _data.stride(_ndims - 1 - i);
 
     if (data)
     {
@@ -46,21 +127,10 @@ void Image::create(int ndims, const Vec3i& size, int pixel_type, const uint8_t* 
         memcpy(_data.data(), data, num_bytes);
     }
 }
-void Image::set(int ndims, const Vec3i& size, int pixel_type, const NumpyArray& data)
-{
-    _ndims = ndims;
-    _size = size;
-    _pixel_type = pixel_type;
-    _data = data;
-    _step[0] = 0; _step[1] = 0; _step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        _step[i] = _data.stride(_ndims - 1 - i);
-}
 void Image::release()
 {
     _pixel_type = image::PixelType_Unknown;
     _data = NumpyArray();
-    _step[0] = 0; _step[1] = 0; _step[2] = 0;
 }
 
 void Image::set_origin(const Vec3d& origin)
@@ -108,10 +178,6 @@ Image Image::clone() const
     img._ndims = _ndims;
     img._size = _size;
     img._data = _data.copy();
-    assert(_data.is_contiguous());
-    img._step[0] = 0; img._step[1] = 0; img._step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        img._step[i] = _data.stride(_ndims - 1 - i);
     img._pixel_type = _pixel_type;
     img._spacing = _spacing;
     img._origin = _origin;
@@ -122,10 +188,6 @@ Image Image::clone() const
 bool Image::valid() const
 {
     return _data.valid();
-}
-const size_t* Image::step() const
-{
-    return _step;
 }
 void Image::copy_to(uint8_t* dest) const
 {
@@ -148,9 +210,7 @@ Image Image::convert_to(int type) const
     Image r = *this;
     r._data = _data.cast(numpy::pixel_type_to_numpy(type));
     r._pixel_type = type;
-    r._step[0] = 0; r._step[1] = 0; r._step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        r._step[i] = _data.stride(_ndims - 1 - i);
+
     return r;
 }
 
@@ -163,9 +223,6 @@ _origin(other._origin),
 _spacing(other._spacing),
 _pixel_type(other._pixel_type)
 {
-    _step[0] = 0; _step[1] = 0; _step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        _step[i] = _data.stride(_ndims - 1 - i);
 }
 Image& Image::operator=(const Image& other)
 {
@@ -176,13 +233,9 @@ Image& Image::operator=(const Image& other)
     _spacing = other._spacing;
     _pixel_type = other._pixel_type;
 
-    _step[0] = 0; _step[1] = 0; _step[2] = 0;
-    for (int i = 0; i < _ndims; ++i)
-        _step[i] = _data.stride(_ndims - 1 - i);
-
     return *this;
 }
-const NumpyArray& Image::numpy_array() const
+const NumpyArray& Image::data() const
 {
     return _data;
 }
