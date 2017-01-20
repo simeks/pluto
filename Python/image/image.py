@@ -35,7 +35,27 @@ class Image(np.ndarray):
                 elif self.pixel_type == PixelType_Vec4d:
                     self.pixel_type = PixelType_Float64
 
-
+        if self.dtype != obj.dtype:
+            if self.pixel_type in (PixelType_Vec3u8, PixelType_Vec3f, PixelType_Vec3d):
+                if self.dtype == 'uint8':
+                    self.pixel_type = PixelType_Vec3u8
+                elif self.dtype == 'float32':
+                    self.pixel_type = PixelType_Vec3f
+                elif self.dtype == 'float64':
+                    self.pixel_type = PixelType_Vec3d
+                else:
+                    raise ValueError('Failed to convert')
+            if self.pixel_type in (PixelType_Vec4u8, PixelType_Vec4f, PixelType_Vec4d):
+                if self.dtype == 'uint8':
+                    self.pixel_type = PixelType_Vec4u8
+                elif self.dtype == 'float32':
+                    self.pixel_type = PixelType_Vec4f
+                elif self.dtype == 'float64':
+                    self.pixel_type = PixelType_Vec4d
+                else:
+                    raise ValueError('Failed to convert')
+            else:
+                self.pixel_type = type_from_string(str(self.dtype))
 
 
     
