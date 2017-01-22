@@ -47,16 +47,18 @@ void FlowPythonModule::post_init()
     add_type("FlowPin", FlowPin::static_class());
     add_type("FlowProperty", FlowProperty::static_class());
 
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, open, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, window, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, load, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, save, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, install_node_template, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_template, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, create_node, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, add_graph_path, "");
-    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_templates, "");
-    MODULE_ADD_PYTHON_KEYWORD_FUNCTION(FlowPythonModule, run, "Runs a graph");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, open, "open(file)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, window, "window()");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, load, "load(file)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, save, "save(file, graph)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, install_node_template, "install_node_template(node)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_template, "node_template(cls)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, create_node, "create_node(cls)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, add_graph_path, "add_graph_path(path)");
+    MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, node_templates, "node_templates()");
+    MODULE_ADD_PYTHON_KEYWORD_FUNCTION(FlowPythonModule, run, "run(graph, **kwargs)\n"
+        "--\n"
+        "Runs a graph");
 }
 FlowWindow* FlowPythonModule::open(const char* file)
 {

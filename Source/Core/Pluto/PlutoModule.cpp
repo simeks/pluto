@@ -26,15 +26,15 @@ PlutoModule::~PlutoModule()
 }
 void PlutoModule::post_init()
 {
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, python_dir, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, module_dir, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, run_file, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, create_object, "");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, auto_reload, "");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "user_dir()");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, python_dir, "python_dir()");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, module_dir, "module_dir()");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, run_file, "run_file(file)");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, print_html, "print_html(html)");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "register_class(cls)");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "classes()");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, create_object, "create_object(cls, *args)");
+    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, auto_reload, "auto_reload(module)");
 
     add_type("Object", Object::static_class());
     add_type("StdStream", PyStdStream::static_class());
