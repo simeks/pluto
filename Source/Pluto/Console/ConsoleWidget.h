@@ -56,6 +56,8 @@ public slots:
 
     void set_style_sheet(const QString& sheet);
 
+    void append_image(const QImage& img);
+
 signals:
     /// Executed when a command is executed
     void invoke_command(const QString& command);

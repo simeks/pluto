@@ -379,4 +379,24 @@ void ConsoleWidget::set_style_sheet(const QString& sheet)
     setStyleSheet(sheet);
     document()->setDefaultStyleSheet(sheet);
 }
+void ConsoleWidget::append_image(const QImage& img)
+{
+    QTextCursor cursor = textCursor();
+    if (isReadOnly()) // Read-only means no prompt
+    {
+        cursor.movePosition(QTextCursor::End);
+        cursor.insertImage(img);
+        ensureCursorVisible();
+    }
+    else
+    {
+        // Otherwise we insert it before the prompt
+        cursor.setPosition(_prompt_position - _prompt.length());
+        cursor.movePosition(QTextCursor::PreviousRow);
+        cursor.insertImage(img);
+        cursor.insertBlock();
+        _prompt_position = cursor.position() + _prompt.length();
+    }
+    ensureCursorVisible();
+}
 

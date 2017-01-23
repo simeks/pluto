@@ -18,8 +18,6 @@ public:
 
     void run_file(const std::string& file);
 
-    void print_html(const std::string& txt);
-
     PyObject* register_class(PyObject* cls);
     PyObject* classes() const;
     

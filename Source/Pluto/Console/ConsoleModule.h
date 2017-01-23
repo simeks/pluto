@@ -15,7 +15,10 @@ public:
 
     void post_init() OVERRIDE;
 
-    void focus() const;
+    void print_html(const char* txt);
+    /// @param obj : bytes object
+    void print_image(PyObject* obj);
+
     void set_style_sheet(const char* stylesheet);
 
     static const char* name();
