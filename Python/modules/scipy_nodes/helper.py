@@ -157,7 +157,9 @@ class NumpyNode(flow.Node):
             return
         args = []
         for a in self.args:
-            args.append(ctx.read_pin(a))
+            obj = ctx.read_pin(a)
+            if obj is not None:
+                args.append(obj)
         
         returns = self.func(*args)
         if returns is not None:
