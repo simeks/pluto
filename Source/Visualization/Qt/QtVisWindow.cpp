@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Image/Image.h>
+#include <Core/Python/PythonCommon.h>
 
 #include "QtVisWindow.h"
 
@@ -26,13 +27,37 @@ void QtVisWindow::set_image(const Image& image)
     //assert(image.pixel_type() == image::PixelType_UInt8);
     
     QImage::Format fmt = QImage::Format_Invalid;
-    if (image.pixel_type() == image::PixelType_UInt8)
-        fmt = QImage::Format_Grayscale8;
-    else if (image.pixel_type() == image::PixelType_Vec3u8)
-        fmt = QImage::Format_RGB888;
-    else if (image.pixel_type() == image::PixelType_Vec4u8)
-        fmt = QImage::Format_RGBA8888;
-    assert(fmt != QImage::Format_Invalid);
+
+    int arr_type = arr.type();
+    if (arr.ndims() == 3)
+    {
+        // 2D image with multiple channels
+        int n_channels = arr.shape()[2];
+        if (n_channels == 3)
+        {
+            if (arr_type == NPY_UINT8)
+            {
+                fmt = QImage::Format_RGB888;
+            }
+        }
+        else if (n_channels == 4)
+        {
+            if (arr_type == NPY_UINT8)
+            {
+                fmt = QImage::Format_RGBA8888;
+            }
+        }
+    }
+    else if (arr.ndims() == 2 || arr.ndims() == 1)
+    {
+        if (arr_type == NPY_UINT8)
+            fmt = QImage::Format_Grayscale8;
+    }
+
+    if (fmt != QImage::Format_Invalid)
+    {
+        PYTHON_ERROR(TypeError, "Invalid image format");
+    }
     
     QImage qimage((uint8_t*)arr.data(), arr.shape()[1], arr.shape()[0], (int)arr.strides()[0], fmt);
     QPixmap pixmap = QPixmap::fromImage(qimage);
