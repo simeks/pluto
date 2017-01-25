@@ -65,6 +65,10 @@ class NumpyDocstringParse(object):
 
         names = [n.strip() for n in t2]
 
+        # Filter arguments that make no sense in our case, such as the output argument.
+        # TODO: How to handle ...?
+        names = [n for n in names if n not in ('...', 'output')]
+
         # Parse multi-line description
         next_line = self.iter.peek()
         while self.line_indent(next_line) > indent:
@@ -155,13 +159,13 @@ class NumpyNode(flow.Node):
     def run(self, ctx):
         if self.func == None:
             return
-        args = []
+        kwargs = {}
         for a in self.args:
             obj = ctx.read_pin(a)
             if obj is not None:
-                args.append(obj)
+                kwargs[a] = obj
         
-        returns = self.func(*args)
+        returns = self.func(**kwargs)
         if returns is not None:
             if len(self.returns) > 1:
                 if len(returns) > len(self.returns):
