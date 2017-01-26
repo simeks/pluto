@@ -114,7 +114,11 @@ bool NumpyArray::is_contiguous() const
 }
 NumpyArray NumpyArray::copy() const
 {
-    return NumpyArray((PyArrayObject*)PyArray_NewCopy(_arr, NPY_CORDER));
+    PyObject* obj = PyArray_NewCopy(_arr, NPY_CORDER);
+    NumpyArray arr((PyArrayObject*)obj);
+    Py_DECREF(obj);
+
+    return arr;
 }
 void NumpyArray::copy_to(uint8_t* dest) const
 {
@@ -140,15 +144,27 @@ void NumpyArray::copy_from(uint8_t* src) const
 }
 NumpyArray NumpyArray::cast(int type) const
 {
-    return NumpyArray((PyArrayObject*)PyArray_Cast(_arr, type));
+    PyObject* obj = PyArray_Cast(_arr, type);
+    NumpyArray arr((PyArrayObject*)obj);
+    Py_DECREF(obj);
+
+    return arr;
 }
 NumpyArray NumpyArray::cast(PyArray_Descr* desc) const
 {
-    return NumpyArray((PyArrayObject*)PyArray_CastToType(_arr, desc, 0));
+    PyObject* obj = PyArray_CastToType(_arr, desc, 0);
+    NumpyArray arr((PyArrayObject*)obj);
+    Py_DECREF(obj);
+
+    return arr;
 }
 NumpyArray NumpyArray::contiguous() const
 {
-    return NumpyArray(PyArray_GETCONTIGUOUS(_arr));
+    PyArrayObject* obj = PyArray_GETCONTIGUOUS(_arr);
+    NumpyArray arr(obj);
+    Py_DECREF(obj);
+
+    return arr;
 }
 NumpyArray::NumpyArray(const NumpyArray& other)
 {
@@ -160,4 +176,9 @@ NumpyArray& NumpyArray::operator=(const NumpyArray& other)
     _arr = other._arr;
     Py_XINCREF(_arr);
     return *this;
+}
+
+bool numpy::check(PyObject* obj)
+{
+    return PyArray_Check(obj);
 }

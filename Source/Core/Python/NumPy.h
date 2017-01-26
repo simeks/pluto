@@ -96,5 +96,9 @@ PyObject* NumpyArray::object() const
     return (PyObject*)_arr;
 }
 
+namespace numpy
+{
+    bool check(PyObject* obj);
+}
 
 #endif // __CORE_PYTHON_NUMPY_H__
