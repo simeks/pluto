@@ -173,8 +173,10 @@ NumpyArray::NumpyArray(const NumpyArray& other)
 }
 NumpyArray& NumpyArray::operator=(const NumpyArray& other)
 {
+    Py_XINCREF(other._arr);
+    Py_XDECREF(_arr);
+
     _arr = other._arr;
-    Py_XINCREF(_arr);
     return *this;
 }
 

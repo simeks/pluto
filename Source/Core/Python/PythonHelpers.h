@@ -13,7 +13,7 @@
     PyObject* obj[N]; \
     for (int i = 0; i < N; ++i) \
     { \
-        obj[i] = PySequence_GetItem(args, i); \
+        obj[i] = PySequence_Fast_GET_ITEM(args, i); \
         if (!obj[i]) \
         { \
             PyErr_SetString(PyExc_TypeError, "missing required argument"); \
