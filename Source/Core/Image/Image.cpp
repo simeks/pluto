@@ -1,6 +1,7 @@
 #include "Common.h"
 
 #include "Image.h"
+#include "Python/NumPy.h"
 #include "Python/PythonCommon.h"
 #include "Types.h"
 
@@ -31,7 +32,7 @@ namespace python_convert
     template<>
     CORE_API Image from_python(PyObject* obj)
     {
-        if (PyObject_IsInstance(obj, image_py_type()))
+        if (numpy::check(obj))
         {
             image::PixelType pixel_type = image::PixelType_Unknown;
             if (PyObject_HasAttrString(obj, "pixel_type"))
@@ -46,7 +47,7 @@ namespace python_convert
             
             return img;
         }
-
+        
         PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
     }
 

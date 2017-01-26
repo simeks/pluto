@@ -22,43 +22,37 @@ void QtVisWindow::set_image(const Image& image)
         return;
 
     NumpyArray arr = image.data().contiguous();
+    arr = arr.cast(NPY_UINT8);
+
     assert(arr.ndims() <= 3);
 
     //assert(image.pixel_type() == image::PixelType_UInt8);
-    
+
     QImage::Format fmt = QImage::Format_Invalid;
 
-    int arr_type = arr.type();
     if (arr.ndims() == 3)
     {
         // 2D image with multiple channels
         int n_channels = arr.shape()[2];
         if (n_channels == 3)
         {
-            if (arr_type == NPY_UINT8)
-            {
-                fmt = QImage::Format_RGB888;
-            }
+            fmt = QImage::Format_RGB888;
         }
         else if (n_channels == 4)
         {
-            if (arr_type == NPY_UINT8)
-            {
-                fmt = QImage::Format_RGBA8888;
-            }
+            fmt = QImage::Format_RGBA8888;
         }
     }
     else if (arr.ndims() == 2 || arr.ndims() == 1)
     {
-        if (arr_type == NPY_UINT8)
-            fmt = QImage::Format_Grayscale8;
+        fmt = QImage::Format_Grayscale8;
     }
 
-    if (fmt != QImage::Format_Invalid)
+    if (fmt == QImage::Format_Invalid)
     {
         PYTHON_ERROR(TypeError, "Invalid image format");
     }
-    
+
     QImage qimage((uint8_t*)arr.data(), arr.shape()[1], arr.shape()[0], (int)arr.strides()[0], fmt);
     QPixmap pixmap = QPixmap::fromImage(qimage);
 
@@ -77,7 +71,7 @@ void QtVisWindow::setup_ui()
     setWindowIcon(QIcon(":/res/icon.ico"));
 
     setMinimumSize(400, 300);
-    
+
     _view = new QGraphicsView(this);
     _view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setCentralWidget(_view);
