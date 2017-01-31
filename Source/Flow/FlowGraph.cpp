@@ -221,7 +221,7 @@ FlowGraph::FlowGraph(const FlowGraph& other) : Object(other)
     }
 }
 
-static const char* flow_graph_file_version = "1.0";
+static const char* flow_graph_file_version = "1.1";
 
 FlowGraph* flow_graph::load(const JsonObject& root)
 {
@@ -263,8 +263,24 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             for (auto& p : properties)
             {
+                // TODO: Error checking, what if property type has changed?
                 if (p.second.is_string())
-                    out_node->set_property(p.first.c_str(), p.second.as_string().c_str());
+                {
+                    out_node->set_property(p.first.c_str(), python_convert::to_python(p.second.as_string()));
+                }
+                else if (p.second.is_int())
+                {
+                    out_node->set_property(p.first.c_str(), python_convert::to_python(p.second.as_int()));
+                }
+                else if (p.second.is_float())
+                {
+                    out_node->set_property(p.first.c_str(), python_convert::to_python(p.second.as_double()));
+                }
+                else if (p.second.is_bool())
+                {
+                    out_node->set_property(p.first.c_str(), python_convert::to_python(p.second.as_bool()));
+                }
+
             }
         }
         out_graph->add_node(out_node);
@@ -366,7 +382,23 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         properties.set_empty_object();
         for (auto p : n.second->properties())
         {
-            properties[p->name()].set_string(n.second->property(p->name()));
+            switch (p->type())
+            {
+            case FlowProperty::Type_Int:
+                properties[p->name()].set_int(n.second->attribute<int>(p->name()));
+                break;
+            case FlowProperty::Type_Float:
+                properties[p->name()].set_double(n.second->attribute<double>(p->name()));
+                break;
+            case FlowProperty::Type_Bool:
+                properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
+                break;
+            case FlowProperty::Type_String:
+            case FlowProperty::Type_FilePath:
+            default:
+                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+                break;
+            }
         }
 
         for (auto outpin : n.second->pins())

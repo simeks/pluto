@@ -1,12 +1,14 @@
 #include <Core/Common.h>
 
 #include "FlowGraph.h"
+#include "FlowModule.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
 #include "QtFlowGraphScene.h"
 #include "QtFlowLink.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+#include "QtFlowUI.h"
 #include "QtNoteItem.h"
 
 #include "Nodes/QtConstantNode.h"
@@ -41,17 +43,6 @@ QtFlowGraphScene::~QtFlowGraphScene()
     clear();
 }
 
-QtFlowNode* QtFlowGraphScene::create_node(FlowNode* node, const QPointF& pos)
-{
-    QtFlowNode* ui_node = _create_node(node);
-    ui_node->move_node(pos);
-    addItem(ui_node);
-
-    _flow_graph->add_node(node);
-    _nodes[node->node_id()] = ui_node;
-
-    return ui_node;
-}
 void QtFlowGraphScene::add_node(QtFlowNode* node)
 {
     if (_nodes.find(node->node_id()) != _nodes.end())
@@ -193,13 +184,15 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
     _flow_graph->release();
     _flow_graph = graph;
 
+    QtFlowUI* ui = FlowModule::instance().ui();
+
     /// Links pointing from first pin to second pin
     typedef std::pair<FlowPin*, FlowPin*> Link;
     std::vector<Link> links;
     for (auto& n : graph->nodes())
     {
         FlowNode* node = n.second;
-        QtFlowNode* ui_node = _create_node(node);
+        QtFlowNode* ui_node = ui->create_ui_node(node);
 
         auto old_node = old_nodes.find(node->node_id());
         if (old_node != old_nodes.end())
@@ -263,36 +256,4 @@ void QtFlowGraphScene::clear_scene()
     _notes.clear();
 
     clear();
-}
-QtFlowNode* QtFlowGraphScene::_create_node(FlowNode* node)
-{
-    QtFlowNode* n = nullptr;
-
-    QString cls = node->node_class();
-    if (cls == "flow.Constant")
-    {
-        n = new QtConstantNode(node);
-    }
-    else if (cls == "flow.Print")
-    {
-        n = new QtPrintNode(node);
-    }
-    else if (cls == "flow.Variable")
-    {
-        n = new QtVariableNode(node);
-    }
-    else if (cls == "flow.GraphInput")
-    {
-        n = new QtGraphInputNode(node);
-    }
-    else if (cls == "flow.GraphOutput")
-    {
-        n = new QtGraphOutputNode(node);
-    }
-    else
-    {
-        n = new QtFlowNode(node);
-    }
-    n->setup();
-    return n;
 }

@@ -9,6 +9,7 @@
 #include "QtFlowGraphView.h"
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
+#include "QtFlowUI.h"
 #include "QtNoteItem.h"
 #include "Style.h"
 
@@ -32,6 +33,8 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     _temp_link(nullptr),
     _highlight_pin(nullptr)
 {
+    _ui = FlowModule::instance().ui();
+
     build_node_menu();
 
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -528,7 +531,10 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
                     FlowNode* node = object_cast<FlowNode>(object_clone(template_node));
                     node->set_node_id(guid::create_guid());
 
-                    QtFlowNode* n = _scene->create_node(node, mapToScene(pt));
+                    QtFlowNode* n = _ui->create_ui_node(node);
+                    n->move_node(mapToScene(pt));
+                    _scene->add_node(n);
+
                     emit node_create(n);
                 }
             }
@@ -572,11 +578,14 @@ void QtFlowGraphView::node_paste()
             QPointF offset = i->scenePos() - origin;
             FlowNode* copy = object_clone(i->node());
             copy->set_node_id(guid::create_guid());
-            QtFlowNode* n = _scene->create_node(copy, mouse_pos + offset);
+
+            QtFlowNode* n = _ui->create_ui_node(copy);
+            n->move_node(mouse_pos + offset);
+            _scene->add_node(n);
+
             emit node_create(n);
             copy->release();
         }
-
     }
 }
 void QtFlowGraphView::reset_nodes()

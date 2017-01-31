@@ -130,6 +130,10 @@ const std::vector<FlowNode*>& FlowModule::node_templates() const
 {
     return _node_templates;
 }
+QtFlowUI* FlowModule::ui() const
+{
+    return _ui;
+}
 FlowModule& FlowModule::instance()
 {
     return *s_instance;

@@ -19,8 +19,6 @@ public:
     QtFlowGraphScene(FlowGraph* graph, QObject *parent = nullptr);
     ~QtFlowGraphScene();
 
-    QtFlowNode* create_node(FlowNode* node, const QPointF& pos);
-    
     void add_node(QtFlowNode* node);
     void remove_node(QtFlowNode* node);
 
@@ -60,9 +58,6 @@ private:
     void remove_links(QtFlowNode* node);
     /// Removes all links associated with pin
     void remove_links(QtFlowPin* pin);
-
-    /// Creates the QtFlowNode object corresponding to the specified node class
-    QtFlowNode* _create_node(FlowNode* node);
 
     FlowGraph* _flow_graph;
 

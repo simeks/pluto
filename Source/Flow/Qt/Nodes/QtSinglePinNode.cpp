@@ -13,7 +13,7 @@
 QtSinglePinNode::QtSinglePinNode(FlowNode* node, QGraphicsItem* parent) :
     QtFlowNode(node, parent)
 {
-    _text = "";
+    _text = node->title();
 }
 QtSinglePinNode::~QtSinglePinNode()
 {

@@ -13,6 +13,7 @@ class PrintNode(flow.Node):
         self.title = 'Print'
         self.category = 'Flow'
         self.value = ''
+        self.ui_class = 'print_node'
 
     def run(self, ctx):
         self.value = str(ctx.read_pin('In'))

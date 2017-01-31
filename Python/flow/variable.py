@@ -16,6 +16,7 @@ class VariableNode(flow.Node):
         self.node_class = 'flow.Variable'
         self.title = 'Variable'
         self.category = 'Flow'
+        self.ui_class = 'variable_node'
 
     def run(self, ctx):
         if self.name in ctx.env:

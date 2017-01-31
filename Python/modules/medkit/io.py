@@ -1,5 +1,6 @@
 import SimpleITK as sitk
-from flow import node
+from flow import FlowNode, FlowPin, FlowProperty, install_node_template
+from pluto import pluto_class
 import image
 
 def format_from_sitk(img):
@@ -69,7 +70,7 @@ def format_to_sitk(fmt):
     elif fmt == image.PixelType_Vec4d:
         return sitk.sitkVectorFloat64, 4
 
-@node('Read', 'Image/IO')
+
 def read(file):
     """
     Returns:
@@ -92,7 +93,6 @@ def read(file):
 
     return img
 
-@node('Write', 'Image/IO')
 def write(image, file):
     writer = sitk.ImageFileWriter()
     writer.SetFileName(str(file))
@@ -108,3 +108,56 @@ def write(image, file):
     out.SetOrigin(image.origin)
 
     writer.Execute(out)
+
+
+@pluto_class
+class ReadNode(FlowNode):
+    pins = [
+        FlowPin('File', FlowPin.In),
+        FlowPin('Image', FlowPin.Out)
+    ]
+    properties = [
+        FlowProperty('file', '', FlowProperty.Type_FilePath, FlowProperty.File_Open, "Image (*.*)"),
+    ]
+
+    def __init__(self):
+        super(ReadNode, self).__init__()
+        self.node_class = 'medkit.io.ReadNode'
+        self.title = 'Read'
+        self.category = 'Image/IO'
+
+    def run(self, ctx):
+        f = self.file
+        if self.is_pin_linked('File'):
+            f = ctx.read_pin('File')
+
+        ctx.write_pin('Image', read(f))    
+
+
+@pluto_class
+class WriteNode(FlowNode):
+    pins = [
+        FlowPin('Image', FlowPin.In),
+        FlowPin('File', FlowPin.In)
+    ]
+    properties = [
+        FlowProperty('file', '', FlowProperty.Type_FilePath, FlowProperty.File_Save, "Image (*.*)"),
+    ]
+
+    def __init__(self):
+        super(WriteNode, self).__init__()
+        self.node_class = 'medkit.io.WriteNode'
+        self.title = 'Write'
+        self.category = 'Image/IO'
+
+    def run(self, ctx):
+        f = self.file
+        if self.is_pin_linked('File'):
+            f = ctx.read_pin('File')
+
+        im = ctx.read_pin('Image')
+        if im is not None:
+            write(im, f)
+
+install_node_template(ReadNode())
+install_node_template(WriteNode())

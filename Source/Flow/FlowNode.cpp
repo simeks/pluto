@@ -174,11 +174,11 @@ const std::vector<FlowProperty*>& FlowNode::properties() const
 {
     return _properties;
 }
-const char* FlowNode::property(const char* name) const
-{
-    return attribute<const char*>(name);
-}
 void FlowNode::set_property(const char* name, const char* value)
+{
+    set_attribute(name, value);
+}
+void FlowNode::set_property(const char* name, PyObject* value)
 {
     set_attribute(name, value);
 }
@@ -208,6 +208,12 @@ const Vec2i& FlowNode::ui_pos() const
 void FlowNode::set_ui_pos(const Vec2i& pos)
 {
     _ui_pos = pos;
+}
+const char* FlowNode::ui_class() const
+{
+    if (has_attribute("ui_class"))
+        return attribute<const char*>("ui_class");
+    return "";
 }
 FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {

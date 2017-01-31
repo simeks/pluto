@@ -26,6 +26,8 @@ void GraphOutputNode::object_init()
     set_attribute("category", "Flow/Graph");
     set_attribute("doc", "Graph output node");
 
+    set_attribute("ui_class", "graph_output");
+
     add_pin("In", FlowPin::In);
     add_property(object_new<FlowProperty>("name", ""));
 }

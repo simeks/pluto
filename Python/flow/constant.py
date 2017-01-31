@@ -16,6 +16,7 @@ class ConstantNode(flow.Node):
         self.node_class = 'flow.Constant'
         self.title = 'Constant'
         self.category = 'Flow'
+        self.ui_class = 'constant_node'
 
     def run(self, ctx):
         if self.type.lower() == 'str':

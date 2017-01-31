@@ -10,6 +10,7 @@ class QtFlowGraphScene;
 class QtFlowLink;
 class QtFlowNode;
 class QtFlowPin;
+class QtFlowUI;
 class QtNoteItem;
 class QtFlowGraphView : public QGraphicsView
 {
@@ -68,6 +69,8 @@ private:
         RunStatus_Running,
         RunStatus_Failed
     };
+
+    QtFlowUI* _ui;
 
     QMenu* _node_menu;
     QAction* _note_action;

@@ -19,6 +19,7 @@
 #include <QGridLayout>
 #include <QMessageBox>
 #include <QSettings>
+#include <QSplitter>
 #include <QThread>
 #include <QUndoStack>
 
@@ -609,13 +610,13 @@ void QtFlowWindow::setup_ui()
     _node_property_view = new QtNodePropertyWidget(this);
     connect(_graph_view, SIGNAL(flow_node_selected(QtFlowNode*)), _node_property_view, SLOT(flow_node_selected(QtFlowNode*)));
 
-    QWidget* central_widget = new QWidget(this);
-    QHBoxLayout* layout = new QHBoxLayout(central_widget);
-    layout->setMargin(0);
-    layout->addWidget(_graph_view);
-    layout->addWidget(_node_property_view);
 
-    setCentralWidget(central_widget);
+    QSplitter* splitter = new QSplitter(this);
+    splitter->addWidget(_graph_view);
+    splitter->addWidget(_node_property_view);
+    _node_property_view->resize(600, 0); // TODO: Sizing is weird
+
+    setCentralWidget(splitter);
 
     update_recent_menu();
 }

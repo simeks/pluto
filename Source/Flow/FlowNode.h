@@ -79,11 +79,13 @@ public:
 
     const std::vector<FlowProperty*>& properties() const;
 
-    const char* property(const char* name) const;
     void set_property(const char* name, const char* value);
+    void set_property(const char* name, PyObject* value);
     
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
+
+    const char* ui_class() const;
 
     FlowNode(const FlowNode&);
 protected:

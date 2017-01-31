@@ -11,6 +11,7 @@ public:
 
     virtual void node_finished() OVERRIDE;
     virtual void reset_run_status() OVERRIDE;
+
 };
 
 #endif // __FLOW_QT_PRINT_NODE_H__

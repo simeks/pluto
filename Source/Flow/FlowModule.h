@@ -30,6 +30,8 @@ public:
 
     const std::vector<FlowNode*>& node_templates() const;
 
+    QtFlowUI* ui() const;
+
     static FlowModule& instance();
 
 private:

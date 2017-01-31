@@ -1,7 +1,7 @@
 APPNAME = 'Pluto'
 VERSION = '0.0.1'
 
-SUBFOLDERS = ['Source', 'Tests']
+SUBFOLDERS = ['Source', 'Tests', 'External/qtextra']
 
 top = '.'
 out = 'Build'

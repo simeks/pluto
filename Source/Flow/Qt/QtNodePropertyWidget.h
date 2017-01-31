@@ -5,6 +5,17 @@
 
 class QLineEdit;
 class QtFlowNode;
+
+class QtAbstractPropertyBrowser;
+class QtProperty;
+
+class QtStringPropertyManager;
+class QtIntPropertyManager;
+class QtDoublePropertyManager;
+class QtBoolPropertyManager;
+class QtFilePropertyManager;
+
+
 class QtNodePropertyWidget : public QWidget
 {
     Q_OBJECT
@@ -19,13 +30,22 @@ private:
 
     QtFlowNode* _selected_node;
 
-    QWidget* _property_grid;
+    QtStringPropertyManager* _string_property_manager;
+    QtIntPropertyManager* _int_property_manager;
+    QtDoublePropertyManager* _double_property_manager;
+    QtBoolPropertyManager* _bool_property_manager;
+    QtFilePropertyManager* _file_property_manager;
+
+    QtAbstractPropertyBrowser* _property_browser;
     
 public slots:
     void flow_node_selected(QtFlowNode* node);
 
 private slots:
-    void property_changed(const QString& txt);
+    void property_changed(QtProperty *property, const QString &val);
+    void property_changed(QtProperty *property, int val);
+    void property_changed(QtProperty *property, double val);
+    void property_changed(QtProperty *property, bool val);
 };
 
 #endif // __QT_NODE_PROPERTY_WIDGET_H__

@@ -5,7 +5,25 @@
 #include <QDialog>
 
 class FlowNode;
+class QtFlowNode;
 class QtFlowWindow;
+
+class UiNodeFactory
+{
+public:
+    virtual QtFlowNode* create(FlowNode* node) = 0;
+};
+
+template<typename T>
+class UiNodeFactoryTpl : public UiNodeFactory
+{
+public:
+    QtFlowNode* create(FlowNode* node)
+    {
+        return new T(node);
+    }
+};
+
 class QtFlowUI : public QObject
 {
     Q_OBJECT
@@ -13,7 +31,17 @@ class QtFlowUI : public QObject
 public:
     QtFlowUI();
     ~QtFlowUI();
-    
+
+    QtFlowNode* create_ui_node(FlowNode* node);
+
+    void install_ui_node_factory(const std::string& ui_class, UiNodeFactory* factory);
+
+    template<typename T>
+    void install_ui_node_factory(const std::string& ui_class)
+    {
+        install_ui_node_factory(ui_class, new UiNodeFactoryTpl<T>());
+    }
+
 public slots:
     QtFlowWindow* create_window();
 
@@ -27,6 +55,7 @@ signals:
     
 private:
     std::vector<QtFlowWindow*> _windows;
+    std::map<std::string, UiNodeFactory*> _node_factories;
 
 };
 
