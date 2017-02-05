@@ -1,5 +1,5 @@
 import SimpleITK as sitk
-from flow import FlowNode, FlowPin, FlowProperty, install_node_template
+from flow import FlowNode, FlowPin, FlowProperty, FileProperty, install_node_template
 from pluto import pluto_class
 import image
 
@@ -117,7 +117,7 @@ class ReadNode(FlowNode):
         FlowPin('Image', FlowPin.Out)
     ]
     properties = [
-        FlowProperty('file', '', FlowProperty.Type_FilePath, FlowProperty.File_Open, "Image (*.*)"),
+        FileProperty('file', '', FileProperty.File_Open, "Image (*.*)"),
     ]
 
     def __init__(self):
@@ -141,7 +141,7 @@ class WriteNode(FlowNode):
         FlowPin('File', FlowPin.In)
     ]
     properties = [
-        FlowProperty('file', '', FlowProperty.Type_FilePath, FlowProperty.File_Save, "Image (*.*)"),
+        FileProperty('file', '', FileProperty.File_Save, "Image (*.*)"),
     ]
 
     def __init__(self):

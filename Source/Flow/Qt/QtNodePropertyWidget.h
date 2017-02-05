@@ -15,7 +15,6 @@ class QtDoublePropertyManager;
 class QtBoolPropertyManager;
 class QtFilePropertyManager;
 
-
 class QtNodePropertyWidget : public QWidget
 {
     Q_OBJECT

@@ -382,23 +382,25 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         properties.set_empty_object();
         for (auto p : n.second->properties())
         {
-            switch (p->type())
-            {
-            case FlowProperty::Type_Int:
-                properties[p->name()].set_int(n.second->attribute<int>(p->name()));
-                break;
-            case FlowProperty::Type_Float:
-                properties[p->name()].set_double(n.second->attribute<double>(p->name()));
-                break;
-            case FlowProperty::Type_Bool:
-                properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
-                break;
-            case FlowProperty::Type_String:
-            case FlowProperty::Type_FilePath:
-            default:
-                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-                break;
-            }
+            properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+
+            //switch (p->type())
+            //{
+            //case FlowProperty::Type_Int:
+            //    properties[p->name()].set_int(n.second->attribute<int>(p->name()));
+            //    break;
+            //case FlowProperty::Type_Float:
+            //    properties[p->name()].set_double(n.second->attribute<double>(p->name()));
+            //    break;
+            //case FlowProperty::Type_Bool:
+            //    properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
+            //    break;
+            //case FlowProperty::Type_String:
+            //case FlowProperty::Type_FilePath:
+            //default:
+            //    properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+            //    break;
+            //}
         }
 
         for (auto outpin : n.second->pins())

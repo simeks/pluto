@@ -78,46 +78,53 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
         for (auto p : node->properties())
         {
             QString property_name = p->name();
-            switch (p->type())
+            if (p->is_a(FileProperty::static_class()))
             {
-                case FlowProperty::Type_Int:
-                {
-                    QtProperty* prop = _int_property_manager->addProperty(property_name);
-                    _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
-                    _property_browser->addProperty(prop);
-                    break;
-                }
-                case FlowProperty::Type_Float:
-                {
-                    QtProperty* prop = _double_property_manager->addProperty(property_name);
-                    _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
-                    _property_browser->addProperty(prop);
-                    break;
-                }
-                case FlowProperty::Type_Bool:
-                {
-                    QtProperty* prop = _bool_property_manager->addProperty(property_name);
-                    _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
-                    _property_browser->addProperty(prop);
-                    break;
-                }
-                case FlowProperty::Type_FilePath:
-                {
-                    QFileDialog::AcceptMode accept_mode = p->file_mode() == FlowProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
+                FileProperty* file_property = object_cast<FileProperty>(p);
 
-                    QtProperty* prop = _file_property_manager->addProperty(property_name, accept_mode, QString::fromStdString(p->file_filter()));
-                    _file_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
-                    _property_browser->addProperty(prop);
-                    break;
-                }
-                default: // case FlowProperty::Type_String:
-                {
-                    QtProperty* prop = _string_property_manager->addProperty(property_name);
-                    _string_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
-                    _property_browser->addProperty(prop);
-                    break;
-                }
+                QFileDialog::AcceptMode accept_mode = file_property->file_mode() == FileProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
+
+                QtProperty* prop = _file_property_manager->addProperty(property_name, accept_mode, QString::fromStdString(file_property->file_filter()));
+                _file_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
+                _property_browser->addProperty(prop);
             }
+            else
+            {
+                QtProperty* prop = _string_property_manager->addProperty(property_name);
+                _string_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
+                _property_browser->addProperty(prop);
+            }
+            //switch (p->type())
+            //{
+            //    case FlowProperty::Type_Int:
+            //    {
+            //        QtProperty* prop = _int_property_manager->addProperty(property_name);
+            //        _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
+            //        _property_browser->addProperty(prop);
+            //        break;
+            //    }
+            //    case FlowProperty::Type_Float:
+            //    {
+            //        QtProperty* prop = _double_property_manager->addProperty(property_name);
+            //        _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
+            //        _property_browser->addProperty(prop);
+            //        break;
+            //    }
+            //    case FlowProperty::Type_Bool:
+            //    {
+            //        QtProperty* prop = _bool_property_manager->addProperty(property_name);
+            //        _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
+            //        _property_browser->addProperty(prop);
+            //        break;
+            //    }
+            //    case FlowProperty::Type_FilePath:
+            //    {
+            //        break;
+            //    }
+            //    default: // case FlowProperty::Type_String:
+            //    {
+            //    }
+            //}
         }
         _property_browser->show();
     }

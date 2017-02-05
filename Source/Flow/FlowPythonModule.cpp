@@ -46,6 +46,7 @@ void FlowPythonModule::post_init()
     add_type("FlowNode", FlowNode::static_class());
     add_type("FlowPin", FlowPin::static_class());
     add_type("FlowProperty", FlowProperty::static_class());
+    add_type("FileProperty", FileProperty::static_class());
 
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, open, "open(file)");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, window, "window()");
