@@ -470,7 +470,10 @@ void JsonWriter::write_value(const JsonObject& node, std::ostream& out)
         out << "null";
         break;
     case JsonObject::BOOL:
-        out << node.as_bool();
+        if (node.as_bool())
+            out << "true";
+        else
+            out << "false";
         break;
     case JsonObject::INTEGER:
         out << node.as_int64();
