@@ -46,7 +46,12 @@ void FlowPythonModule::post_init()
     add_type("FlowNode", FlowNode::static_class());
     add_type("FlowPin", FlowPin::static_class());
     add_type("FlowProperty", FlowProperty::static_class());
+    add_type("BoolProperty", BoolProperty::static_class());
+    add_type("IntProperty", IntProperty::static_class());
+    add_type("FloatProperty", FloatProperty::static_class());
+    add_type("EnumProperty", EnumProperty::static_class());
     add_type("FileProperty", FileProperty::static_class());
+    add_type("StringProperty", StringProperty::static_class());
 
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, open, "open(file)");
     MODULE_ADD_PYTHON_FUNCTION(FlowPythonModule, window, "window()");

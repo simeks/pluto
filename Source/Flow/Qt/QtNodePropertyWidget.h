@@ -9,11 +9,12 @@ class QtFlowNode;
 class QtAbstractPropertyBrowser;
 class QtProperty;
 
-class QtStringPropertyManager;
-class QtIntPropertyManager;
-class QtDoublePropertyManager;
 class QtBoolPropertyManager;
+class QtDoublePropertyManager;
+class QtEnumPropertyManager;
 class QtFilePropertyManager;
+class QtIntPropertyManager;
+class QtStringPropertyManager;
 
 class QtNodePropertyWidget : public QWidget
 {
@@ -34,6 +35,7 @@ private:
     QtDoublePropertyManager* _double_property_manager;
     QtBoolPropertyManager* _bool_property_manager;
     QtFilePropertyManager* _file_property_manager;
+    QtEnumPropertyManager* _enum_property_manager;
 
     QtAbstractPropertyBrowser* _property_browser;
     
@@ -45,6 +47,8 @@ private slots:
     void property_changed(QtProperty *property, int val);
     void property_changed(QtProperty *property, double val);
     void property_changed(QtProperty *property, bool val);
+
+    void enum_property_changed(QtProperty* property, int i);
 };
 
 #endif // __QT_NODE_PROPERTY_WIDGET_H__

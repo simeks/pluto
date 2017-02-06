@@ -15,7 +15,7 @@ public:
     ~FlowProperty();
 
     void object_init();
-    void object_init(const char* name, const char* default_value);
+    void object_init(const char* name);
     void object_python_init(const Tuple&, const Dict&);
 
     const char* name() const;
@@ -23,6 +23,8 @@ public:
 
     FlowNode* owner() const;
     void set_owner(FlowNode* node);
+
+    FlowProperty(const FlowProperty& other);
 
 protected:
     std::string _name;
@@ -99,7 +101,24 @@ public:
     void object_init();
     void object_python_init(const Tuple&, const Dict&);
 
+    const std::vector<std::string>& options() const;
+    int default_index() const;
+
 private:
+    std::vector<std::string> _options;
+    int _default_index; // Index to default value
+};
+
+class FLOW_API StringProperty : public FlowProperty
+{
+    DECLARE_OBJECT(StringProperty, FlowProperty);
+public:
+    DECLARE_OBJECT_CONSTRUCTOR(StringProperty);
+    ~StringProperty();
+
+    void object_init();
+    void object_init(const char* name, const char* default_value);
+    void object_python_init(const Tuple&, const Dict&);
 
 };
 

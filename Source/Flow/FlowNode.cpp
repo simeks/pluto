@@ -224,8 +224,7 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
     for (auto& prop : other._properties)
     {
         FlowProperty* p = object_clone(prop);
-        p->set_owner(this);
-        _properties.push_back(p);
+        add_property(p);
     }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;

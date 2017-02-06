@@ -350,6 +350,12 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         }
     }
 
+    // TODO: Ugly error catching
+    if (PyErr_Occurred())
+    {
+        PyErr_Print(); 
+        return nullptr;
+    }
 
     return out_graph;
 }
@@ -382,25 +388,30 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         properties.set_empty_object();
         for (auto p : n.second->properties())
         {
-            properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-
-            //switch (p->type())
-            //{
-            //case FlowProperty::Type_Int:
-            //    properties[p->name()].set_int(n.second->attribute<int>(p->name()));
-            //    break;
-            //case FlowProperty::Type_Float:
-            //    properties[p->name()].set_double(n.second->attribute<double>(p->name()));
-            //    break;
-            //case FlowProperty::Type_Bool:
-            //    properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
-            //    break;
-            //case FlowProperty::Type_String:
-            //case FlowProperty::Type_FilePath:
-            //default:
-            //    properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-            //    break;
-            //}
+            if (p->is_a(FileProperty::static_class()))
+            {
+                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+            }
+            else if (p->is_a(BoolProperty::static_class()))
+            {
+                properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
+            }
+            else if (p->is_a(IntProperty::static_class()))
+            {
+                properties[p->name()].set_int(n.second->attribute<int>(p->name()));
+            }
+            else if (p->is_a(FloatProperty::static_class()))
+            {
+                properties[p->name()].set_double(n.second->attribute<double>(p->name()));
+            }
+            else if (p->is_a(EnumProperty::static_class()))
+            {
+                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+            }
+            else
+            {
+                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+            }
         }
 
         for (auto outpin : n.second->pins())
@@ -442,6 +453,13 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         n["ui_pos"].set_empty_array();
         n["ui_pos"].append().set_int(pos.x);
         n["ui_pos"].append().set_int(pos.y);
+    }
+
+
+    // TODO: Ugly error catching
+    if (PyErr_Occurred())
+    {
+        PyErr_Print();
     }
 }
 FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)

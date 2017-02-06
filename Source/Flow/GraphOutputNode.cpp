@@ -29,7 +29,7 @@ void GraphOutputNode::object_init()
     set_attribute("ui_class", "graph_output");
 
     add_pin("In", FlowPin::In);
-    add_property(object_new<FlowProperty>("name", ""));
+    add_property(object_new<StringProperty>("name", ""));
 }
 void GraphOutputNode::run(FlowContext* ctx)
 {

@@ -20,23 +20,18 @@ void FlowProperty::object_init()
     _owner = nullptr;
     _default_value = nullptr;
 }
-void FlowProperty::object_init(const char* name, const char* default_value)
+void FlowProperty::object_init(const char* name)
 {
     _owner = nullptr;
+    _default_value = nullptr;
     _name = name;
-    _default_value = PyUnicode_FromString(default_value);
 }
 void FlowProperty::object_python_init(const Tuple& args, const Dict&)
 {
     _owner = nullptr;
     if (args.size() > 0)
         _name = python_convert::from_python<std::string>(args.get(0));
-
-    if (args.size() > 1)
-    {
-        _default_value = args.get(1);
-        Py_XINCREF(_default_value);
-    }
+    _default_value = nullptr;
 }
 const char* FlowProperty::name() const
 {
@@ -54,8 +49,13 @@ void FlowProperty::set_owner(FlowNode* node)
 {
     _owner = node;
 }
-
-
+FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
+{
+    _name = other._name;
+    _default_value = other._default_value;
+    Py_XINCREF(_default_value);
+    _owner = other._owner;
+}
 
 
 namespace python_convert
@@ -90,11 +90,9 @@ void FileProperty::object_init()
 {
     FlowProperty::object_init();
 }
-void FileProperty::object_python_init(const Tuple& args, const Dict&)
+void FileProperty::object_python_init(const Tuple& args, const Dict& kw)
 {
-    _owner = nullptr;
-    if (args.size() > 0)
-        _name = python_convert::from_python<std::string>(args.get(0));
+    FlowProperty::object_python_init(args, kw);
 
     if (args.size() > 1)
     {
@@ -119,4 +117,218 @@ FileProperty::FileMode FileProperty::file_mode() const
 const std::string& FileProperty::file_filter() const
 {
     return _file_filter;
+}
+
+
+OBJECT_INIT_TYPE_FN(BoolProperty)
+{
+    OBJECT_PYTHON_NO_METHODS();
+}
+
+IMPLEMENT_OBJECT(BoolProperty, "BoolProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(BoolProperty, FlowProperty);
+
+BoolProperty::~BoolProperty()
+{
+}
+void BoolProperty::object_init()
+{
+    FlowProperty::object_init();
+}
+void BoolProperty::object_python_init(const Tuple& args, const Dict& kw)
+{
+    FlowProperty::object_python_init(args, kw);
+
+    _default_value = nullptr;
+    if (args.size() > 1)
+    {
+        PyObject* def = args.get(1);
+        if (PyBool_Check(def))
+        {
+            _default_value = def;
+            Py_XINCREF(_default_value);
+        }
+        else
+        {
+            PYTHON_ERROR(TypeError, "Expected default argument to be bool");
+        }
+    }
+}
+
+
+OBJECT_INIT_TYPE_FN(IntProperty)
+{
+    OBJECT_PYTHON_NO_METHODS();
+}
+
+IMPLEMENT_OBJECT(IntProperty, "IntProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(IntProperty, FlowProperty);
+
+IntProperty::~IntProperty()
+{
+}
+void IntProperty::object_init()
+{
+    FlowProperty::object_init();
+}
+void IntProperty::object_python_init(const Tuple& args, const Dict& kw)
+{
+    FlowProperty::object_python_init(args, kw);
+
+    if (args.size() > 1)
+    {
+        PyObject* def = args.get(1);
+        if (PyLong_Check(def))
+        {
+            _default_value = args.get(1);
+            Py_XINCREF(_default_value);
+        }
+        else
+        {
+            PYTHON_ERROR(TypeError, "Expected default argument to be integer");
+        }
+    }
+    else
+        _default_value = PyLong_FromLong(0);
+}
+
+
+OBJECT_INIT_TYPE_FN(FloatProperty)
+{
+    OBJECT_PYTHON_NO_METHODS();
+}
+
+IMPLEMENT_OBJECT(FloatProperty, "FloatProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(FloatProperty, FlowProperty);
+
+FloatProperty::~FloatProperty()
+{
+}
+void FloatProperty::object_init()
+{
+    FlowProperty::object_init();
+}
+void FloatProperty::object_python_init(const Tuple& args, const Dict& kw)
+{
+    FlowProperty::object_python_init(args, kw);
+
+    if (args.size() > 1)
+    {
+        PyObject* def = args.get(1);
+        if (PyNumber_Check(def))
+        {
+            _default_value = args.get(1);
+            Py_XINCREF(_default_value);
+        }
+        else
+        {
+            PYTHON_ERROR(TypeError, "Expected default argument to be float");
+        }
+    }
+}
+
+
+OBJECT_INIT_TYPE_FN(EnumProperty)
+{
+    OBJECT_PYTHON_NO_METHODS();
+}
+
+IMPLEMENT_OBJECT(EnumProperty, "EnumProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(EnumProperty, FlowProperty);
+
+EnumProperty::~EnumProperty()
+{
+}
+void EnumProperty::object_init()
+{
+    FlowProperty::object_init();
+}
+void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
+{
+    FlowProperty::object_python_init(args, kw);
+
+    if (args.size() < 2)
+        PYTHON_ERROR(ValueError, "Expected at least 2 arguments");
+
+    _default_index = -1;
+
+    Sequence opts(args.get(1));
+    for (int i = 0; i < opts.size(); ++i)
+    {
+        PyObject* str = opts.get(i);
+        if (!PyUnicode_Check(str))
+            PYTHON_ERROR(TypeError, "Expected all options to be strings");
+
+        _options.push_back(PyUnicode_AsUTF8(str));
+    }
+
+    if (args.size() > 2)
+    {
+        PyObject* def = args.get(2);
+        if (PyLong_Check(def))
+        {
+            _default_index = python_convert::from_python<int>(def);
+            if (_default_index >= 0 && _default_index < opts.size())
+            {
+                _default_value = opts.get(_default_index);
+                Py_XINCREF(_default_value);
+            }
+            else
+            {
+                PYTHON_ERROR(TypeError, "Index out of bounds: 0 <= %d < %d", _default_index, opts.size());
+            }
+        }
+        else
+        {
+            PYTHON_ERROR(TypeError, "Expected default index to be int");
+        }
+    }
+
+}
+const std::vector<std::string>& EnumProperty::options() const
+{
+    return _options;
+}
+int EnumProperty::default_index() const
+{
+    return _default_index;
+}
+
+OBJECT_INIT_TYPE_FN(StringProperty)
+{
+    OBJECT_PYTHON_NO_METHODS();
+}
+
+IMPLEMENT_OBJECT(StringProperty, "StringProperty", FLOW_API);
+IMPLEMENT_OBJECT_CONSTRUCTOR(StringProperty, FlowProperty);
+
+StringProperty::~StringProperty()
+{
+}
+void StringProperty::object_init()
+{
+    FlowProperty::object_init();
+}
+void StringProperty::object_init(const char* name, const char* default_value)
+{
+    FlowProperty::object_init(name);
+    _default_value = PyUnicode_FromString(default_value);
+}
+void StringProperty::object_python_init(const Tuple& args, const Dict& kw)
+{
+    FlowProperty::object_python_init(args, kw);
+
+    if (args.size() > 1)
+    {
+        PyObject* def = args.get(1);
+        if (PyUnicode_Check(def))
+        {
+            _default_value = args.get(1);
+            Py_XINCREF(_default_value);
+        }
+        else
+        {
+            PYTHON_ERROR(TypeError, "Expected default argument to be string");
+        }
+    }
 }

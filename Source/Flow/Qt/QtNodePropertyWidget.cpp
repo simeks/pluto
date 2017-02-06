@@ -40,6 +40,7 @@ void QtNodePropertyWidget::setup_ui()
     _double_property_manager = new QtDoublePropertyManager(this);
     _bool_property_manager = new QtBoolPropertyManager(this);
     _file_property_manager = new QtFilePropertyManager(this);
+    _enum_property_manager = new QtEnumPropertyManager(this);
 
     QtTreePropertyBrowser* tree_property_browser = new QtTreePropertyBrowser(this);
     _property_browser = tree_property_browser;
@@ -49,6 +50,7 @@ void QtNodePropertyWidget::setup_ui()
     tree_property_browser->setFactoryForManager(_double_property_manager, new QtDoubleSpinBoxFactory(this));
     tree_property_browser->setFactoryForManager(_bool_property_manager, new QtCheckBoxFactory(this));
     tree_property_browser->setFactoryForManager(_file_property_manager, new QtFileEditorFactory(this));
+    tree_property_browser->setFactoryForManager(_enum_property_manager, new QtEnumEditorFactory(this));
 
     tree_property_browser->setPropertiesWithoutValueMarked(true);
     tree_property_browser->setRootIsDecorated(false);
@@ -66,6 +68,7 @@ void QtNodePropertyWidget::setup_ui()
     connect(_double_property_manager, SIGNAL(valueChanged(QtProperty*, double)), this, SLOT(property_changed(QtProperty*, double)));
     connect(_bool_property_manager, SIGNAL(valueChanged(QtProperty*, bool)), this, SLOT(property_changed(QtProperty*, bool)));
     connect(_file_property_manager, SIGNAL(valueChanged(QtProperty*, const QString&)), this, SLOT(property_changed(QtProperty*, const QString&)));
+    connect(_enum_property_manager, SIGNAL(valueChanged(QtProperty*, int)), this, SLOT(enum_property_changed(QtProperty*, int)));
 }
 void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
 {
@@ -80,12 +83,47 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
             QString property_name = p->name();
             if (p->is_a(FileProperty::static_class()))
             {
-                FileProperty* file_property = object_cast<FileProperty>(p);
+                FileProperty* file_prop = object_cast<FileProperty>(p);
 
-                QFileDialog::AcceptMode accept_mode = file_property->file_mode() == FileProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
+                QFileDialog::AcceptMode accept_mode = file_prop->file_mode() == FileProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
 
-                QtProperty* prop = _file_property_manager->addProperty(property_name, accept_mode, QString::fromStdString(file_property->file_filter()));
+                QtProperty* prop = _file_property_manager->addProperty(property_name, accept_mode, QString::fromStdString(file_prop->file_filter()));
                 _file_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
+                _property_browser->addProperty(prop);
+            }
+            else if (p->is_a(BoolProperty::static_class()))
+            {
+                QtProperty* prop = _bool_property_manager->addProperty(property_name);
+                _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
+                _property_browser->addProperty(prop);
+            }
+            else if (p->is_a(IntProperty::static_class()))
+            {
+                QtProperty* prop = _int_property_manager->addProperty(property_name);
+                _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
+                _property_browser->addProperty(prop);
+            }
+            else if (p->is_a(FloatProperty::static_class()))
+            {
+                QtProperty* prop = _double_property_manager->addProperty(property_name);
+                _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
+                _property_browser->addProperty(prop);
+            }
+            else if (p->is_a(EnumProperty::static_class()))
+            {
+                EnumProperty* enum_prop = object_cast<EnumProperty>(p);
+
+                QtProperty* prop = _enum_property_manager->addProperty(property_name);
+                QStringList options;
+                for (auto& o : enum_prop->options())
+                {
+                    options.push_back(QString::fromStdString(o));
+                }
+
+                _enum_property_manager->setEnumNames(prop, options);
+                if (enum_prop->default_index() >= 0)
+                    _enum_property_manager->setValue(prop, enum_prop->default_index());
+
                 _property_browser->addProperty(prop);
             }
             else
@@ -94,37 +132,6 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
                 _string_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
                 _property_browser->addProperty(prop);
             }
-            //switch (p->type())
-            //{
-            //    case FlowProperty::Type_Int:
-            //    {
-            //        QtProperty* prop = _int_property_manager->addProperty(property_name);
-            //        _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
-            //        _property_browser->addProperty(prop);
-            //        break;
-            //    }
-            //    case FlowProperty::Type_Float:
-            //    {
-            //        QtProperty* prop = _double_property_manager->addProperty(property_name);
-            //        _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
-            //        _property_browser->addProperty(prop);
-            //        break;
-            //    }
-            //    case FlowProperty::Type_Bool:
-            //    {
-            //        QtProperty* prop = _bool_property_manager->addProperty(property_name);
-            //        _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
-            //        _property_browser->addProperty(prop);
-            //        break;
-            //    }
-            //    case FlowProperty::Type_FilePath:
-            //    {
-            //        break;
-            //    }
-            //    default: // case FlowProperty::Type_String:
-            //    {
-            //    }
-            //}
         }
         _property_browser->show();
     }
@@ -179,6 +186,19 @@ void QtNodePropertyWidget::property_changed(QtProperty *prop, bool val)
     {
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(), 
             python_convert::to_python(val));
+        _selected_node->node_updated();
+    }
+}
+void QtNodePropertyWidget::enum_property_changed(QtProperty* prop, int i)
+{
+    if (_selected_node)
+    {
+        QStringList enum_names = _enum_property_manager->enumNames(prop);
+        const QString& val = enum_names[i];
+
+        _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(),
+            python_convert::to_python(val));
+
         _selected_node->node_updated();
     }
 }
