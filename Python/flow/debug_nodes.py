@@ -1,16 +1,16 @@
-import flow
+from flow import FlowNode, FlowPin, StringProperty, IntProperty, install_node_template
 from flow.node_helper import context_node, node
 from pluto import pluto_class
 import time
 
 @pluto_class
-class SleepNode(flow.Node):
+class SleepNode(FlowNode):
     pins = [
-        flow.Pin('In', flow.Pin.In),
-        flow.Pin('Out', flow.Pin.Out)
+        FlowPin('In', FlowPin.In),
+        FlowPin('Out', FlowPin.Out)
     ]
     properties = [
-        flow.Property('time', '0'),
+        IntProperty('time', 0),
     ]
 
     def __init__(self):
@@ -25,16 +25,16 @@ class SleepNode(flow.Node):
     	ctx.write_pin('Out', ctx.read_pin('In'))
 
 
-flow.install_node_template(SleepNode())
+install_node_template(SleepNode())
 
 
 @pluto_class
-class FailNode(flow.Node):
+class FailNode(FlowNode):
     pins = [
-        flow.Pin('In', flow.Pin.In),
+        FlowPin('In', FlowPin.In),
     ]
     properties = [
-        flow.Property('error', ''),
+        StringProperty('error', ''),
     ]
 
     def __init__(self):
@@ -49,5 +49,5 @@ class FailNode(flow.Node):
             raise ValueError(self.error)
 
 
-flow.install_node_template(FailNode())
+install_node_template(FailNode())
 

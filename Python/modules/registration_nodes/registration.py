@@ -1,4 +1,4 @@
-import flow
+from flow import FlowNode, FlowPin, FileProperty, install_node_template
 import image
 from pluto import pluto_class
 
@@ -31,24 +31,24 @@ def parse_settings_old(file):
     return settings
 
 @pluto_class
-class RegistrationNode(flow.Node):
+class RegistrationNode(FlowNode):
     pins = [
-        flow.Pin('Fixed0', flow.Pin.In),
-        flow.Pin('Moving0', flow.Pin.In),
-        flow.Pin('Fixed1', flow.Pin.In),
-        flow.Pin('Moving1', flow.Pin.In),
-        flow.Pin('Fixed2', flow.Pin.In),
-        flow.Pin('Moving2', flow.Pin.In),
+        FlowPin('Fixed0', FlowPin.In),
+        FlowPin('Moving0', FlowPin.In),
+        FlowPin('Fixed1', FlowPin.In),
+        FlowPin('Moving1', FlowPin.In),
+        FlowPin('Fixed2', FlowPin.In),
+        FlowPin('Moving2', FlowPin.In),
 
-        flow.Pin('ConstraintMask', flow.Pin.In),
-        flow.Pin('ConstraintValues', flow.Pin.In),
+        FlowPin('ConstraintMask', FlowPin.In),
+        FlowPin('ConstraintValues', FlowPin.In),
 
-        flow.Pin('StartingGuess', flow.Pin.In),
+        FlowPin('StartingGuess', FlowPin.In),
 
-        flow.Pin('Deformation', flow.Pin.Out),
+        FlowPin('Deformation', FlowPin.Out),
     ]
     properties = [
-        flow.Property('param_file', '')
+        FileProperty('param_file', '')
     ]
 
     def __init__(self):
@@ -87,4 +87,4 @@ class RegistrationNode(flow.Node):
         df = eng.execute(fixed, moving)
         ctx.write_pin('Deformation', df)
 
-flow.install_node_template(RegistrationNode())
+install_node_template(RegistrationNode())

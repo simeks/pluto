@@ -1,4 +1,4 @@
-import flow
+from flow import FlowNode, FlowPin, FileProperty, install_node_template
 import image
 import medkit
 import os
@@ -22,13 +22,13 @@ def run_transformix(param_file, out, img=None, df=False, jac=False):
 
 
 @pluto_class
-class TransformixNode(flow.Node):
+class TransformixNode(FlowNode):
     pins = [
-        flow.Pin('Image', flow.Pin.In),
-        flow.Pin('Transform', flow.Pin.In),
-        flow.Pin('Out', flow.Pin.Out),
-        flow.Pin('Def', flow.Pin.Out),
-        flow.Pin('Jac', flow.Pin.Out),
+        FlowPin('Image', FlowPin.In),
+        FlowPin('Transform', FlowPin.In),
+        FlowPin('Out', FlowPin.Out),
+        FlowPin('Def', FlowPin.Out),
+        FlowPin('Jac', FlowPin.Out),
     ]
 
     def __init__(self):
@@ -78,5 +78,5 @@ class TransformixNode(flow.Node):
 
 
 
-flow.install_node_template(TransformixNode())
+install_node_template(TransformixNode())
 

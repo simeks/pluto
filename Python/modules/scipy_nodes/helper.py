@@ -159,13 +159,22 @@ class NumpyNode(flow.Node):
     def run(self, ctx):
         if self.func == None:
             return
+
+        args = []
+        args_names = []
+        for a in self.args:
+            if ctx.is_pin_linked(a):
+                args.append(ctx.read_pin(a))
+                args_names.append(a)
+            else:
+                break
+
         kwargs = {}
         for a in self.args:
-            obj = ctx.read_pin(a)
-            if obj is not None:
-                kwargs[a] = obj
-        
-        returns = self.func(**kwargs)
+            if ctx.is_pin_linked(a) and a not in args_names:
+                kwargs[a] = ctx.read_pin(a)
+
+        returns = self.func(*args, **kwargs)
         if returns is not None:
             if len(self.returns) > 1:
                 if len(returns) > len(self.returns):

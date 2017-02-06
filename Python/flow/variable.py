@@ -1,19 +1,19 @@
-import flow
+from flow import FlowNode, FlowPin, StringProperty, install_node_template
 from pluto import pluto_class
 
 @pluto_class
-class VariableNode(flow.Node):
+class VariableNode(FlowNode):
     pins = [
-        flow.Pin('Out', flow.Pin.Out)
+        FlowPin('Out', FlowPin.Out)
     ]
     properties = [
-        flow.Property('name', ''),
-        flow.Property('default', '')
+        StringProperty('name', ''),
+        StringProperty('default', '')
     ]
 
     def __init__(self):
         super(VariableNode, self).__init__()
-        self.node_class = 'flow.Variable'
+        self.node_class = 'flow.variable.VariableNode'
         self.title = 'Variable'
         self.category = 'Flow'
         self.ui_class = 'variable_node'
@@ -24,5 +24,5 @@ class VariableNode(flow.Node):
         else:
             ctx.write_pin('Out', self.default)
 
-flow.install_node_template(VariableNode())
+install_node_template(VariableNode())
 

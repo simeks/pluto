@@ -1,4 +1,4 @@
-from flow import FlowNode, FlowPin, FlowProperty, FileProperty, install_node_template
+from flow import FlowNode, FlowPin, StringProperty, FileProperty, EnumProperty, install_node_template
 from pluto import pluto_class
 
 import numpy as np
@@ -9,7 +9,7 @@ class EvalNode(FlowNode):
         FlowPin('Out', FlowPin.Out)
     ]
     properties = [
-        FlowProperty('code', ''),
+        StringProperty('code', ''),
     ]
 
     def __init__(self):

@@ -1,4 +1,4 @@
-import flow
+from flow import FlowNode, FlowPin, FileProperty, install_node_template
 import image
 import medkit
 import os
@@ -37,24 +37,24 @@ def run_elastix(param_file, fixed_imgs, moving_imgs, out, fixed_mask=None, movin
 
 
 @pluto_class
-class ElastixNode(flow.Node):
+class ElastixNode(FlowNode):
     pins = [
-        flow.Pin('F0', flow.Pin.In),
-        flow.Pin('M0', flow.Pin.In),
-        flow.Pin('F1', flow.Pin.In),
-        flow.Pin('M1', flow.Pin.In),
-        flow.Pin('F2', flow.Pin.In),
-        flow.Pin('M2', flow.Pin.In),
-        flow.Pin('T0', flow.Pin.In),
-        flow.Pin('FixedMask', flow.Pin.In),
-        flow.Pin('MovingMask', flow.Pin.In),
-        flow.Pin('FixedLandmarks', flow.Pin.In),
-        flow.Pin('MovingLandmarks', flow.Pin.In),
-        flow.Pin('Out', flow.Pin.Out),
-        flow.Pin('Transform', flow.Pin.Out),
+        FlowPin('F0', FlowPin.In),
+        FlowPin('M0', FlowPin.In),
+        FlowPin('F1', FlowPin.In),
+        FlowPin('M1', FlowPin.In),
+        FlowPin('F2', FlowPin.In),
+        FlowPin('M2', FlowPin.In),
+        FlowPin('T0', FlowPin.In),
+        FlowPin('FixedMask', FlowPin.In),
+        FlowPin('MovingMask', FlowPin.In),
+        FlowPin('FixedLandmarks', FlowPin.In),
+        FlowPin('MovingLandmarks', FlowPin.In),
+        FlowPin('Out', FlowPin.Out),
+        FlowPin('Transform', FlowPin.Out),
     ]
     properties = [
-        flow.Property('param_file', '')
+        FileProperty('param_file', '')
     ]
 
     def __init__(self):
@@ -115,5 +115,5 @@ class ElastixNode(flow.Node):
             ctx.write_pin('Transform', Parameters(os.path.join(temp_dir, 'TransformParameters.0.txt')))
 
 
-flow.install_node_template(ElastixNode())
+install_node_template(ElastixNode())
 
