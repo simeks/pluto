@@ -32,7 +32,7 @@ namespace python_convert
     template<>
     CORE_API Image from_python(PyObject* obj)
     {
-        if (numpy::check(obj))
+        if (numpy::check_type(obj))
         {
             image::PixelType pixel_type = image::PixelType_Unknown;
             if (PyObject_HasAttrString(obj, "pixel_type"))

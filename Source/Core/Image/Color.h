@@ -1,6 +1,8 @@
 #ifndef __CORE_IMAGE_COLOR_H__
 #define __CORE_IMAGE_COLOR_H__
 
+#include <Core/Common.h>
+
 struct RGBA32
 {
     uint8_t r, g, b, a;

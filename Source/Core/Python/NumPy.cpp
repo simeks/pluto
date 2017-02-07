@@ -180,7 +180,3 @@ NumpyArray& NumpyArray::operator=(const NumpyArray& other)
     return *this;
 }
 
-bool numpy::check(PyObject* obj)
-{
-    return PyArray_Check(obj);
-}
