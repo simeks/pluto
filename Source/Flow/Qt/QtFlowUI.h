@@ -24,7 +24,7 @@ public:
     }
 };
 
-class QtFlowUI : public QObject
+class FLOW_API QtFlowUI : public QObject
 {
     Q_OBJECT
 

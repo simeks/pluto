@@ -7,6 +7,7 @@
 #include "QtFlowNode.h"
 #include "QtFlowPin.h"
 #include "Style.h"
+#include "UiFlowNode.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsGridLayout>
@@ -14,7 +15,7 @@
 #include <QGraphicsSceneMoveEvent>
 #include <QPainter>
 
-QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsItem* parent) : QGraphicsItem(parent), _node(nullptr), _highlighted_pin(-1), _status(Idle)
+QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsObject* parent) : QGraphicsObject(parent), _node(nullptr), _highlighted_pin(-1), _status(Idle)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -26,6 +27,8 @@ QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsItem* parent) : QGraphicsItem(pa
 
     _node = node;
     _node->addref();
+    if (_node->is_a(UiFlowNode::static_class()))
+        object_cast<UiFlowNode>(_node)->set_ui_node(this);
 
     _title = _node->title();
 }

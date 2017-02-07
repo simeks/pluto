@@ -25,6 +25,7 @@ def build(bld):
 			'Qt/QtGraphFileLoader.h', 
 			'Qt/QtNodePropertyWidget.h',
 			'Qt/QtNoteItem.h',
+			'Qt/Nodes/QtTextViewNode.h'
 			],
 		includes='. .. ../../External/qtextra/src/qtpropertybrowser',
 		defines='PLUTO_FLOW_EXPORTS',

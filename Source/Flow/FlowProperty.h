@@ -69,6 +69,7 @@ public:
     ~BoolProperty();
 
     void object_init();
+    void object_init(const char* name, bool default_value);
     void object_python_init(const Tuple&, const Dict&);
 }; 
 class FLOW_API IntProperty : public FlowProperty

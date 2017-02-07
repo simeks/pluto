@@ -6,6 +6,8 @@
 
 #include "API.h"
 
+class QtFlowNode;
+
 class FlowContext;
 class FlowGraph;
 class FlowPin;
@@ -100,7 +102,7 @@ protected:
     Vec2i _ui_pos;
 
     FlowNodeFunction _function;
-
 };
+
 
 #endif // __FLOW_NODE_H__

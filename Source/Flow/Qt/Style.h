@@ -1,10 +1,12 @@
 #ifndef __FLOW_QT_STYLE_H__
 #define __FLOW_QT_STYLE_H__
 
+#include "API.h"
+
 #include <QColor>
 #include <QFont>
 
-struct FlowUIStyle
+struct FLOW_API FlowUIStyle
 {
     /// Background
     QColor background_color;

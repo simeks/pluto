@@ -76,13 +76,26 @@ public:
         write_pin(name, python_convert::to_python(obj));
     }
     template<typename T>
-    T read_pin(const char* name, const T& def=0)
+    T read_pin(const char* name)
+    {
+        T ret = python_convert::from_python<T>(read_pin(name));
+        if (PyErr_Occurred())
+        {
+            // TODO:
+            PyErr_Print();
+            return ret;
+        }
+
+        return ret;
+    }
+    template<typename T>
+    T read_pin(const char* name, const T& def)
     {
         PyObject* obj = read_pin(name);
         if (!obj)
             return def;
 
-        T ret = python_convert::from_python<T>(read_pin(name));
+        T ret = python_convert::from_python<T>(obj);
         if (PyErr_Occurred())
         {
             // TODO:

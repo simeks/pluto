@@ -135,6 +135,11 @@ void BoolProperty::object_init()
 {
     FlowProperty::object_init();
 }
+void BoolProperty::object_init(const char* name, bool default_value)
+{
+    FlowProperty::object_init(name);
+    _default_value = PyBool_FromLong(default_value);
+}
 void BoolProperty::object_python_init(const Tuple& args, const Dict& kw)
 {
     FlowProperty::object_python_init(args, kw);

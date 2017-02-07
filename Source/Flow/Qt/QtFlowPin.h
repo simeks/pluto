@@ -1,9 +1,14 @@
 #ifndef __QT_FLOW_PIN_H__
 #define __QT_FLOW_PIN_H__
 
+#include "API.h"
+
+#include <QColor>
+#include <QPointF>
+
 class FlowPin;
 class QtFlowNode;
-class QtFlowPin
+class FLOW_API QtFlowPin
 {
 public:
     QtFlowPin(QtFlowNode* owner, FlowPin* pin, const QPointF& local_pos);

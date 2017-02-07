@@ -16,6 +16,7 @@
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
 #include "Qt/QtGraphFileLoader.h"
+#include "UiFlowNode.h"
 
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowPythonModule, open, const char*);
@@ -44,6 +45,7 @@ void FlowPythonModule::post_init()
     add_type("FlowContext", FlowContext::static_class());
     add_type("FlowGraph", FlowGraph::static_class());
     add_type("FlowNode", FlowNode::static_class());
+    add_type("UiFlowNode", UiFlowNode::static_class());
     add_type("FlowPin", FlowPin::static_class());
     add_type("FlowProperty", FlowProperty::static_class());
     add_type("BoolProperty", BoolProperty::static_class());

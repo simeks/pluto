@@ -15,10 +15,11 @@ def build(bld):
 		target='Visualization',
 		source=bld.find_files('**/(*.cpp)'), 
 		moc=[
-			'Qt/QtVisWindow.h'
+			'Qt/QtVisWindow.h',
+			'Qt/QtVisNode.h'
 			],
 		includes='. ..',
 		defines='PLUTO_VIS_EXPORTS',
-		use='Core ' + use,
+		use='Core Flow ' + use,
 	)
 

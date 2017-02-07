@@ -9,6 +9,7 @@
 #include "Nodes/QtPrintNode.h"
 #include "Nodes/QtSinglePinNode.h"
 #include "Nodes/QtVariableNode.h"
+#include "Nodes/QtTextViewNode.h"
 
 #include "QtFlowNode.h"
 #include "QtFlowUI.h"
@@ -25,6 +26,7 @@ QtFlowUI::QtFlowUI()
     install_ui_node_factory<QtPrintNode>("print_node");
     install_ui_node_factory<QtSinglePinNode>("single_pin_node");
     install_ui_node_factory<QtVariableNode>("variable_node");
+    install_ui_node_factory<QtTextViewNode>("text_view_node");
 }
 QtFlowUI::~QtFlowUI()
 {

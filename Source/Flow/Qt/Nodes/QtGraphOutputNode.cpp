@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtGraphOutputNode::QtGraphOutputNode(FlowNode* node, QGraphicsItem* parent) :
+QtGraphOutputNode::QtGraphOutputNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
     _text = _node->attribute<const char*>("name");

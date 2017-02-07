@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsItem* parent) :
+QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
     PyObject* value = _node->attribute("value");

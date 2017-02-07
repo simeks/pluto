@@ -6,7 +6,7 @@
 class QtSinglePinNode : public QtFlowNode
 {
 public:
-    QtSinglePinNode(FlowNode* node, QGraphicsItem* parent = nullptr);
+    QtSinglePinNode(FlowNode* node, QGraphicsObject* parent = nullptr);
     virtual ~QtSinglePinNode();
     
     virtual void node_updated() OVERRIDE;

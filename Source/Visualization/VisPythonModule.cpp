@@ -4,6 +4,8 @@
 #include <Core/Python/PythonFunction.h>
 #include <Core/Qt/WindowManager.h>
 
+#include <Flow/FlowModule.h>
+
 #include "Qt/QtVisWindow.h"
 #include "VisPythonModule.h"
 

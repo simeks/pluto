@@ -14,6 +14,6 @@ namespace python_convert
     template<>
     CORE_API QString from_python<QString>(PyObject* obj)
     {
-        return QString(PyUnicode_AsUTF8(obj));
+        return QString::fromUtf8(PyUnicode_AsUTF8(obj));
     }
 }

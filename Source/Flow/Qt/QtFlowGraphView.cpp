@@ -88,12 +88,22 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
     if (_scene && mouse_event->button() & Qt::MouseButton::LeftButton)
     {
         auto scene_items = items(mouse_event->pos());
-        if (scene_items.size() != 0)
+
+        QGraphicsItem* item = nullptr;
+        for (int i = 0; i < scene_items.size(); ++i)
+        {
+            if (scene_items[i]->flags() & QGraphicsItem::ItemIsSelectable)
+            {
+                item = scene_items[i];
+                break;
+            }
+        }
+
+        if (item)
         {
             if (_run_status == RunStatus_Running)
                 return;
 
-            auto& item = scene_items[0];
             if (item->type() == QtFlowNode::Type)
             {
                 QtFlowNode* node = (QtFlowNode*)item;

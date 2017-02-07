@@ -1,3 +1,4 @@
-from image.color import *
-from image.image import *
-from image.types import *
+from .color import *
+from .image import *
+from .types import *
+from .info import *

@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsItem* parent) :
+QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
     _text = _node->attribute<const char*>("value");

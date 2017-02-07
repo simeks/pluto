@@ -1,14 +1,17 @@
 #ifndef __QT_FLOW_NODE_H__
 #define __QT_FLOW_NODE_H__
 
-#include <QGraphicsItem>
+#include <Core/Platform/Guid.h>
+#include <Flow/API.h>
+
+#include <QGraphicsObject>
 
 class FlowNode;
 class QtFlowPin;
 class QGraphicsGridLayout;
 class QWidget;
 
-class QtFlowNode : public QGraphicsItem
+class FLOW_API QtFlowNode : public QGraphicsObject
 {
 public:
     enum Status
@@ -21,7 +24,7 @@ public:
 
     enum { Type = UserType + 1 };
 
-    QtFlowNode(FlowNode* node, QGraphicsItem* parent = nullptr);
+    QtFlowNode(FlowNode* node, QGraphicsObject* parent = nullptr);
     virtual ~QtFlowNode();
 
     void setup();

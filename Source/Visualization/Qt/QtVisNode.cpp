@@ -1,24 +1,25 @@
 #include <Core/Common.h>
+#include <Core/Image/Image.h>
 
-#include "FlowNode.h"
-#include "FlowPin.h"
-#include "QtSinglePinNode.h"
-#include "Qt/QtFlowPin.h"
-#include "Qt/Style.h"
+#include <Flow/FlowNode.h>
+#include <Flow/FlowPin.h>
+#include <Flow/Qt/QtFlowPin.h>
+#include <Flow/Qt/Style.h>
+
+#include "QtVisNode.h"
 
 #include <QFontMetrics>
 #include <QGraphicsScene>
 #include <QPainter>
 
-QtSinglePinNode::QtSinglePinNode(FlowNode* node, QGraphicsObject* parent) :
+QtVisNode::QtVisNode(FlowNode* node, QGraphicsObject* parent) :
     QtFlowNode(node, parent)
 {
-    _text = node->title();
 }
-QtSinglePinNode::~QtSinglePinNode()
+QtVisNode::~QtVisNode()
 {
 }
-void QtSinglePinNode::node_updated()
+void QtVisNode::node_updated()
 {
     QtFlowNode::node_updated();
 
@@ -35,7 +36,7 @@ void QtSinglePinNode::node_updated()
     update();
     scene()->update();
 }
-void QtSinglePinNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void QtVisNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -57,12 +58,19 @@ void QtSinglePinNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
     QFont fnt = style.node_font;
     QFontMetrics metrics(fnt);
 
-    QPoint title_pos(10, _rect.height() - metrics.height() / 2);
+    QPoint title_pos(20, 20);
 
+    fnt.setBold(true);
     painter->setFont(fnt);
     painter->setPen(style.node_title_color);
 
-    painter->drawText(title_pos, text());
+    painter->drawText(title_pos, "Image");
+    
+    if (!_qimage.isNull())
+    {
+        QImage thumb = _qimage.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        painter->drawImage(title_pos + QPointF(0, 10), thumb);
+    }
 
     QtFlowPin* pin = _pins[0];
     painter->setBrush(pin->color());
@@ -70,7 +78,7 @@ void QtSinglePinNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
     painter->drawEllipse(pin->local_pos(), style.pin_radius, style.pin_radius);
 
 }
-void QtSinglePinNode::create_pins()
+void QtVisNode::create_pins()
 {
     assert(_node->pins().size() == 1);
 
@@ -87,17 +95,55 @@ void QtSinglePinNode::create_pins()
     _pin = new QtFlowPin(this, _node->pins()[0], pin_pos);
     _pins.push_back(_pin);
 }
-void QtSinglePinNode::calculate_size()
+void QtVisNode::calculate_size()
 {
     assert(_node->pins().size() == 1);
 
     QFont fnt = FlowUIStyle::default_style().node_font;
     QFontMetrics font_metrics(fnt);
-    int height = font_metrics.height() + 10; // Title
-    int width = std::max(40, font_metrics.width(text())+25);
+    int height = font_metrics.height() + 110; // Title
+    int width = std::max(120, font_metrics.width("Image") + 25);
     _rect = QRect(0, 0, width, height);
 }
-const QString& QtSinglePinNode::text() const
+void QtVisNode::show_image(const Image& image)
 {
-    return _text;
+    if (!image.valid())
+        return;
+
+    _data = image.data().contiguous();
+    _data = _data.cast(NPY_UINT8);
+
+    assert(_data.ndims() <= 3);
+
+    //assert(image.pixel_type() == image::PixelType_UInt8);
+
+    QImage::Format fmt = QImage::Format_Invalid;
+
+    if (_data.ndims() == 3)
+    {
+        // 2D image with multiple channels
+        int n_channels = _data.shape()[2];
+        if (n_channels == 3)
+        {
+            fmt = QImage::Format_RGB888;
+        }
+        else if (n_channels == 4)
+        {
+            fmt = QImage::Format_RGBA8888;
+        }
+    }
+    else if (_data.ndims() == 2 || _data.ndims() == 1)
+    {
+        fmt = QImage::Format_Grayscale8;
+    }
+
+    if (fmt == QImage::Format_Invalid)
+    {
+        PYTHON_ERROR(TypeError, "Invalid image format");
+    }
+
+    _qimage = QImage((uint8_t*)_data.data(), _data.shape()[1], _data.shape()[0], (int)_data.strides()[0], fmt);
+    
+    update();
 }
+
