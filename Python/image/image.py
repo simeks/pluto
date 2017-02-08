@@ -1,5 +1,10 @@
 import numpy as np
+import re
 from image.types import *
+
+from flow import install_node_template, FlowNode, UiFlowNode, FlowProperty, FlowPin, StringProperty
+from pluto import pluto_class
+
 
 class Image(np.ndarray):
     def __new__(cls, arr, pixel_type):
@@ -58,4 +63,43 @@ class Image(np.ndarray):
                 self.pixel_type = type_from_string(str(self.dtype))
 
 
-    
+@pluto_class
+class SliceImageNode(UiFlowNode):
+    pins = [
+        FlowPin('In', FlowPin.In),
+        FlowPin('Out', FlowPin.Out)
+    ]
+    properties = [
+        StringProperty('index', ''),
+    ]
+
+    def __init__(self):
+        super(SliceImageNode, self).__init__()
+        self.node_class = 'image.image.SliceImageNode'
+        self.title = 'Slice'
+        self.category = 'Image'
+        self.ui_class = 'one_to_one_node'
+        self.ui_node_title_var = 'index'
+
+    def run(self, ctx):
+        img = ctx.read_pin('In')
+        if img is None or not isinstance(img, np.ndarray):
+            raise ValueError('Expected an Image object')
+
+        # Validate index
+        index = ''
+        tokens = self.index.split(',')
+        for i in range(0, len(tokens)):
+            if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
+                index = index + ','
+                continue
+            if re.match('[0-9:]+$', tokens[i].strip()):
+                index = index + tokens[i].strip()
+                if i != len(tokens)-1:
+                    index = index + ','
+            else:
+                raise SyntaxError('Invalid syntax: %s' % self.index) 
+
+        ctx.write_pin('Out', eval('img[%s]' % index))
+
+install_node_template(SliceImageNode())

@@ -6,6 +6,7 @@
 #include "Nodes/QtConstantNode.h"
 #include "Nodes/QtGraphInputNode.h"
 #include "Nodes/QtGraphOutputNode.h"
+#include "Nodes/QtOneToOneNode.h"
 #include "Nodes/QtPrintNode.h"
 #include "Nodes/QtSinglePinNode.h"
 #include "Nodes/QtVariableNode.h"
@@ -23,6 +24,7 @@ QtFlowUI::QtFlowUI()
     install_ui_node_factory<QtConstantNode>("constant_node");
     install_ui_node_factory<QtGraphInputNode>("graph_input");
     install_ui_node_factory<QtGraphOutputNode>("graph_output");
+    install_ui_node_factory<QtOneToOneNode>("one_to_one_node");
     install_ui_node_factory<QtPrintNode>("print_node");
     install_ui_node_factory<QtSinglePinNode>("single_pin_node");
     install_ui_node_factory<QtVariableNode>("variable_node");

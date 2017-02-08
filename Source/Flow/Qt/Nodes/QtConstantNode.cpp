@@ -10,11 +10,22 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
+using namespace python_convert;
+
 QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
-    PyObject* value = _node->attribute("value");
-    _text = python_convert::from_python<const char*>(PyObject_Str(value));
+    if (_node->has_attribute("ui_constant_var"))
+    {
+        const char* var = from_python<const char*>(_node->attribute("ui_constant_var"));
+        _text = from_python<const char*>(_node->attribute(var));
+    }
+    else if (_node->has_attribute("value"))
+    {
+        PyObject* value = _node->attribute("value");
+        _text = python_convert::from_python<const char*>(PyObject_Str(value));
+    }
+    
     if (_text.length() > 50)
     {
         _text = _text.right(50);
@@ -26,8 +37,17 @@ QtConstantNode::~QtConstantNode()
 }
 void QtConstantNode::node_updated()
 {
-    PyObject* value = _node->attribute("value");
-    _text = python_convert::from_python<const char*>(PyObject_Str(value));
+    if (_node->has_attribute("ui_constant_var"))
+    {
+        const char* var = from_python<const char*>(_node->attribute("ui_constant_var"));
+        _text = from_python<const char*>(_node->attribute(var));
+    }
+    else if (_node->has_attribute("value"))
+    {
+        PyObject* value = _node->attribute("value");
+        _text = python_convert::from_python<const char*>(PyObject_Str(value));
+    }
+
     if (_text.length() > 50)
     {
         _text = _text.right(50);
