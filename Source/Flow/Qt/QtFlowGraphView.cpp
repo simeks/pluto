@@ -19,7 +19,7 @@
 #include <QMouseEvent>
 #include <QTimer>
 
-std::vector<QtFlowNode*> QtFlowGraphView::s_node_clipboard;
+std::vector<QGraphicsItem*> QtFlowGraphView::s_node_clipboard;
 
 
 Q_DECLARE_METATYPE(FlowNode*);
@@ -571,31 +571,60 @@ void QtFlowGraphView::node_copy()
     s_node_clipboard.clear();
     for (auto& i : _scene->selectedItems())
     {
-        if (i->type() == QtFlowNode::Type)
-        {
-            s_node_clipboard.push_back((QtFlowNode*)i);
-        }
+        s_node_clipboard.push_back(i);
     }
 }
 void QtFlowGraphView::node_paste()
 {
     if (!s_node_clipboard.empty() && underMouse())
     {
+        std::map<Guid, QtFlowNode*> old_to_new;
+
         QPointF mouse_pos = mapToScene(mapFromGlobal(QCursor::pos()));
         QPointF origin = s_node_clipboard[0]->scenePos();
         for (auto i : s_node_clipboard)
         {
-            QPointF offset = i->scenePos() - origin;
-            FlowNode* copy = object_clone(i->node());
-            copy->set_node_id(guid::create_guid());
+            if (i->type() == QtFlowNode::Type)
+            {
+                QtFlowNode* node = (QtFlowNode*)i;
 
-            QtFlowNode* n = _ui->create_ui_node(copy);
-            n->move_node(mouse_pos + offset);
-            _scene->add_node(n);
+                QPointF offset = node->scenePos() - origin;
+                FlowNode* copy = object_clone(node->node());
+                copy->set_node_id(guid::create_guid());
 
-            emit node_create(n);
-            copy->release();
+                QtFlowNode* n = _ui->create_ui_node(copy);
+                n->move_node(mouse_pos + offset);
+                _scene->add_node(n);
+
+                emit node_create(n);
+                copy->release();
+
+                old_to_new[node->node_id()] = n;
+            }
         }
+
+        // Connect nodes
+        for (auto i : s_node_clipboard)
+        {
+            if (i->type() == QtFlowLink::Type)
+            {
+                QtFlowLink* link = (QtFlowLink*)i;
+
+                QtFlowPin* old_start = link->start();
+                QtFlowPin* old_end = link->end();
+
+                if (old_to_new.find(old_start->owner()->node_id()) == old_to_new.end() ||
+                    old_to_new.find(old_end->owner()->node_id()) == old_to_new.end())
+                    continue;
+
+                QtFlowNode* new_start_node = old_to_new[old_start->owner()->node_id()];
+                QtFlowNode* new_end_node = old_to_new[old_end->owner()->node_id()];
+
+                QtFlowLink* new_link = new QtFlowLink(new_start_node->pin(old_start->name()), new_end_node->pin(old_end->name()));
+                _scene->try_add_link(new_link);
+            }
+        }
+
     }
 }
 void QtFlowGraphView::reset_nodes()

@@ -89,7 +89,7 @@ private:
     QtFlowLink* _temp_link;
     QtFlowPin* _highlight_pin;
 
-    static std::vector<QtFlowNode*> s_node_clipboard;
+    static std::vector<QGraphicsItem*> s_node_clipboard;
 
     void build_node_menu();
     void draw_background_grid(QPainter* painter, int grid_step);
