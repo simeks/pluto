@@ -5,6 +5,8 @@
 #include <QDialog>
 #include <QMainWindow>
 
+#include <Core/Python/NumPy.h>
+
 class Image;
 class QGraphicsView;
 class VIS_API QtVisWindow : public QMainWindow
@@ -25,6 +27,7 @@ protected:
 private:
     void setup_ui();
 
+    NumpyArray _data;
     QGraphicsView* _view;
 };
 

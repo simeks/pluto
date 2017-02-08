@@ -6,6 +6,7 @@
 #include <Flow/Qt/QtFlowPin.h>
 #include <Flow/Qt/Style.h>
 
+#include "Image.h"
 #include "QtVisNode.h"
 
 #include <QFontMetrics>
@@ -68,8 +69,7 @@ void QtVisNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
     
     if (!_qimage.isNull())
     {
-        QImage thumb = _qimage.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        painter->drawImage(title_pos + QPointF(0, 10), thumb);
+        painter->drawImage(QPointF(10, title_pos.y()+10), _thumbnail);
     }
 
     QtFlowPin* pin = _pins[0];
@@ -100,50 +100,35 @@ void QtVisNode::calculate_size()
     assert(_node->pins().size() == 1);
 
     QFont fnt = FlowUIStyle::default_style().node_font;
+    fnt.setBold(true);
     QFontMetrics font_metrics(fnt);
-    int height = font_metrics.height() + 110; // Title
-    int width = std::max(120, font_metrics.width("Image") + 25);
-    _rect = QRect(0, 0, width, height);
+
+    if (!_thumbnail.isNull())
+    {
+        int width = std::max(font_metrics.width("Image") + 25, _thumbnail.width()+20);
+        int height = font_metrics.height() + 30 + _thumbnail.height(); // Title
+        _rect = QRect(0, 0, width, height);
+    }
+    else
+    {
+        _rect = QRect(0, 0, font_metrics.width("Image") + 40, font_metrics.height() + 35);
+    }
 }
 void QtVisNode::show_image(const Image& image)
 {
     if (!image.valid())
         return;
 
-    _data = image.data().contiguous();
-    _data = _data.cast(NPY_UINT8);
-
-    assert(_data.ndims() <= 3);
-
-    //assert(image.pixel_type() == image::PixelType_UInt8);
-
-    QImage::Format fmt = QImage::Format_Invalid;
-
-    if (_data.ndims() == 3)
-    {
-        // 2D image with multiple channels
-        int n_channels = _data.shape()[2];
-        if (n_channels == 3)
-        {
-            fmt = QImage::Format_RGB888;
-        }
-        else if (n_channels == 4)
-        {
-            fmt = QImage::Format_RGBA8888;
-        }
-    }
-    else if (_data.ndims() == 2 || _data.ndims() == 1)
-    {
-        fmt = QImage::Format_Grayscale8;
-    }
-
-    if (fmt == QImage::Format_Invalid)
+    _data = format_data(image.data(), image.data().type() == NPY_BOOL ? visualization::ImageType_Bool : visualization::ImageType_Unknown);
+    _qimage = convert_to_qimage(_data);
+    if (_qimage.isNull())
     {
         PYTHON_ERROR(TypeError, "Invalid image format");
     }
 
-    _qimage = QImage((uint8_t*)_data.data(), _data.shape()[1], _data.shape()[0], (int)_data.strides()[0], fmt);
-    
+    _thumbnail = _qimage.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    calculate_size();
     update();
 }
 

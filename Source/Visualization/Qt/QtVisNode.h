@@ -27,6 +27,7 @@ protected:
 
     QtFlowPin* _pin;
     QImage _qimage;
+    QImage _thumbnail;
     NumpyArray _data;
 };
 
