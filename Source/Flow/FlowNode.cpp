@@ -225,6 +225,8 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
     {
         FlowProperty* p = object_clone(prop);
         add_property(p);
+
+        set_attribute(p->name(), other.attribute(p->name()));
     }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
