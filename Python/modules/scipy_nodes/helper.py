@@ -63,7 +63,13 @@ class NumpyDocstringParse(object):
         t = line.split(':')
         t2 = t[0].split(',')
 
-        names = [n.strip() for n in t2]
+        names = []
+        for n in t2:
+            # Filter out weird arguments, ndimage tends to have loose comments in parameters section
+            if ' ' in n.strip():
+                continue
+
+            names.append(n.strip())
 
         # Filter arguments that make no sense in our case, such as the output argument.
         # TODO: How to handle ...?
@@ -77,6 +83,13 @@ class NumpyDocstringParse(object):
             
         return names
 
+    def format_return_name(self, n):
+        n = n.strip()
+        for i in range(0, len(n)):
+            if n[i] == '-':
+                n = n[0:i] + '_' + n[i+1:]
+        return n
+
     def parse_return(self, i):
         line = self.iter.next()
         indent = self.line_indent(line)
@@ -84,7 +97,7 @@ class NumpyDocstringParse(object):
         if ':' in line:
             t = line.split(':')
             t2 = t[0].split(',')
-            names = [n.strip() for n in t2]
+            names = [self.format_return_name(n) for n in t2]
         else:
             # No name on return
             names = ['Out'+str(i)]
@@ -102,7 +115,8 @@ class NumpyDocstringParse(object):
         ret = []
         while not self.section_end():
             name = self.parse_parameter()
-            ret.extend(name)
+            if name:
+                ret.extend(name)
         return ret
 
     def parse_returns(self):
@@ -147,6 +161,9 @@ class NumpyNode(flow.Node):
             self.returns = ndoc.outputs
             for o in self.returns:
                 self.add_pin(o, flow.Pin.Out)
+            if len(self.returns) == 0:
+                # Assume we always have one return, there are a lot of missing returns in ndimage docs
+                self.returns.append('Out')
 
         self.func = fn
         self.node_class = 'numpy' + '.' + fn.__name__

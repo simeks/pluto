@@ -60,7 +60,7 @@ register_node(np.sinc, 'sinc', 'NumPy/Math/Special')
 
 register_node(np.signbit , 'signbit ', 'NumPy/Math/Float')
 register_node(np.copysign, 'copysign', 'NumPy/Math/Float')
-register_node(np.frexp, 'frexp', 'NumPy/Math/Float')
+# register_node(np.frexp, 'frexp', 'NumPy/Math/Float') # TODO: Handle tuple returns
 register_node(np.ldexp, 'ldexp', 'NumPy/Math/Float')
 
 register_node(np.add, 'add', 'NumPy/Math/Arithmetic')

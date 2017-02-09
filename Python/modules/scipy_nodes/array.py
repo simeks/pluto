@@ -31,16 +31,16 @@ register_node(np.swapaxes, 'swapaxes', 'NumPy/Array/Transpose')
 register_node(np.transpose, 'transpose', 'NumPy/Array/Transpose')
 
 # Changing number of dimensions
-register_node(np.atleast_1d, 'atleast_1d', 'NumPy/Array/Dimensions')
-register_node(np.atleast_2d, 'atleast_2d', 'NumPy/Array/Dimensions')
-register_node(np.atleast_3d, 'atleast_3d', 'NumPy/Array/Dimensions')
+#register_node(np.atleast_1d, 'atleast_1d', 'NumPy/Array/Dimensions') # TODO: Handle '...' arguments
+#register_node(np.atleast_2d, 'atleast_2d', 'NumPy/Array/Dimensions') # TODO: Handle '...' arguments
+#register_node(np.atleast_3d, 'atleast_3d', 'NumPy/Array/Dimensions') # TODO: Handle '...' arguments
 register_node(np.broadcast_to, 'broadcast_to', 'NumPy/Array/Dimensions')
-register_node(np.broadcast_arrays, 'broadcast_arrays', 'NumPy/Array/Dimensions')
+#register_node(np.broadcast_arrays, 'broadcast_arrays', 'NumPy/Array/Dimensions') # TODO: Handle '*args' arguments
 register_node(np.expand_dims, 'expand_dims', 'NumPy/Array/Dimensions')
 register_node(np.squeeze, 'squeeze', 'NumPy/Array/Dimensions')
 
 # Joining arrays
-register_node(np.concatenate, 'concatenate', 'NumPy/Array/Joining')
+#register_node(np.concatenate, 'concatenate', 'NumPy/Array/Joining') # TODO: Handle '...' arguments
 register_node(np.stack, 'stack', 'NumPy/Array/Joining')
 register_node(np.column_stack, 'column_stack', 'NumPy/Array/Joining')
 register_node(np.dstack, 'dstack', 'NumPy/Array/Joining')
