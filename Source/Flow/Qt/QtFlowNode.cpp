@@ -174,7 +174,8 @@ QtFlowPin* QtFlowNode::pin(const char* name) const
 {
     for (auto& p : _pins)
     {
-        if (strcmp(p->name(), name) == 0)
+        // Case-insensitive comparison
+        if (_stricmp(p->name(), name) == 0)
         {
             return p;
         }
@@ -251,8 +252,6 @@ void QtFlowNode::move_node(const QPointF& scene_pos)
 
 void QtFlowNode::create_pins()
 {
-    _pins.resize(_node->pins().size());
-    
     const FlowUIStyle& style = FlowUIStyle::default_style();
 
     QFontMetrics metrics(style.node_font);
@@ -272,7 +271,7 @@ void QtFlowNode::create_pins()
             pin_pos = QPoint(_rect.width(), y_offset + out_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
             ++out_pin;
         }
-        _pins[pin->pin_id()] = new QtFlowPin(this, pin, pin_pos);
+        _pins.push_back(new QtFlowPin(this, pin, pin_pos));
     }
 
 }
@@ -307,10 +306,81 @@ void QtFlowNode::calculate_size()
     }
     _rect = QRect(0, 0, width, height);
 }
+void QtFlowNode::update_pins()
+{
+    std::vector<QtFlowPin*> new_pins;
 
+    // Find which pins to add
+    for (auto& p : _node->pins())
+    {
+        auto it = std::find_if(_pins.begin(), _pins.end(), [p](QtFlowPin* p2) { return p2->pin() == p; });
+        if (it != _pins.end())
+        {
+            new_pins.push_back(*it);
+        }
+        else
+        {
+            new_pins.push_back(new QtFlowPin(this, p, QPointF())); // We update position later
+        }
+    }
+
+    for (auto& p : _pins)
+    {
+        if (std::find(new_pins.begin(), new_pins.end(), p) == new_pins.end())
+        {
+            delete p;
+        }
+    }
+
+    _pins = new_pins;
+
+    calculate_size();
+
+    const FlowUIStyle& style = FlowUIStyle::default_style();
+
+    QFontMetrics metrics(style.node_font);
+    int y_offset = metrics.height() + 25;
+
+    // Update remaining pins
+    int in_pin = 0, out_pin = 0;
+    for (auto& pin : _pins)
+    {
+        QPoint pin_pos;
+        if (pin->pin_type() == FlowPin::In)
+        {
+            pin_pos = QPoint(0, y_offset + in_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
+            ++in_pin;
+        }
+        else
+        {
+            pin_pos = QPoint(_rect.width(), y_offset + out_pin * (metrics.height() + 10) - metrics.height() / 2 + 2);
+            ++out_pin;
+        }
+        pin->set_local_pos(pin_pos);
+    }
+    update();
+}
 int QtFlowNode::type() const
 {
     return Type;
+}
+void QtFlowNode::on_pin_linked(QtFlowPin* pin)
+{
+    bool need_update = pin->pin()->is_a(ArrayFlowPin::static_class());
+
+    _node->on_pin_linked(pin->pin());
+
+    if (need_update)
+        update_pins();
+}
+void QtFlowNode::on_pin_unlinked(QtFlowPin* pin)
+{
+    bool need_update = pin->pin()->is_a(ArrayFlowPin::static_class());
+
+    _node->on_pin_unlinked(pin->pin());
+
+    if (need_update)
+        update_pins();
 }
 void QtFlowNode::hoverMoveEvent(QGraphicsSceneHoverEvent* evt)
 {

@@ -9,6 +9,8 @@
 #include "GraphNote.h"
 #include "RunGraphNode.h"
 
+#include <regex>
+
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowGraph, reload);
 
 OBJECT_INIT_TYPE_FN(FlowGraph)
@@ -306,24 +308,28 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             FlowPin* begin_pin = nullptr; // begin_node->pin(begin_pin_id);
             FlowPin* end_pin = nullptr; // end_node->pin(end_pin_id);
 
-            if (links[i]["begin_pin"].is_number())
-            {
-                int begin_pin_id = links[i]["begin_pin"].as_int();
-                begin_pin = begin_node->pin(begin_pin_id);
-            }
-            else if (links[i]["begin_pin"].is_string())
+            if (links[i]["begin_pin"].is_string())
             {
                 begin_pin = begin_node->pin(links[i]["begin_pin"].as_string().c_str());
             }
 
-            if (links[i]["end_pin"].is_number())
+            if (links[i]["end_pin"].is_string())
             {
-                int end_pin_id = links[i]["end_pin"].as_int();
-                end_pin = end_node->pin(end_pin_id);
-            }
-            else if (links[i]["end_pin"].is_string())
-            {
-                end_pin = end_node->pin(links[i]["end_pin"].as_string().c_str());
+                const char* name = links[i]["end_pin"].as_string().c_str();
+
+                std::regex expr("(\\w+)\\[(\\d+)\\]$");
+
+                std::cmatch cm;
+                if (std::regex_match(name, cm, expr))
+                {
+                    // Pin with names of the format name[i] are considered 
+                    end_pin = end_node->pin(cm[1].str().c_str(), atoi(cm[2].str().c_str()));
+                }
+                else
+                {
+                    end_pin = end_node->pin(name);
+
+                }
             }
 
             // TODO:
@@ -331,6 +337,8 @@ FlowGraph* flow_graph::load(const JsonObject& root)
                 continue;
 
             out_graph->try_add_link(begin_pin, end_pin);
+            begin_node->on_pin_linked(begin_pin);
+            end_node->on_pin_linked(end_pin);
         }
     }
 
@@ -434,9 +442,9 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         link.set_empty_object();
 
         link["begin_node"].set_string(guid::to_string(l.first->owner()->node_id()));
-        link["end_node"].set_string(guid::to_string(l.second->owner()->node_id()));
-
         link["begin_pin"].set_string(l.first->name());
+
+        link["end_node"].set_string(guid::to_string(l.second->owner()->node_id()));
         link["end_pin"].set_string(l.second->name());
     }
 

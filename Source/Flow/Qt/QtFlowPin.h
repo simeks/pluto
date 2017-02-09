@@ -24,8 +24,7 @@ public:
 
     QtFlowNode* owner() const;
     const char* name() const;
-    int id() const;
-
+    
     FlowPin* pin() const;
     int pin_type() const;
 

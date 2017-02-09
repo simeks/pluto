@@ -112,10 +112,6 @@ const std::vector<FlowPin*>& FlowNode::pins() const
 {
     return _pins;
 }
-FlowPin* FlowNode::pin(int id) const
-{
-    return _pins[id];
-}
 FlowPin* FlowNode::pin(const char* name) const
 {
     for (auto& p : _pins)
@@ -127,6 +123,54 @@ FlowPin* FlowNode::pin(const char* name) const
         }
     }
     return nullptr;
+}
+ArrayFlowPin* FlowNode::pin(const char* name, int index)
+{
+    std::vector<ArrayFlowPin*> pins = pin_array(name);
+    for (auto& p : pins)
+    {
+        if (p->index() == index)
+            return p;
+    }
+
+    if (pins.empty())
+        return nullptr;
+
+    ArrayFlowPin* last = pins.back();
+    while (last->index() < index)
+    {
+        ArrayFlowPin* pin = object_clone(last);
+        pin->set_index(last->index() + 1);
+        pin->set_previous(last);
+        last->set_next(pin);
+
+        pin->set_owner(this);
+        _pins.insert(std::find(_pins.begin(), _pins.end(), last) + 1, pin);
+
+        last = pin;
+    }
+
+    return last;
+}
+std::vector<ArrayFlowPin*> FlowNode::pin_array(const char* name) const
+{
+    std::vector<ArrayFlowPin*> out;
+    for (auto& p : _pins)
+    {
+        if (p->is_a(ArrayFlowPin::static_class()))
+        {
+            ArrayFlowPin* pin = object_cast<ArrayFlowPin>(p);
+
+            // Case-insensitive comparison
+            if (_stricmp(pin->base_name(), name) == 0)
+            {
+                // We can assume that all pins come in order
+                out.push_back(pin);
+            }
+        }
+    }
+
+    return out;
 }
 bool FlowNode::is_pin_linked(const char* name) const
 {
@@ -153,13 +197,10 @@ void FlowNode::set_graph(FlowGraph* graph)
 
 void FlowNode::add_pin(const char* name, int pin_type)
 {
-    int id = (int)_pins.size();
-    _pins.push_back(object_new<FlowPin>(name, (FlowPin::Type)pin_type, this, id));
+    _pins.push_back(object_new<FlowPin>(name, (FlowPin::Type)pin_type, this));
 }
 void FlowNode::add_pin(FlowPin* pin)
 {
-    int id = (int)_pins.size();
-    pin->set_pin_id(id);
     pin->set_owner(this);
     _pins.push_back(pin);
 }
@@ -219,7 +260,8 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {
     for (auto& pin : other._pins)
     {
-        add_pin(pin->name(), pin->pin_type());
+        FlowPin* p = object_clone(pin);
+        add_pin(p);
     }
     for (auto& prop : other._properties)
     {
@@ -231,4 +273,68 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
     _function = other._function;
+}
+void FlowNode::on_pin_linked(FlowPin* pin)
+{
+    if (pin->is_a(ArrayFlowPin::static_class()))
+    {
+        add_array_pin(object_cast<ArrayFlowPin>(pin));
+    }
+}
+void FlowNode::on_pin_unlinked(FlowPin* pin)
+{
+    if (pin->is_a(ArrayFlowPin::static_class()))
+    {
+        remove_array_pin(object_cast<ArrayFlowPin>(pin));
+    }
+}
+void FlowNode::add_array_pin(ArrayFlowPin* prev)
+{
+    ArrayFlowPin* first = prev;
+    while (first->previous()) first = first->previous();
+
+    ArrayFlowPin* last = first;
+
+    int n = 0; // Number of free pins
+    while (last->next())
+    {
+        if (last->links().size() == 0)
+            ++n;
+
+        last = last->next();
+    }
+
+    if (n > 0)
+        return; // Don't add any new pins to array if we already have free pins
+    
+    ArrayFlowPin* pin = object_clone(last);
+    pin->set_index(last->index() + 1);
+    pin->set_previous(last);
+    last->set_next(pin);
+
+    pin->set_owner(this);
+    _pins.insert(std::find(_pins.begin(), _pins.end(), last)+1, pin);
+}
+void FlowNode::remove_array_pin(ArrayFlowPin* pin)
+{
+    // Unlink pin from others
+    ArrayFlowPin* next = pin->next();
+    ArrayFlowPin* prev = pin->previous();
+
+    if (next) next->set_previous(prev);
+    if (prev) prev->set_next(next);
+
+    // Decrement indices of pins after this one
+    while (next)
+    {
+        next->set_index(next->index() - 1);
+        next = next->next();
+    }
+    
+    // Remove pin from node
+    auto it = std::find(_pins.begin(), _pins.end(), pin);
+    assert(it != _pins.end());
+    _pins.erase(it);
+
+    pin->release();
 }

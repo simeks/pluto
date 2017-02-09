@@ -8,6 +8,7 @@
 
 class QtFlowNode;
 
+class ArrayFlowPin;
 class FlowContext;
 class FlowGraph;
 class FlowPin;
@@ -58,10 +59,16 @@ public:
 
     const std::vector<FlowPin*>& pins() const;
 
-    FlowPin* pin(int id) const;
-
     /// Note: Pin names are case-insensitive
     FlowPin* pin(const char* name) const;
+
+    /// Returns the array pin with the given base name and array index
+    /// Returns a new pin if the array exists but does not cover the specified index.
+    /// Returns null if no array pin with the given name was found.
+    ArrayFlowPin* pin(const char* name, int index);
+
+    /// Returns all pins of the array with the given name
+    std::vector<ArrayFlowPin*> pin_array(const char* name) const;
 
     /// Note: Pin names are case-insensitive
     bool is_pin_linked(const char* name) const;
@@ -90,9 +97,21 @@ public:
     const char* ui_class() const;
 
     FlowNode(const FlowNode&);
+
+    /// Called whenever the given pin receives a new link
+    void on_pin_linked(FlowPin* pin);
+    /// Called whenever the given pin is unlinked from another pin
+    void on_pin_unlinked(FlowPin* pin);
+
 protected:
     /// Steals the reference to prop
     void add_property(FlowProperty* prop);
+
+    /// Adds a new array pin after the specified pin
+    void add_array_pin(ArrayFlowPin* prev);
+
+    /// Removes an array pin updates all other pins accordingly
+    void remove_array_pin(ArrayFlowPin* pin);
 
     std::vector<FlowPin*> _pins;
     std::vector<FlowProperty*> _properties;
@@ -103,6 +122,8 @@ protected:
 
     FlowNodeFunction _function;
 };
+
+
 
 
 #endif // __FLOW_NODE_H__

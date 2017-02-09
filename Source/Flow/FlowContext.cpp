@@ -44,7 +44,7 @@ void FlowContext::object_init(FlowGraph* graph)
 
     initialize();
 }
-void FlowContext::object_python_init(const Tuple& t, const Dict& )
+void FlowContext::object_python_init(const Tuple& t, const Dict&)
 {
     if (t.size() != 1)
         PYTHON_ERROR(ValueError, "expected 1 argument");
@@ -102,7 +102,7 @@ bool FlowContext::run(Callback* cb)
     while (!_nodes_to_execute.empty())
     {
         _current_node = _nodes_to_execute.back();
-        
+
         std::cout << "Running " << _current_node->category() << "/" << _current_node->title() << std::endl;
 
         if (cb)
@@ -215,13 +215,38 @@ PyObject* FlowContext::read_pin(const char* name)
     if (_current_node)
     {
         FlowPin* pin = _current_node->pin(name);
-        if (pin && !pin->links().empty() && pin->pin_type() == FlowPin::In)
+        if (pin)
         {
-            auto it = _state.find(pin->links()[0]);
-            if (it != _state.end())
+            if (!pin->links().empty() && pin->pin_type() == FlowPin::In)
             {
-                Py_XINCREF(it->second);
-                return it->second;
+                auto it = _state.find(pin->links()[0]);
+                if (it != _state.end())
+                {
+                    Py_XINCREF(it->second);
+                    return it->second;
+                }
+            }
+        }
+        else
+        {
+            // If no single pin was found, try for pin array
+
+            std::vector<ArrayFlowPin*> pin_array = _current_node->pin_array(name);
+            if (pin_array.size() > 1)
+            {
+                // The way pin array work we always have n + 1 pins when n is the number of linked pins
+
+                Tuple t(pin_array.size() - 1);
+                for (int i = 0; i < pin_array.size() - 1; ++i)
+                {
+                    auto it = _state.find(pin_array[i]->links()[0]);
+                    if (it != _state.end())
+                    {
+                        Py_XINCREF(it->second);
+                        t.set(i, it->second);
+                    }
+                }
+                return t.new_reference();
             }
         }
         // else TODO: Error

@@ -15,9 +15,11 @@ QtFlowPin::QtFlowPin(QtFlowNode* owner, FlowPin* pin, const QPointF& local_pos) 
     _local_pos(local_pos),
     _highlighted(false)
 {
+    _pin->addref();
 }
 QtFlowPin::~QtFlowPin()
 {
+    _pin->release();
 }
 void QtFlowPin::set_highlight(bool h)
 {
@@ -47,10 +49,6 @@ QtFlowNode* QtFlowPin::owner() const
 const char* QtFlowPin::name() const
 {
     return _pin->name();
-}
-int QtFlowPin::id() const
-{
-    return _pin->pin_id();
 }
 FlowPin* QtFlowPin::pin() const
 {

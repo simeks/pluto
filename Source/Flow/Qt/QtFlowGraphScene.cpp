@@ -102,6 +102,10 @@ bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
         _links.push_back(link);
         if (link->scene() != this)
             addItem(link);
+
+        a->owner()->on_pin_linked(a);
+        b->owner()->on_pin_linked(b);
+
         return true;
     }
     return false;
@@ -111,9 +115,16 @@ void QtFlowGraphScene::remove_link(QtFlowLink* link)
     if (std::find(_links.begin(), _links.end(), link) == _links.end())
         return;
 
+    QtFlowPin* start = link->start();
+    QtFlowPin* end = link->end();
+
     _flow_graph->remove_link(link->start()->pin(), link->end()->pin());
+    
     _links.erase(std::remove(_links.begin(), _links.end(), link), _links.end());
     removeItem(link);
+    
+    start->owner()->on_pin_unlinked(start);
+    end->owner()->on_pin_unlinked(end);
 }
 void QtFlowGraphScene::remove_links(QtFlowNode* node)
 {
@@ -129,10 +140,16 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
     {
         if ((*it)->start() == pin || (*it)->end() == pin)
         {
-            _flow_graph->remove_link((*it)->start()->pin(), (*it)->end()->pin());
+            QtFlowPin* start = (*it)->start();
+            QtFlowPin* end = (*it)->end();
 
-            removeItem(*it);
+            _flow_graph->remove_link(start->pin(), end->pin());
+
             it = _links.erase(it);
+            removeItem(*it);
+
+            start->owner()->on_pin_unlinked(start);
+            end->owner()->on_pin_unlinked(end);
         }
         else
             ++it;
@@ -221,8 +238,8 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
         QtFlowNode* begin_node = _nodes[l.first->owner()->node_id()];
         QtFlowNode* end_node = _nodes[l.second->owner()->node_id()];
 
-        QtFlowPin* begin_pin = begin_node->pins()[l.first->pin_id()];
-        QtFlowPin* end_pin = end_node->pins()[l.second->pin_id()];
+        QtFlowPin* begin_pin = begin_node->pin(l.first->name());
+        QtFlowPin* end_pin = end_node->pin(l.second->name());
 
         QtFlowLink* link = new QtFlowLink(begin_pin, end_pin);
         addItem(link);

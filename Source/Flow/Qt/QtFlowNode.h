@@ -58,12 +58,16 @@ public:
 
     int type() const;
 
+    void on_pin_linked(QtFlowPin* pin);
+    void on_pin_unlinked(QtFlowPin* pin);
+
 protected:
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* evt) OVERRIDE;
 
     virtual void create_pins();
     virtual void calculate_size();
+    void update_pins();
 
     void paint_status_marker(QPainter* painter, const QPointF& pos);
     void paint_pins(QPainter* painter);
