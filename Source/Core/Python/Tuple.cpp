@@ -40,6 +40,11 @@ PyObject* Tuple::tuple() const
 {
     return _t;
 }
+PyObject* Tuple::new_reference() const
+{
+    Py_XINCREF(_t);
+    return _t;
+}
 Tuple::Tuple(const Tuple& other)
 {
     _t = other._t;

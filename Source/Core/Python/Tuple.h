@@ -20,6 +20,7 @@ public:
     bool valid() const;
 
     PyObject* tuple() const;
+    PyObject* new_reference() const;
 
     Tuple(const Tuple& other);
     Tuple& operator=(const Tuple& other);
