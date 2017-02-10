@@ -29,7 +29,8 @@ const FlowUIStyle& FlowUIStyle::default_style()
         s_default->pin_color_highlight = QColor::fromRgb(255, 255, 255);
         s_default->pin_outline_color_highlight = QColor::fromRgb(104, 104, 104);
         s_default->pin_text_color = QColor::fromRgb(218, 218, 218);
-        s_default->pin_radius = 4;
+        s_default->pin_radius = 5;
+        s_default->pin_margin = 5;
 
         s_default->node_font = QFont();
     }

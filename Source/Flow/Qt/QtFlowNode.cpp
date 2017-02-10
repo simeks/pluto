@@ -41,7 +41,7 @@ QtFlowNode::~QtFlowNode()
 }
 QRectF QtFlowNode::boundingRect() const
 {
-    int pin_radius = FlowUIStyle::default_style().pin_radius;
+    int pin_radius = FlowUIStyle::default_style().pin_radius + FlowUIStyle::default_style().pin_margin;
     return _rect.adjusted(-pin_radius, -pin_radius, pin_radius, pin_radius);
 }
 void QtFlowNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -133,7 +133,7 @@ void QtFlowNode::paint_pins(QPainter* painter)
         }
         else
         {
-            text_pos = QPoint(_rect.width() - label_width - 10, y_offset + out_pin * (metrics.height() + 10));
+            text_pos = QPoint(_rect.width() - label_width - 10, y_offset + out_pin * (metrics.height() + 5));
             ++out_pin;
         }
 
@@ -155,7 +155,7 @@ int QtFlowNode::check_pin(const QPointF& pt) const
         QPointF p = pt - _pins[i]->local_pos();
         double distance = std::sqrt(QPointF::dotProduct(p, p));
 
-        if (distance < style.pin_radius * 2.0)
+        if (distance < (style.pin_radius * 2.0 + style.pin_margin))
         {
             return i;
         }

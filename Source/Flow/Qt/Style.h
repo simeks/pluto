@@ -34,6 +34,7 @@ struct FLOW_API FlowUIStyle
     QColor pin_outline_color_highlight;
     QColor pin_text_color;
     int pin_radius;
+    int pin_margin;
 
     /// General
     QFont node_font;
