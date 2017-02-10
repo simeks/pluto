@@ -70,14 +70,14 @@ class SliceImageNode(FlowNode):
         FlowPin('Out', FlowPin.Out)
     ]
     properties = [
-        StringProperty('index', ''),
+        StringProperty('index', '0,0'),
     ]
 
     def __init__(self):
         super(SliceImageNode, self).__init__()
         self.node_class = 'image.image.SliceImageNode'
         self.title = 'Slice'
-        self.category = 'Image'
+        self.category = 'Image/Slice'
         self.ui_class = 'one_to_one_node'
         self.ui_node_title_var = 'index'
 
@@ -102,5 +102,50 @@ class SliceImageNode(FlowNode):
 
         ctx.write_pin('Out', eval('img[%s]' % index))
 
+
+
+@pluto_class
+class SetSliceImageNode(FlowNode):
+    pins = [
+        FlowPin('In', FlowPin.In),
+        FlowPin('Value', FlowPin.In),
+        FlowPin('Out', FlowPin.Out)
+    ]
+    properties = [
+        StringProperty('slice', '0,0'),
+    ]
+
+    def __init__(self):
+        super(SetSliceImageNode, self).__init__()
+        self.node_class = 'image.image.SetSliceImageNode'
+        self.title = 'SetSlice'
+        self.category = 'Image/Slice'
+
+    def run(self, ctx):
+        img = ctx.read_pin('In')
+        if img is None or not isinstance(img, np.ndarray):
+            raise ValueError('Expected an Image object')
+
+        value = ctx.read_pin('Value')
+
+        # Validate index
+        index = ''
+        tokens = self.slice.split(',')
+        for i in range(0, len(tokens)):
+            if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
+                index = index + ','
+                continue
+            if re.match('[0-9:]+$', tokens[i].strip()):
+                index = index + tokens[i].strip()
+                if i != len(tokens)-1:
+                    index = index + ','
+            else:
+                raise SyntaxError('Invalid syntax: %s' % self.slice) 
+
+        tmp = img
+        exec('tmp[%s] = value' % index)
+        ctx.write_pin('Out', tmp)
+
 install_node_template(SliceImageNode())
+install_node_template(SetSliceImageNode())
 
