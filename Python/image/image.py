@@ -2,12 +2,12 @@ import numpy as np
 import re
 from image.types import *
 
-from flow import install_node_template, FlowNode, UiFlowNode, FlowProperty, FlowPin, StringProperty
+from flow import install_node_template, FlowNode, FlowProperty, FlowPin, StringProperty
 from pluto import pluto_class
 
 
 class Image(np.ndarray):
-    def __new__(cls, arr, pixel_type):
+    def __new__(cls, arr, pixel_type=PixelType_Unknown):
         obj = np.asarray(arr).view(cls)
         obj.spacing = (1, 1, 1)
         obj.origin = (0, 0, 0)
@@ -64,7 +64,7 @@ class Image(np.ndarray):
 
 
 @pluto_class
-class SliceImageNode(UiFlowNode):
+class SliceImageNode(FlowNode):
     pins = [
         FlowPin('In', FlowPin.In),
         FlowPin('Out', FlowPin.Out)
@@ -103,3 +103,4 @@ class SliceImageNode(UiFlowNode):
         ctx.write_pin('Out', eval('img[%s]' % index))
 
 install_node_template(SliceImageNode())
+
