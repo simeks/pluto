@@ -145,8 +145,8 @@ void QtFlowGraphScene::remove_links(QtFlowPin* pin)
 
             _flow_graph->remove_link(start->pin(), end->pin());
 
-            it = _links.erase(it);
             removeItem(*it);
+            it = _links.erase(it);
 
             start->owner()->on_pin_unlinked(start);
             end->owner()->on_pin_unlinked(end);
