@@ -196,6 +196,7 @@ void FlowGraph::reload(const char* node_class)
                     for (FlowPin* l : links)
                     {
                         new_pin->link_to(l);
+                        new_node->on_pin_linked(new_pin);
                     }
                 }
             }

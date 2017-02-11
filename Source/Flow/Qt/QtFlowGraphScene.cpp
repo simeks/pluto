@@ -194,6 +194,7 @@ FlowGraph* QtFlowGraphScene::graph() const
 }
 void QtFlowGraphScene::set_graph(FlowGraph* graph)
 {
+    // We keep the previous state of the graph to keep the run status of reloaded nodes.
     std::map<Guid, QtFlowNode*> old_nodes = _nodes;
 
     clear_scene();

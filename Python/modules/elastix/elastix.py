@@ -1,4 +1,4 @@
-from flow import FlowNode, FlowPin, FileProperty, install_node_template
+from flow import FlowNode, ArrayFlowPin, FlowPin, FileProperty, install_node_template
 import image
 import medkit
 import os
@@ -9,7 +9,7 @@ from pluto import pluto_class
 
 
 elastix_exe = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'elastix.exe')
-def run_elastix(param_file, fixed_imgs, moving_imgs, out, fixed_mask=None, moving_mask=None, t0=None, fp=None, mp=None):
+def run_elastix(param_file, fixed_imgs, moving_imgs, out, fixed_mask=None, moving_mask=None, t=None, fp=None, mp=None):
     args = [elastix_exe, '-p', param_file, '-out', out]
     for i, f in enumerate(fixed_imgs):
         if f:
@@ -23,8 +23,9 @@ def run_elastix(param_file, fixed_imgs, moving_imgs, out, fixed_mask=None, movin
     if moving_mask != None:
         args.extend(['-mMask', moving_mask])
 
-    if t0 != None:
-        args.extend(['-t0', t0])
+    if t != None:
+        for i in range(0, len(t)):
+            args.extend(['-t'+str(i), t[i]])
 
     if fp != None:
         args.extend(['-fp', fp])
@@ -39,13 +40,9 @@ def run_elastix(param_file, fixed_imgs, moving_imgs, out, fixed_mask=None, movin
 @pluto_class
 class ElastixNode(FlowNode):
     pins = [
-        FlowPin('F0', FlowPin.In),
-        FlowPin('M0', FlowPin.In),
-        FlowPin('F1', FlowPin.In),
-        FlowPin('M1', FlowPin.In),
-        FlowPin('F2', FlowPin.In),
-        FlowPin('M2', FlowPin.In),
-        FlowPin('T0', FlowPin.In),
+        ArrayFlowPin('F', FlowPin.In),
+        ArrayFlowPin('M', FlowPin.In),
+        ArrayFlowPin('T', FlowPin.In),
         FlowPin('FixedMask', FlowPin.In),
         FlowPin('MovingMask', FlowPin.In),
         FlowPin('FixedLandmarks', FlowPin.In),
@@ -64,11 +61,8 @@ class ElastixNode(FlowNode):
         self.category = 'Elastix'
 
     def run(self, ctx):
-        fixed = []
-        moving = []
-        for i in range(0, 3):
-            fixed.append(ctx.read_pin('F'+str(i)))
-            moving.append(ctx.read_pin('M'+str(i)))
+        fixed = list(ctx.read_pin('F'))
+        moving = list(ctx.read_pin('M'))
 
         fixed_mask = ctx.read_pin('FixedMask')
         moving_mask = ctx.read_pin('MovingMask')
@@ -78,18 +72,16 @@ class ElastixNode(FlowNode):
         if (fp != None and type(fp) != str) or (mp != None and type(mp) != str):
             raise ValueError('Wrong values for landmarks, expected string')
 
-        t0 = ctx.read_pin('T0')
-
         temp_dir = ctx.temp_node_dir()
-        for i in range(0, 3):
+        for i in range(0, len(fixed)):
             if type(fixed[i]) == image.Image:
-                medkit.write(fixed[i], os.path.join(temp_dir, 'f'+i+'.mhd'))
-                fixed[i] = os.path.join(temp_dir, 'f'+i+'.mhd')
+                medkit.write(fixed[i], os.path.join(temp_dir, 'f'+str(i)+'.mhd'))
+                fixed[i] = os.path.join(temp_dir, 'f'+str(i)+'.mhd')
 
             if type(moving[i]) == image.Image:
-                medkit.write(moving[i], os.path.join(temp_dir, 'm'+i+'.mhd'))
-                moving[i] = os.path.join(temp_dir, 'm'+i+'.mhd')
-
+                medkit.write(moving[i], os.path.join(temp_dir, 'm'+str(i)+'.mhd'))
+                moving[i] = os.path.join(temp_dir, 'm'+str(i)+'.mhd')
+ 
             if (fixed[i] != None and type(fixed[i]) != str) or (moving[i] != None and type(moving[i]) != str):
                 raise ValueError('Wrong values for input images, expected string or image')
 
@@ -101,15 +93,23 @@ class ElastixNode(FlowNode):
             medkit.write(moving_mask, os.path.join(temp_dir, 'mmask.mhd'))
             moving_mask = os.path.join(temp_dir, 'mmask.mhd')
 
-        if type(t0) == Parameters:
-            t0.write(os.path.join(temp_dir, 't0.txt'))
-            t0 = os.path.join(temp_dir, 't0.txt')
+        t = ctx.read_pin('T')
+        if t:
+            t = list(t)
+            for i in range(0, len(t)):
+                if type(t[i]) == Parameters:
+                    t[i].write(os.path.join(temp_dir, 't'+str(i)+'.txt'))
+                    t[i] = os.path.join(temp_dir, 't'+str(i)+'.txt')
+
+
+        if self.param_file == '':
+            raise ValueError('Parameter file not set')
 
         param_file = os.path.abspath(self.param_file)
-        run_elastix(param_file, fixed, moving, temp_dir, t0=t0, fixed_mask=fixed_mask, moving_mask=moving_mask, fp=fp, mp=mp)
+        run_elastix(param_file, fixed, moving, temp_dir, t=t, fixed_mask=fixed_mask, moving_mask=moving_mask, fp=fp, mp=mp)
 
         if self.is_pin_linked('Out'):
-            ctx.write_pin('Out', medkit.read(os.path.join(temp_dir, 'result.0.nii')))
+            ctx.write_pin('Out', medkit.read(os.path.join(temp_dir, 'result.0.mhd')))
 
         if self.is_pin_linked('Transform'):
             ctx.write_pin('Transform', Parameters(os.path.join(temp_dir, 'TransformParameters.0.txt')))
