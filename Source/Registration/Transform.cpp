@@ -35,48 +35,63 @@ Image transform::transform(const Image& image, const Image& deformation)
 {
     if (image.valid() && deformation.valid())
     {
+        Image image_to_transform = image;
+        Image result;
+
         assert(deformation.size() == image.size());
 
+        // @hack only 3d registration is supported currently so to support 2d images
+        // we reshape them to 3d images with z axis set to length 1
+        bool is_2d = image_to_transform.ndims() == 2;
+        if (is_2d)
+            image_to_transform = image_to_transform.reshape(3, Vec3i(image_to_transform.size().x, image_to_transform.size().y, 1));
+            
         if (image.pixel_type() == image::PixelType_UInt8)
         {
-            return transform::transform_image<ImageUInt8>(image, deformation);
+            result = transform::transform_image<ImageUInt8>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_UInt16)
         {
-            return transform::transform_image<ImageUInt16>(image, deformation);
+            result = transform::transform_image<ImageUInt16>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_UInt32)
         {
-            return transform::transform_image<ImageUInt32>(image, deformation);
+            result = transform::transform_image<ImageUInt32>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Float32)
         {
-            return transform::transform_image<ImageFloat32>(image, deformation);
+            result = transform::transform_image<ImageFloat32>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Float64)
         {
-            return transform::transform_image<ImageFloat64>(image, deformation);
+            result = transform::transform_image<ImageFloat64>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Vec3u8)
         {
-            return transform::transform_image<ImageVec3u8>(image, deformation);
+            result = transform::transform_image<ImageVec3u8>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Vec3f)
         {
-            return transform::transform_image<ImageVec3f>(image, deformation);
+            result = transform::transform_image<ImageVec3f>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Vec4u8)
         {
-            return transform::transform_image<ImageColorf>(image, deformation);
+            result = transform::transform_image<ImageColorf>(image_to_transform, deformation);
         }
         else if (image.pixel_type() == image::PixelType_Vec4f)
         {
-            return transform::transform_image<ImageColorf>(image, deformation);
+            result = transform::transform_image<ImageColorf>(image_to_transform, deformation);
         }
         else
         {
-            PYTHON_ERROR_R(ValueError, Image(), "Unsupported image format (%s)", image::pixel_type_to_string(image.pixel_type()));
+            PYTHON_ERROR_R(ValueError, Image(), "Unsupported image format (%s)", image::pixel_type_to_string(image_to_transform.pixel_type()));
         }
+
+        // Return image to its original format
+        if (is_2d)
+            result = result.reshape(2, Vec3i(result.size().x, result.size().y, 1));
+
+        return result;
     }
     PYTHON_ERROR_R(ValueError, Image(), "Missing arguments");
 }

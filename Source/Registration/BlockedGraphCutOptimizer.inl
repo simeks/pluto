@@ -26,12 +26,12 @@ BlockedGraphCutOptimizer<TImage>::BlockedGraphCutOptimizer(const Dict& settings)
     {
         _energy.set_regularization_weight(settings.get<double>("regularization_weight"));
     }
-    if (settings.has_key("regularization_weights"))
+    /*if (settings.has_key("regularization_weights"))
     {
         Tuple rw = settings.get<Tuple>("regularization_weights");
         for (int i = 0; i < rw.size(); ++i)
             _energy.set_regularization_weight(i, rw.get<double>(i));
-    }
+    }*/
     if (settings.has_key("block_size"))
         _block_size = settings.get<Vec3i>("block_size");
 
@@ -59,6 +59,10 @@ void BlockedGraphCutOptimizer<TImage>::execute(
     int ndims = def.ndims();
     Vec3i dims = def.size();
 
+    // @hack special case for "2d" images
+    if (dims.z == 1)
+        ndims = 2;
+
     Vec3i block_dims = _block_size;
     if (block_dims.x == 0)
         block_dims.x = dims.x;
@@ -66,6 +70,9 @@ void BlockedGraphCutOptimizer<TImage>::execute(
         block_dims.y = dims.y;
     if (block_dims.z == 0)
         block_dims.z = dims.z;
+
+    if (ndims == 2)
+        block_dims.z = 1;
 
     Vec3i block_count(
         dims.x / block_dims.x,

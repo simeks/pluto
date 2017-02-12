@@ -1,4 +1,4 @@
-from flow import FlowNode, FlowPin, FileProperty, install_node_template
+from flow import FlowNode, ArrayFlowPin, FlowPin, FileProperty, install_node_template
 import image
 from pluto import pluto_class
 
@@ -33,12 +33,8 @@ def parse_settings_old(file):
 @pluto_class
 class RegistrationNode(FlowNode):
     pins = [
-        FlowPin('Fixed0', FlowPin.In),
-        FlowPin('Moving0', FlowPin.In),
-        FlowPin('Fixed1', FlowPin.In),
-        FlowPin('Moving1', FlowPin.In),
-        FlowPin('Fixed2', FlowPin.In),
-        FlowPin('Moving2', FlowPin.In),
+        ArrayFlowPin('Fixed', FlowPin.In),
+        ArrayFlowPin('Moving', FlowPin.In),
 
         FlowPin('ConstraintMask', FlowPin.In),
         FlowPin('ConstraintValues', FlowPin.In),
@@ -77,12 +73,8 @@ class RegistrationNode(FlowNode):
         if self.is_pin_linked('StartingGuess'):
             eng.set_starting_guess(ctx.read_pin('StartingGuess'))
 
-        fixed = []
-        moving = []
-        for i in range(0, 3):
-            if self.is_pin_linked('Fixed'+str(i)) or self.is_pin_linked('Moving'+str(i)):
-                fixed.append(ctx.read_pin('Fixed'+str(i)))
-                moving.append(ctx.read_pin('Moving'+str(i)))
+        fixed = ctx.read_pin('Fixed')
+        moving = ctx.read_pin('Moving')
 
         df = eng.execute(fixed, moving)
         ctx.write_pin('Deformation', df)

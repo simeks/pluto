@@ -58,6 +58,8 @@ public:
     NumpyArray cast(int type) const;
     NumpyArray cast(PyArray_Descr* desc) const;
 
+    NumpyArray reshape(int ndims, Py_intptr_t* dims) const;
+
     NumpyArray contiguous() const;
 
     NumpyArray(const NumpyArray& other);

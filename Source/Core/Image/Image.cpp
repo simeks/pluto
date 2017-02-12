@@ -185,6 +185,18 @@ Image Image::clone() const
     
     return img;
 }
+Image Image::reshape(int ndims, const Vec3i& size)
+{
+    int npy_ndims = 0;
+    Py_intptr_t npy_dims[4] = { 1, 1, 1, 1 };
+    numpy_shape(ndims, size, _pixel_type, npy_ndims, npy_dims);
+
+    Image r = *this;
+    r._data = _data.reshape(npy_ndims, npy_dims);
+    r._ndims = ndims;
+    r._size = size;
+    return r;
+}
 
 bool Image::valid() const
 {

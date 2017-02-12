@@ -320,6 +320,9 @@ Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
     _constraint_mask_pyramid.resize(_pyramid_level_max);
     _constraint_pyramid.resize(_pyramid_level_max);
 
+    _fixed_pyramid[0].resize(_image_pair_count);
+    _moving_pyramid[0].resize(_image_pair_count);
+
     for (int i = 0; i < _image_pair_count; ++i)
     {
         Image fixed_img = fixed.get<Image>(i);
@@ -331,8 +334,15 @@ Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
             fixed_img.size() != moving_img.size())
             PYTHON_ERROR_R(ValueError, Image(), "Image pairs needs to have the same size and pixel type");
 
-        _fixed_pyramid[0].resize(_image_pair_count);
-        _moving_pyramid[0].resize(_image_pair_count);
+        /// @Hack until we have a dedicated 2d registration engine. We just reshape 2d images to 3d with the z axis set to length 1
+        if (fixed_img.ndims() == 2)
+        {
+            fixed_img = fixed_img.reshape(3, Vec3i(fixed_img.size().x, fixed_img.size().y, 1));
+        }
+        if (moving_img.ndims() == 2)
+        {
+            moving_img = moving_img.reshape(3, Vec3i(moving_img.size().x, moving_img.size().y, 1));
+        }
 
         if (_image_type == image::PixelType_Float32)
         {

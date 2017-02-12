@@ -19,12 +19,12 @@ INLINE double EnergyFunction<TImage>::unary_term(const Vec3i& p, const Vec3d& de
     return (1 - _regulariation_weight)*dataterm;
 }
 template<typename TImage>
-INLINE double EnergyFunction<TImage>::binary_term(const Vec3d& def1, const Vec3d& def2, const Vec3i& step)
+INLINE double EnergyFunction<TImage>::binary_term(const Vec3i& /*p*/, const Vec3d& def1, const Vec3d& def2, const Vec3i& step)
 {
     Vec3d diff = (def1 - def2) * _moving_spacing;
 
     double n = (step * _fixed_spacing).length_squared();
-    return _regulariation_weight*diff.length_squared() / n; // TODO: Spacing?
+    return _regulariation_weight*diff.length_squared() / n;
 }
 template<typename TImage>
 void EnergyFunction<TImage>::set_images(const Image* fixed_image, const Image* moving_image, int pair_count)

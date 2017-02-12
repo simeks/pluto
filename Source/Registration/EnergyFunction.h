@@ -14,7 +14,7 @@ public:
     EnergyFunction();
 
     double unary_term(const Vec3i& p, const Vec3d& def);
-    double binary_term(const Vec3d& def1, const Vec3d& def2, const Vec3i& step);
+    double binary_term(const Vec3i& p, const Vec3d& def1, const Vec3d& def2, const Vec3i& step);
 
     void set_images(const Image* fixed, const Image* moving, int pair_count);
 

@@ -158,6 +158,18 @@ NumpyArray NumpyArray::cast(PyArray_Descr* desc) const
 
     return arr;
 }
+NumpyArray NumpyArray::reshape(int ndims, Py_intptr_t* dims) const
+{
+    PyArray_Dims d;
+    d.len = ndims;
+    d.ptr = dims;
+
+    PyObject* obj = PyArray_Newshape(_arr, &d, NPY_CORDER);
+    NumpyArray arr((PyArrayObject*)obj);
+    Py_DECREF(obj);
+
+    return arr;
+}
 NumpyArray NumpyArray::contiguous() const
 {
     PyArrayObject* obj = PyArray_GETCONTIGUOUS(_arr);
