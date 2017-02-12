@@ -99,8 +99,6 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
             }
         }
 
-        std::cout << "scene_items: " << scene_items.size() << std::endl;
-
         if (item)
         {
             if (_run_status == RunStatus_Running)
