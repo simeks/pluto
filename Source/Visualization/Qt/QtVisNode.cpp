@@ -8,13 +8,15 @@
 
 #include "Image.h"
 #include "QtVisNode.h"
+#include "QtVisWindow.h"
 
 #include <QFontMetrics>
 #include <QGraphicsScene>
 #include <QPainter>
 
 QtVisNode::QtVisNode(FlowNode* node, QGraphicsObject* parent) :
-    QtFlowNode(node, parent)
+    QtFlowNode(node, parent),
+    _window(nullptr)
 {
 }
 QtVisNode::~QtVisNode()
@@ -127,8 +129,28 @@ void QtVisNode::show_image(const Image& image)
     }
 
     _thumbnail = _qimage.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
+    
     calculate_size();
     update();
+}
+void QtVisNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
+}
+void QtVisNode::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+{
+    if (!_data.valid())
+        return;
+
+    if (!_window)
+    {
+        _window = new QtVisWindow();
+        _window->set_image(_data);
+        _window->show();
+    }
+    else
+    {
+        _window->set_image(_data);
+        _window->show();
+    }
 }
 

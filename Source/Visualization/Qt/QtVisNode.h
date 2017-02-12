@@ -7,6 +7,7 @@
 #include <Flow/Qt/QtFlowNode.h>
 
 class Image;
+class QtVisWindow;
 class VIS_API QtVisNode : public QtFlowNode
 {
     Q_OBJECT
@@ -25,10 +26,15 @@ protected:
     virtual void create_pins() OVERRIDE;
     virtual void calculate_size() OVERRIDE;
 
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+
     QtFlowPin* _pin;
     QImage _qimage;
     QImage _thumbnail;
     NumpyArray _data;
+
+    QtVisWindow* _window;
 };
 
 #endif // __QT_VIS_NODE_H__

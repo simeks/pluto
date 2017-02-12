@@ -34,12 +34,31 @@ void QtVisWindow::set_image(const Image& image)
     _view->scene()->clear();
     _view->scene()->addPixmap(pixmap);
     _view->scene()->setSceneRect(pixmap.rect());
-    _view->fitInView(_view->scene()->sceneRect(), Qt::KeepAspectRatio);
+}
+void QtVisWindow::set_image(const NumpyArray& img)
+{
+    _data = format_data(img, img.type() == NPY_BOOL ? visualization::ImageType_Bool : visualization::ImageType_Unknown);
+    QImage qimage = convert_to_qimage(_data);
+    if (qimage.isNull())
+    {
+        PYTHON_ERROR(TypeError, "Invalid image format");
+    }
+
+    QPixmap pixmap = QPixmap::fromImage(qimage);
+
+    _view->scene()->clear();
+    _view->scene()->addPixmap(pixmap);
+    _view->scene()->setSceneRect(pixmap.rect());
 }
 void QtVisWindow::resizeEvent(QResizeEvent* e)
 {
     _view->fitInView(_view->scene()->sceneRect(), Qt::KeepAspectRatio);
     QMainWindow::resizeEvent(e);
+}
+void QtVisWindow::showEvent(QShowEvent* e)
+{
+    _view->fitInView(_view->scene()->sceneRect(), Qt::KeepAspectRatio);
+    QMainWindow::showEvent(e);
 }
 void QtVisWindow::setup_ui()
 {
@@ -50,6 +69,6 @@ void QtVisWindow::setup_ui()
     _view = new QGraphicsView(this);
     _view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setCentralWidget(_view);
-
     _view->setScene(new QGraphicsScene(_view));
+    _view->setBackgroundBrush(QBrush(Qt::black));
 }
