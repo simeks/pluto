@@ -38,7 +38,8 @@ Image transform::transform(const Image& image, const Image& deformation)
         Image image_to_transform = image;
         Image result;
 
-        assert(deformation.size() == image.size());
+        if (deformation.size() != image.size())
+            PYTHON_ERROR_R(ValueError, Image(), "Deformation field and image needs to be the same size");
 
         // @hack only 3d registration is supported currently so to support 2d images
         // we reshape them to 3d images with z axis set to length 1
