@@ -53,15 +53,18 @@ void BlockedGraphCutOptimizer<TImage>::execute(
 
     _energy.set_images(fixed, moving, pair_count);
 
-    Vec3d moving_spacing = moving[0].spacing();
-    Vec3d moving_spacing_inv = Vec3d(1.0 / moving_spacing.x, 1.0 / moving_spacing.y, 1.0 / moving_spacing.z);
-
     int ndims = def.ndims();
     Vec3i dims = def.size();
 
     // @hack special case for "2d" images
     if (dims.z == 1)
         ndims = 2;
+
+    Vec3d moving_spacing = moving[0].spacing();
+    if (ndims == 2)
+        moving_spacing.z = 1;
+
+    Vec3d moving_spacing_inv = Vec3d(1.0 / moving_spacing.x, 1.0 / moving_spacing.y, 1.0 / moving_spacing.z);
 
     Vec3i block_dims = _block_size;
     if (block_dims.x == 0)

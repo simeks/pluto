@@ -4,6 +4,7 @@
 
 #include <Core/Image/Image.h>
 
+
 NumpyArray format_data(const NumpyArray& img, visualization::ImageType image_type)
 {
     NumpyArray out = img.contiguous();
@@ -25,6 +26,33 @@ NumpyArray format_data(const NumpyArray& img, visualization::ImageType image_typ
             }
         }
     }
+    else
+    {
+        // TODO: Move this
+
+        // Normalize
+        uint8_t max = 0;
+
+        // Assumes 2d image
+        uint8_t* data = (uint8_t*)out.data();
+
+        for (int y = 0; y < out.shape()[0]; ++y)
+        {
+            for (int x = 0; x < out.shape()[1]; ++x)
+            {
+                max = std::max<uint8_t>(data[y*out.stride(0) + x*out.stride(1)], max);
+            }
+        }
+
+        for (int y = 0; y < out.shape()[0]; ++y)
+        {
+            for (int x = 0; x < out.shape()[1]; ++x)
+            {
+                data[y*out.stride(0) + x*out.stride(1)] = uint8_t(255.0f * data[y*out.stride(0) + x*out.stride(1)] / float(max));
+            }
+        }
+    }
+
     return out;
 }
 
