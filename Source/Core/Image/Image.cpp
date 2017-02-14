@@ -185,7 +185,7 @@ Image Image::clone() const
     
     return img;
 }
-Image Image::reshape(int ndims, const Vec3i& size)
+Image Image::reshape(int ndims, const Vec3i& size) const
 {
     int npy_ndims = 0;
     Py_intptr_t npy_dims[4] = { 1, 1, 1, 1 };

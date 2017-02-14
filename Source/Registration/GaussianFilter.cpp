@@ -151,7 +151,7 @@ static TImage gaussian_filter_2d(const TImage& img, double sigma)
 
 Image image::gaussian_filter(const Image& img, double sigma)
 {
-    if (img.ndims() == 3)
+    if (img.ndims() == 3 && img.size().z > 1)
     {
         switch (img.pixel_type())
         {
@@ -173,23 +173,38 @@ Image image::gaussian_filter(const Image& img, double sigma)
     }
     else
     {
-        switch (img.pixel_type())
+        Image img2d = img;
+        if (img.ndims() == 3)
+            img2d = img.reshape(2, Vec3i(img.size().x, img.size().y, 1));
+
+        switch (img2d.pixel_type())
         {
         case image::PixelType_UInt32:
-            return gaussian_filter_2d<ImageUInt32>(img, sigma);
+            img2d = gaussian_filter_2d<ImageUInt32>(img2d, sigma);
+            break;
         case image::PixelType_Float32:
-            return gaussian_filter_2d<ImageFloat32>(img, sigma);
+            img2d = gaussian_filter_2d<ImageFloat32>(img2d, sigma);
+            break;
         case image::PixelType_Float64:
-            return gaussian_filter_2d<ImageFloat64>(img, sigma);
+            img2d = gaussian_filter_2d<ImageFloat64>(img2d, sigma);
+            break;
         case image::PixelType_Vec3f:
-            return gaussian_filter_2d<ImageVec3f>(img, sigma);
+            img2d = gaussian_filter_2d<ImageVec3f>(img2d, sigma);
+            break;
         case image::PixelType_Vec3d:
-            return gaussian_filter_2d<ImageVec3d>(img, sigma);
+            img2d = gaussian_filter_2d<ImageVec3d>(img2d, sigma);
+            break;
         case image::PixelType_Vec4f:
-            return gaussian_filter_2d<ImageColorf>(img, sigma);
+            img2d = gaussian_filter_2d<ImageColorf>(img2d, sigma);
+            break;
         default:
             assert(false);
         }
+
+        if (img.ndims() == 3)
+            return img2d.reshape(3, Vec3i(img.size().x, img.size().y, 1));
+        else
+            return img2d;
     }
     return Image();
 }
