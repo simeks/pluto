@@ -450,7 +450,10 @@ double RegistrationEngine::unit_sigma(const Image& img)
     Vec3d spacing = img.spacing();
     double min_spacing = spacing.x;
     min_spacing = std::min(min_spacing, spacing.y);
-    min_spacing = std::min(min_spacing, spacing.z);
+    
+    if (spacing.z > 0) // 0 spacing makes no sense
+        min_spacing = std::min(min_spacing, spacing.z);
+
     return min_spacing;
 }
 Optimizer* RegistrationEngine::create_optimizer(const char* name, 

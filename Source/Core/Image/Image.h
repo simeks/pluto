@@ -43,7 +43,7 @@ public:
     size_t pixel_count() const;
 
     Image clone() const;
-    Image reshape(int ndims, const Vec3i& size);
+    Image reshape(int ndims, const Vec3i& size) const;
 
     bool valid() const;
 
