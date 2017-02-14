@@ -22,6 +22,9 @@ class Image(np.ndarray):
         self.origin = getattr(obj, 'origin', (0, 0, 0))
         self.pixel_type = getattr(obj, 'pixel_type', PixelType_Unknown)
 
+        if len(obj.shape) == 0:
+            return # TODO: Don't know what is happening here
+
         # Lets say we have I = ImageVec3d, if we do I[:,:,1]
         if self.shape == obj.shape[:-1]:
             if obj.shape[-1] == 3:
