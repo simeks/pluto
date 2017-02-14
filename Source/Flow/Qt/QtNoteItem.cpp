@@ -25,6 +25,7 @@ QtNoteItem::QtNoteItem(GraphNote* note, QGraphicsWidget* parent) : QGraphicsObje
     _text_edit->setAttribute(Qt::WA_TranslucentBackground);
     _text_edit->setStyleSheet("background: transparent; border: none; color: white; font-size:9pt;");
     _text_edit->setFixedSize(190, 50);
+    _text_edit->setText(note->text());
 
     connect(_text_edit, SIGNAL(textChanged()), this, SLOT(text_changed()));
 
