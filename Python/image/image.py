@@ -96,7 +96,7 @@ class SliceImageNode(FlowNode):
             if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
                 index = index + ','
                 continue
-            if re.match('[0-9:]+$', tokens[i].strip()):
+            if re.match('[\-0-9:]+$', tokens[i].strip()):
                 index = index + tokens[i].strip()
                 if i != len(tokens)-1:
                     index = index + ','
@@ -138,7 +138,7 @@ class SetSliceImageNode(FlowNode):
             if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
                 index = index + ','
                 continue
-            if re.match('[0-9:]+$', tokens[i].strip()):
+            if re.match('[\-0-9:]+$', tokens[i].strip()):
                 index = index + tokens[i].strip()
                 if i != len(tokens)-1:
                     index = index + ','
