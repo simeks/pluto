@@ -23,4 +23,9 @@ def magnitude(img):
         m = np.add(m, img[:,i]*img[:,i])
     
     m = np.sqrt(m)
-    return image.Image(m.reshape(shape).astype('float32'), PixelType_Float32)
+    out = image.Image(m.reshape(shape).astype('float32'), PixelType_Float32)
+    if hasattr(img, 'spacing'):
+        out.spacing = img.spacing
+    if hasattr(img, 'origin'):
+        out.origin = img.origin
+    return out

@@ -6,3 +6,4 @@ from .new import *
 from .grid import *
 from .colormap import *
 from .vectorfield import *
+from .resample import *

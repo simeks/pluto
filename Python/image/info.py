@@ -20,7 +20,13 @@ class ImageInfoNode(UiFlowNode):
 
     def run(self, ctx):
         img = ctx.read_pin('In')
-        self.invoke_ui_method('set_text', '<b>Shape</b>: %s<br/><b>Format</b>: %s' % (str(img.shape), str(img.dtype)))
+
+        text = '<b>Shape</b>: %s<br/><b>Format</b>: %s' % (str(img.shape), str(img.dtype))
+        if hasattr(img, 'spacing'):
+            text += '<br/><b>Spacing</b>: %s' % str(img.spacing)
+        if hasattr(img, 'origin'):
+            text += '<br/><b>Origin</b>: %s' % str(img.origin)
+        self.invoke_ui_method('set_text', text)
 
 @pluto_class
 class ShapeNode(FlowNode):

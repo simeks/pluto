@@ -65,6 +65,47 @@ class Image(np.ndarray):
             else:
                 self.pixel_type = type_from_string(str(self.dtype))
 
+@pluto_class
+class ImageSpacingNode(FlowNode):
+    pins = [
+        FlowPin('In', FlowPin.In),
+        FlowPin('Out', FlowPin.Out)
+    ]
+
+    def __init__(self):
+        super(ImageSpacingNode, self).__init__()
+        self.node_class = 'image.image.ImageSpacingNode'
+        self.title = 'Spacing'
+        self.category = 'Image/Meta'
+        self.ui_class = 'one_to_one_node'
+
+    def run(self, ctx):
+        img = ctx.read_pin('In')
+        ctx.write_pin('Out', img.spacing)
+
+
+@pluto_class
+class ImageSetSpacingNode(FlowNode):
+    pins = [
+        FlowPin('In', FlowPin.In),
+        FlowPin('Spacing', FlowPin.In),
+        FlowPin('Out', FlowPin.Out)
+    ]
+
+    def __init__(self):
+        super(ImageSetSpacingNode, self).__init__()
+        self.node_class = 'image.image.ImageSetSpacingNode'
+        self.title = 'SetSpacing'
+        self.category = 'Image/Meta'
+
+    def run(self, ctx):
+        img = ctx.read_pin('In')
+
+        spacing = ctx.read_pin('Spacing')
+        if type(spacing) != tuple and type(spacing) != list:
+            raise ValueError('Invalid spacing, expected tuple or list')
+        img.spacing = spacing 
+        ctx.write_pin('Out', img)
 
 @pluto_class
 class SliceImageNode(FlowNode):
@@ -149,6 +190,8 @@ class SetSliceImageNode(FlowNode):
         exec('tmp[%s] = value' % index)
         ctx.write_pin('Out', tmp)
 
+install_node_template(ImageSpacingNode())
+install_node_template(ImageSetSpacingNode())
 install_node_template(SliceImageNode())
 install_node_template(SetSliceImageNode())
 

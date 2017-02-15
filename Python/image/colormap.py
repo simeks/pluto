@@ -10,7 +10,7 @@ from matplotlib import cm
 
 def colorize(img, min, max, cmap):
     colorfn = eval('cm.%s' % cmap)
-    return colorfn((img-min) / float(max-min)) * 255
+    return (colorfn((img-min) / float(max-min)) * 255).astype(np.uint8)
 
 
 @pluto_class
@@ -43,7 +43,12 @@ class PerceptuallyUniformNode(FlowNode):
         else:
             max = img.max()
 
-        ctx.write_pin('Out', Image(colorize(img, min, max, self.colormap), PixelType_Vec4u8))
+        out = Image(colorize(img, min, max, self.colormap), PixelType_Vec4u8)
+        if hasattr(img, 'spacing'):
+            out.spacing = img.spacing
+        if hasattr(img, 'origin'):
+            out.origin = img.origin
+        ctx.write_pin('Out', out)
 
 @pluto_class
 class JetNode(FlowNode):
@@ -72,7 +77,12 @@ class JetNode(FlowNode):
         else:
             max = img.max()
 
-        ctx.write_pin('Out', Image(colorize(img, min, max, 'jet'), PixelType_Vec4u8))
+        out = Image(colorize(img, min, max, 'jet'), PixelType_Vec4u8)
+        if hasattr(img, 'spacing'):
+            out.spacing = img.spacing
+        if hasattr(img, 'origin'):
+            out.origin = img.origin
+        ctx.write_pin('Out', out)
 
 
 install_node_template(PerceptuallyUniformNode())
