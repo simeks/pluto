@@ -369,6 +369,8 @@ void QtFlowGraphView::keyPressEvent(QKeyEvent *e)
         }
 
         _scene->clearSelection();
+
+        _mode = Mode_Nothing;
     }
 
     _scene->update();
