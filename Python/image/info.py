@@ -3,6 +3,8 @@ from pluto import pluto_class
 
 from .image import Image
 
+import numpy as np
+
 @pluto_class
 class ImageInfoNode(UiFlowNode):
     pins = [
