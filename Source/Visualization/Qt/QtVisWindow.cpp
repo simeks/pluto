@@ -23,7 +23,7 @@ void QtVisWindow::set_image(const Image& image)
         return;
 
     _data = format_data(image.data(), image.data().type() == NPY_BOOL ? visualization::ImageType_Bool : visualization::ImageType_Unknown);
-    QImage qimage = convert_to_qimage(_data);
+    QImage qimage = convert_to_qimage(_data, image.spacing());
     if (qimage.isNull())
     {
         PYTHON_ERROR(TypeError, "Invalid image format");
@@ -35,10 +35,10 @@ void QtVisWindow::set_image(const Image& image)
     _view->scene()->addPixmap(pixmap);
     _view->scene()->setSceneRect(pixmap.rect());
 }
-void QtVisWindow::set_image(const NumpyArray& img)
+void QtVisWindow::set_image(const NumpyArray& img, const Vec3d& spacing)
 {
     _data = format_data(img, img.type() == NPY_BOOL ? visualization::ImageType_Bool : visualization::ImageType_Unknown);
-    QImage qimage = convert_to_qimage(_data);
+    QImage qimage = convert_to_qimage(_data, spacing);
     if (qimage.isNull())
     {
         PYTHON_ERROR(TypeError, "Invalid image format");

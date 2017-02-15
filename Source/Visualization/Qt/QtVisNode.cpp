@@ -16,7 +16,8 @@
 
 QtVisNode::QtVisNode(FlowNode* node, QGraphicsObject* parent) :
     QtFlowNode(node, parent),
-    _window(nullptr)
+    _window(nullptr),
+    _spacing(1,1,1)
 {
 }
 QtVisNode::~QtVisNode()
@@ -122,7 +123,8 @@ void QtVisNode::show_image(const Image& image)
         return;
 
     _data = format_data(image.data(), image.data().type() == NPY_BOOL ? visualization::ImageType_Bool : visualization::ImageType_Unknown);
-    _qimage = convert_to_qimage(_data);
+    _spacing = image.spacing();
+    _qimage = convert_to_qimage(_data, image.spacing());
     if (_qimage.isNull())
     {
         PYTHON_ERROR(TypeError, "Invalid image format");
@@ -144,12 +146,12 @@ void QtVisNode::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
     if (!_window)
     {
         _window = new QtVisWindow();
-        _window->set_image(_data);
+        _window->set_image(_data, _spacing);
         _window->show();
     }
     else
     {
-        _window->set_image(_data);
+        _window->set_image(_data, _spacing);
         _window->show();
     }
 }

@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QMainWindow>
 
+#include <Core/Image/Vec3.h>
 #include <Core/Python/NumPy.h>
 
 class Image;
@@ -20,7 +21,7 @@ public:
 
 public slots:
     void set_image(const Image& img);
-    void set_image(const NumpyArray& img);
+    void set_image(const NumpyArray& img, const Vec3d& spacing=Vec3d(1,1,1));
 
 protected:
     virtual void resizeEvent(QResizeEvent* e) OVERRIDE;

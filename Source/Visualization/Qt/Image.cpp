@@ -56,7 +56,7 @@ NumpyArray format_data(const NumpyArray& img, visualization::ImageType image_typ
     return out;
 }
 
-QImage convert_to_qimage(const NumpyArray& img)
+QImage convert_to_qimage(const NumpyArray& img, const Vec3d& spacing)
 {
     QImage::Format fmt = QImage::Format_Invalid;
 
@@ -83,6 +83,10 @@ QImage convert_to_qimage(const NumpyArray& img)
         return QImage();
     }
 
-    return QImage((uint8_t*)img.data(), img.shape()[1], img.shape()[0], (int)img.strides()[0], fmt);
+    QImage out((uint8_t*)img.data(), img.shape()[1], img.shape()[0], (int)img.strides()[0], fmt);
+    if (spacing.x == 1 && spacing.y == 1)
+        return out;
+    else
+        return out.scaled(img.shape()[1] * spacing.x, img.shape()[0] * spacing.y, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 

@@ -4,6 +4,7 @@
 #include "API.h"
 
 #include <Core/Image/Image.h>
+#include <Core/Image/Vec3.h>
 #include <Flow/Qt/QtFlowNode.h>
 
 class Image;
@@ -33,6 +34,7 @@ protected:
     QImage _qimage;
     QImage _thumbnail;
     NumpyArray _data;
+    Vec3d _spacing;
 
     QtVisWindow* _window;
 };
