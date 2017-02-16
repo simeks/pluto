@@ -2,6 +2,8 @@ import SimpleITK as sitk
 from flow import FlowNode, FlowPin, FlowProperty, FileProperty, install_node_template
 from pluto import pluto_class
 import image
+import os
+import numpy as np
 
 def format_from_sitk(img):
     n_comp = img.GetNumberOfComponentsPerPixel()
@@ -157,7 +159,13 @@ class WriteNode(FlowNode):
 
         im = ctx.read_pin('Image')
         if im is not None:
-            write(im, f)
+            if os.path.splitext(f)[1] == '.png':
+                # TODO: What to do here? Add property? Move to write function?
+                # Normalize to 0-255
+                out = (255 * im / float(im.max())).astype(np.uint8)
+                write(out, f)
+            else:
+                write(im, f)
 
 install_node_template(ReadNode())
 install_node_template(WriteNode())
