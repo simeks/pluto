@@ -141,6 +141,7 @@
     }
 
 
+
 template<typename TClass, typename R>
 void create_function(R TClass::*fn);
 
@@ -161,6 +162,71 @@ private:
     PyMethodDef _def;
     PyCFunctionObject* _fn;
 };
+
+template<ReturnT, Args...>
+struct Caller
+{
+    
+};
+
+
+namespace python
+{
+    namespace function
+    {
+        /// Invokes the specified function using the given args. index_sequence specifies in what order the args should be.
+        template<typename TFunction, typename TTuple, size_t... Index>
+        void invoke(TFunction fn, const TTuple& args, const std::index_sequence<Index...>&);
+
+        /// Invokes the specified method using the given args. index_sequence specifies in what order the args should be.
+        template<typename TClass, typename TFunction, typename TTuple, size_t... Index>
+        void invoke(TClass* self, TFunction fn, const TTuple& args, const std::index_sequence<Index...>&);
+
+        struct CallerBase
+        {
+            virtual PyObject* operator()(PyObject* args, PyObject* kw) = 0;
+        };
+
+        template<typename TReturn, typename ... TArgs>
+        struct FunctionCaller : public CallerBase
+        {
+            TReturn(*_fn)(TArgs...);
+
+            FunctionCaller(TReturn(*fn)(TArgs...));
+            
+            PyObject* operator()(PyObject* args, PyObject* kw);
+        };
+
+        template<typename TClass, typename TReturn, typename ... TArgs>
+        struct MethodCaller : public CallerBase
+        {
+            TClass* _self;
+            TReturn(TClass::*_fn)(TArgs...);
+
+            MethodCaller(TClass* self, TReturn(TClass::*fn)(TArgs...));
+
+            PyObject* operator()(PyObject* args, PyObject* kw);
+        };
+
+        template<typename TClass, typename TReturn, typename ... TArgs>
+        std::unique_ptr<CallerBase> make_caller(TReturn(*meth)(TArgs...));
+
+        template<typename TClass, typename TReturn, typename ... TArgs>
+        std::unique_ptr<CallerBase> make_caller(TClass* self, TReturn(TClass::*meth)(TArgs...));
+    }
+}
+
+namespace python
+{
+    template<typename Fn>
+    PyObject* create_function(Fn* fn)
+    {
+
+    }
+}
+
+
+#include "PythonFunction.inl"
 
 
 #endif // __CORE_PYTHON_FUNCTION_H__
