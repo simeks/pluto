@@ -69,6 +69,7 @@ PyObject* Object::invoke_method(const char* name, PyObject* args)
         PyErr_Print();
         return nullptr;
     }
+    Py_DECREF(method);
     return ret;
 }
 void Object::set_attribute(const char* name, PyObject* attr)

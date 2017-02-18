@@ -15,7 +15,7 @@ int WinMain(HINSTANCE /*hInInstance*/, HINSTANCE /*hPrevInstance*/, char*, int /
     memory::initialize();
     int ret = 0;
     {
-        ConsoleModule::create();
+        console::install_python_module();
 
 #if defined(PLUTO_BUILD_DEBUG) || !defined(PLUTO_PLATFORM_WINDOWS)
         PlutoApplication app(argc, argv);

@@ -45,6 +45,14 @@ namespace python
 
     CORE_API void setattr(const Object& obj, const char* key, const Object& value);
 
+    template<typename T>
+    T getattr(const Object& obj, const char* key);
+    template<typename T>
+    T getattr(const Object& obj, const char* key, const T& default);
+
+    template<typename T>
+    void setattr(const Object& obj, const char* key, const T& value);
+
 } // namespace python
 
 #include "Object.inl"

@@ -31,7 +31,7 @@ namespace python
             Py_RETURN_NONE;
         }
 
-        PyObject* DefaultArgumentPolicy::pop_item_from_tuple(PyObject* t, size_t& i)
+        INLINE PyObject* DefaultArgumentPolicy::pop_item_from_tuple(PyObject* t, size_t& i)
         {
             return PyTuple_GetItem(t, i++);
         }

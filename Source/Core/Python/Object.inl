@@ -51,28 +51,53 @@ namespace python
     }
 
     template<typename T>
-    INLINE T incref(T obj)
+    T incref(T obj)
     {
-        Py_INCREF(obj->ptr());
+        Py_INCREF(obj.ptr());
         return obj;
     }
     template<typename T>
-    INLINE T xincref(T obj)
+    T xincref(T obj)
     {
-        Py_XINCREF(obj->ptr());
+        Py_XINCREF(obj.ptr());
         return obj;
     }
 
     template<typename T>
-    INLINE T decref(T obj)
+    T decref(T obj)
     {
-        Py_DECREF(obj->ptr());
+        Py_DECREF(obj.ptr());
         return obj;
     }
     template<typename T>
-    INLINE T xdecref(T obj)
+    T xdecref(T obj)
     {
-        Py_XDECREF(obj->ptr());
+        Py_XDECREF(obj.ptr());
         return obj;
+    }
+
+    template<typename T>
+    T getattr(const Object& obj, const char* key)
+    {
+        return python_convert::from_python<T>(getattr(obj, key));
+    }
+    template<typename T>
+    T getattr(const Object& obj, const char* key, const T& default)
+    {
+        PyObject* attr = PyObject_GetAttrString(obj.ptr(), key);
+        if (!attr)
+        {
+            PyErr_Clear();
+            return default;
+        }
+        T ret = python_convert::from_python<T>(attr);
+        Py_DECREF(attr); // TODO: Can we avoid this redundant reference handling? 
+        return ret;
+    }
+
+    template<typename T>
+    void setattr(const Object& obj, const char* key, const T& value)
+    {
+        setattr(obj, key, Object(python_convert::to_python(value)));
     }
 }

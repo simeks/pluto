@@ -4,7 +4,6 @@
 #include "API.h"
 
 #include <Core/Modules/ModuleInterface.h>
-#include <Core/Python/PythonModule.h>
 
 class FlowContext;
 class FlowNode;

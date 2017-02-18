@@ -45,7 +45,7 @@ ConsoleWidget::ConsoleWidget(PlutoKernelProxy* kernel, QWidget *parent) :
     setStyleSheet(console_stylesheet);
     document()->setDefaultStyleSheet(console_stylesheet);
 
-    ConsoleModule::instance().set_widget(this);
+    console::set_widget(this);
 
     QString history_file = QString("%1/%2").arg(PlutoCore::instance().user_dir(), s_history_file);
     _history.load(history_file);

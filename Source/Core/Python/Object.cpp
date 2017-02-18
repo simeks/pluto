@@ -3,6 +3,14 @@
 #include "Object.h"
 #include "PythonCommon.h"
 
+namespace python_convert
+{
+    template<>
+    CORE_API python::Object from_python(PyObject* value) { if (value) return python::Object(value); else Py_RETURN_NONE; }
+    template<>
+    CORE_API PyObject* to_python(const python::Object& value) { return python::incref(value.ptr()); }
+}
+
 namespace python
 {
     bool hasattr(const Object& obj, const char* key)

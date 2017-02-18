@@ -3,68 +3,63 @@
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
-#include "Python/PythonFunction.h"
+#include "Python/Module.h"
 #include "Python/StdStream.h"
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, user_dir);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, python_dir);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, module_dir);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, run_file, std::string);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(PlutoModule, register_class, PyObject*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(PlutoModule, classes);
-PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_RETURN(PlutoModule, create_object);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PlutoModule, auto_reload, PyObject*);
+namespace py = python;
 
-std::string PlutoModule::s_version = "0.0";
+namespace pluto
+{
+    std::string s_version = "0.1";
+}
 
-PlutoModule::PlutoModule()
+PYTHON_MODULE(pluto_api)
 {
-}
-PlutoModule::~PlutoModule()
-{
-}
-void PlutoModule::post_init()
-{
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, user_dir, "user_dir()");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, python_dir, "python_dir()");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, module_dir, "module_dir()");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, run_file, "run_file(file)");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, register_class, "register_class(cls)");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, classes, "classes()");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, create_object, "create_object(cls, *args)");
-    MODULE_ADD_PYTHON_FUNCTION(PlutoModule, auto_reload, "auto_reload(module)");
+    py::def(module, "user_dir", &pluto::user_dir, "user_dir()");
+    py::def(module, "python_dir", &pluto::python_dir, "python_dir()");
+    py::def(module, "module_dir", &pluto::module_dir, "module_dir()");
+    py::def(module, "run_file", &pluto::run_file, "run_file(file)");
+    py::def(module, "register_class", &pluto::register_class, "register_class(cls)");
+    py::def(module, "classes", &pluto::classes, "classes()");
+    py::def(module, "create_object", &pluto::create_object, "create_object(cls, *args)");
+    py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
-    add_type("Object", Object::static_class());
-    add_type("StdStream", PyStdStream::static_class());
-    set_object("__version__", python_convert::to_python(s_version));
+    py::def(module, "Object", Object::static_class());
+    py::def(module, "StdStream", PyStdStream::static_class());
+    py::def(module, "__version__", pluto::s_version);
 }
-const char* PlutoModule::user_dir()
+void pluto::install_python_module()
+{
+    PYTHON_MODULE_INSTALL(pluto_api);
+}
+
+const char* pluto::user_dir()
 {
     return PlutoCore::instance().user_dir();
 }
-const char* PlutoModule::python_dir()
+const char* pluto::python_dir()
 {
     return PlutoCore::instance().python_dir();
 }
-const char* PlutoModule::module_dir()
+const char* pluto::module_dir()
 {
     return PlutoCore::instance().module_dir();
 }
-void PlutoModule::run_file(const std::string& file)
+void pluto::run_file(const std::string& file)
 {
     PlutoCore::instance().kernel()->run_file(file);
 }
-PyObject* PlutoModule::register_class(PyObject* cls)
+python::Object pluto::register_class(const python::Object& cls)
 {
-    if (PyType_Check(cls) == 0)
+    if (PyType_Check(cls.ptr()) == 0)
         PYTHON_ERROR_R(TypeError, nullptr, "expected class");
 
-    Py_INCREF(cls);
-    PythonClass::python_class((PyTypeObject*)cls);
+    python::incref(cls);
+    PythonClass::python_class((PyTypeObject*)cls.ptr());
 
     return cls;
 }
-PyObject* PlutoModule::classes() const
+python::Object pluto::classes()
 {
     std::vector<PythonClass*> classes = PythonClass::classes();
     PyObject* list = PyList_New(classes.size());
@@ -74,7 +69,7 @@ PyObject* PlutoModule::classes() const
     }
     return list;
 }
-Object* PlutoModule::create_object(const Tuple& args)
+Object* pluto::create_object(const Tuple& args)
 {
     if (args.size() < 1)
         PYTHON_ERROR_R(AttributeError, nullptr, "expected at least one argument");
@@ -94,11 +89,8 @@ Object* PlutoModule::create_object(const Tuple& args)
 
     return cls->create_object(obj_args);
 }
-void PlutoModule::auto_reload(PyObject* module)
+void pluto::auto_reload(const python::Object& module)
 {
     PlutoCore::instance().kernel()->add_auto_reload(module);
 }
-const char* PlutoModule::name()
-{
-    return "pluto_api";
-}
+

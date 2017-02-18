@@ -1,7 +1,9 @@
 #include "Common.h"
 
 #include "Image.h"
+#include "Python/Module.h"
 #include "Python/NumPy.h"
+#include "Python/Object.h"
 #include "Python/PythonCommon.h"
 #include "Types.h"
 
@@ -12,15 +14,15 @@ namespace
     {
         if (!_image_py_type)
         {
-            PyObject* img_mod = PyImport_ImportModule("image");
-            if (!img_mod)
+            python::Object img_mod = python::import("image");
+            if (!img_mod.ptr())
                 return nullptr;
 
-            PyObject* image = PyObject_GetAttrString(img_mod, "Image");
-            if (!PyType_Check(image))
+            python::Object image = python::getattr(img_mod, "Image");
+            if (!PyType_Check(image.ptr()))
                 return nullptr;
 
-            _image_py_type = image;
+            _image_py_type = image.ptr();
             Py_INCREF(_image_py_type);
         }
         return _image_py_type;
@@ -34,16 +36,14 @@ namespace python_convert
     {
         if (numpy::check_type(obj))
         {
-            image::PixelType pixel_type = image::PixelType_Unknown;
-            if (PyObject_HasAttrString(obj, "pixel_type"))
-                pixel_type = from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
-
+            image::PixelType pixel_type = python::getattr(obj, "pixel_type", image::PixelType_Unknown);
+            
             Image img(from_python<NumpyArray>(obj), pixel_type);
 
             if (PyObject_HasAttrString(obj, "origin"))
-                img.set_origin(from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+                img.set_origin(python::getattr(obj, "origin", Vec3d(0, 0, 0)));
             if (PyObject_HasAttrString(obj, "spacing"))
-                img.set_spacing(from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
+                img.set_origin(python::getattr(obj, "spacing", Vec3d(1, 1, 1)));
             
             return img;
         }

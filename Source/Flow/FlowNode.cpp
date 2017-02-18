@@ -107,6 +107,7 @@ void FlowNode::run(FlowContext* ctx)
     {
         _function(ctx);
     }
+    Py_XDECREF(method);
 }
 const std::vector<FlowPin*>& FlowNode::pins() const
 {

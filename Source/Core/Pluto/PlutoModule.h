@@ -1,33 +1,26 @@
 #ifndef __CORE_PLUTO_MODULE_H__
 #define __CORE_PLUTO_MODULE_H__
 
-#include <Core/Python/PythonModule.h>
-
+class Object;
 class PyStdStream;
-class PlutoModule : public PythonModuleHelper<PlutoModule>
+class Tuple;
+
+namespace pluto
 {
-public:
-    PlutoModule();
-    virtual ~PlutoModule();
-
-    virtual void post_init() OVERRIDE;
-
     const char* user_dir();
     const char* python_dir();
     const char* module_dir();
 
     void run_file(const std::string& file);
 
-    PyObject* register_class(PyObject* cls);
-    PyObject* classes() const;
-    
+    python::Object register_class(const python::Object& cls);
+    python::Object classes();
+
     Object* create_object(const Tuple& args);
 
-    void auto_reload(PyObject* module);
+    void auto_reload(const python::Object& module);
 
-    static const char* name();
-private:
-    static std::string s_version;
-};
+    void install_python_module();
+}
 
 #endif // __CORE_PLUTO_MODULE_H__

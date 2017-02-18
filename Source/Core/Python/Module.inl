@@ -1,7 +1,7 @@
 namespace python
 {
-    template<typename TFn>
-    INLINE void def(const Module& m, const char* name, TFn fn, const char* doc)
+    template<typename TReturn, typename ... TArgs>
+    INLINE void def(const Module& m, const char* name, TReturn(*fn)(TArgs...), const char* doc)
     {
         python::setattr(m, name, python::make_function(fn, name, doc));
     }
@@ -40,4 +40,11 @@ namespace python
     {
         python::setattr(m, name, (PyObject*)cls->python_type());
     }
+    
+    template<typename T>
+    INLINE void def(const Module& m, const char* name, const T& obj)
+    {
+        python::setattr(m, name, python_convert::to_python(obj));
+    }
+
 }

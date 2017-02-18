@@ -1,6 +1,7 @@
 #ifndef __PYTHON_MODULE_H__
 #define __PYTHON_MODULE_H__
 
+#include "Function.h"
 #include "Object.h"
 
 #include <Core/Object/PythonClass.h>
@@ -48,9 +49,18 @@ namespace python
         PyObject* _m;
     };
 
+    /// Imports and returns the specified module
+    CORE_API Object import(const char* name);
+
+    /// Reloads the specified module and returns a new reference to the reloaded module
+    CORE_API Object reload_module(const Object& module);
+
+    /// Returns the dictionary object belonging to the given module
+    CORE_API Object get_dict(const Object& module);
+
     /// @brief Adds a regular function the the given module
-    template<typename TFn>
-    void def(const Module& m, const char* name, TFn fn, const char* doc = nullptr);
+    template<typename TReturn, typename ... TArgs>
+    void def(const Module& m, const char* name, TReturn(*fn)(TArgs...), const char* doc = nullptr);
 
     /// @brief Adds a method as a regular function for the given module
     /// @remark Be careful, this requires the given instance to be available as long as this function is callable from python
@@ -67,6 +77,10 @@ namespace python
 
     /// @brief Adds the specified class to the given module
     void def(const Module& m, const char* name, PythonClass* cls);
+
+    /// @brief Adds the specified object to the given module
+    template<typename T>
+    void def(const Module& m, const char* name, const T& obj);
 
 }
 

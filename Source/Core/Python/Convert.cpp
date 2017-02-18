@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Convert.h"
 #include "Dict.h"
-#include "PythonModule.h"
 #include "Sequence.h"
 #include "Tuple.h"
 
