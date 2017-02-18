@@ -28,7 +28,7 @@ VisModule::~VisModule()
 
 void VisModule::install()
 {
-    VisPythonModule::create();
+    vis::install_python_module();
 }
 void VisModule::uninstall()
 {
