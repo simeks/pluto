@@ -1,6 +1,6 @@
 from flow import FlowNode, ArrayFlowPin, FlowPin, StringProperty, FileProperty, EnumProperty, install_node_template
 from pluto import pluto_class
-
+import re
 
 @pluto_class
 class BuildNode(FlowNode):
