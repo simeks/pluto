@@ -8,10 +8,6 @@
 #include "RegistrationModule.h"
 #include "Transform.h"
 
-namespace registration
-{
-    Image transform(const Image& img, const Image& def);
-}
 
 class RegistrationPythonModule : public PythonModuleHelper<RegistrationPythonModule>
 {
@@ -31,25 +27,6 @@ public:
 };
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, Image, Image);
 
-namespace python_module
-{
-    //void add_function();
-    //void add_object();
-    //void add_type();
-
-} // namespace python_module
-
-namespace python_function
-{
-    template<typename Fn>
-    PyObject* create_function(Fn fn)
-    {
-
-    }
-
-
-} // namespace python_function
-
 
 #define PYTHON_MODULE(Name) \
 static struct PyModuleDef s_##Name##_module_def = { \
@@ -63,12 +40,14 @@ static struct PyModuleDef s_##Name##_module_def = { \
     0, /* m_clear */ \
     0,  /* m_free */ \
 }; \
-void init_module_##Name##(); \
+void init_module_##Name##(PyObject* m); \
 PyObject* PyInit_##Name##() \
 { \
     PyObject* m = PyModule_Create(&s_##Name##_module_def); \
     if (!m) \
         PyErr_Print(); \
+    else \
+        init_module_##Name##(m); \
     return m; \
 } \
 void init_module_##Name##(PyObject* m)
@@ -81,8 +60,37 @@ void init_module_##Name##(PyObject* m)
 #define PYTHON_MODULE_FUNCTION(name, fn)
 #define PYTHON_MODULE_TYPE(name, cls)
 
+void hey()
+{
+    std::cout << "hey" << std::endl;
+}
+void hey2(const char* a)
+{
+    std::cout << "hey2 " << a  << std::endl;
+}
+std::string hey3(const std::string& a)
+{
+    std::cout << "hey3 " << a << std::endl;
+    return a;
+}
+int hey4(int a, int b)
+{
+    std::cout << "hey4 " << a << ", " << b << std::endl;
+    return a+b;
+}
+
 PYTHON_MODULE(registration)
 {
+    m;
+
+    PyObject* fn = python::make_function(&hey);
+
+    int a = PyObject_SetAttrString(m, "hey", fn);
+    a;
+    PyObject_SetAttrString(m, "hey2", python::make_function(&hey2));
+    PyObject_SetAttrString(m, "hey3", python::make_function(&hey3));
+    PyObject_SetAttrString(m, "hey4", python::make_function(&hey4));
+
     PYTHON_MODULE_TYPE("RegistrationEngine", RegistrationEngine::static_class());
     PYTHON_MODULE_FUNCTION("transform", registration::transform);
 }
