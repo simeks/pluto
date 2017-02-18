@@ -2,7 +2,7 @@
 #include <Core/Pluto/PlutoCore.h>
 #include <Core/Python/PythonCommon.h>
 
-#include "FlowPythonModule.h"
+#include "FlowModule.h"
 #include "Qt/Style.h"
 #include "QtGraphFileLoader.h"
 #include "RunGraphNode.h"
@@ -13,7 +13,7 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 
-GraphFileLoader::GraphFileLoader(const char* path, FlowPythonModule* module) : _module(module)
+GraphFileLoader::GraphFileLoader(const char* path)
 {
     _root = QDir(path).absolutePath();
 
@@ -111,7 +111,7 @@ void GraphFileLoader::load(const QString& path)
         node->set_attribute("title", title.toUtf8().constData());
         node->set_attribute("category", category.toUtf8().constData());
 
-        _module->install_node_template(node);
+        FlowModule::instance().install_node_template(node);
         node->release();
     }
 }

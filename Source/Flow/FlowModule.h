@@ -10,6 +10,7 @@ class FlowContext;
 class FlowNode;
 class FlowPythonModule;
 class FlowWindow;
+class GraphFileLoader;
 class QtFlowUI;
 struct FlowNodeDef;
 class FLOW_API FlowModule : public ModuleInterface
@@ -30,6 +31,11 @@ public:
 
     const std::vector<FlowNode*>& node_templates() const;
 
+    /// @brief Auto-reload graphs in the given path
+    /// First all graphs in the specified path will be loaded and added as nodes in the UI.
+    /// If any of the graphs changes while the application is running it will be automatically reloaded.
+    void add_graph_path(const char* path);
+
     QtFlowUI* ui() const;
 
     static FlowModule& instance();
@@ -41,6 +47,8 @@ private:
 
     std::vector<FlowNode*> _node_templates;
     std::vector<FlowWindow*> _flow_windows;
+
+    std::vector<GraphFileLoader*> _loaders;
 };
 
 

@@ -3,6 +3,8 @@
 
 #include "Object.h"
 
+#include <Core/Object/PythonClass.h>
+
 #define PYTHON_MODULE(Name) \
     void init_module_##Name##(python::Module const& m); \
     PyObject* PyInit_##Name##() \
@@ -25,15 +27,14 @@
             init_module_##Name##(python::Module(m)); \
         return m; \
     } \
-    void init_module_##Name##(python::Module const& m)
+    void init_module_##Name##(python::Module const& module)
 
 #define PYTHON_MODULE_INSTALL(name) \
     extern PyObject* PyInit_##name##(); \
     PyImport_AppendInittab(#name, ::PyInit_##name##);
 
 
-#define PYTHON_MODULE_FUNCTION(name, fn) python::setattr(m, name, python::make_function(fn));
-#define PYTHON_MODULE_CLASS(name, cls) python::setattr(m, name, (PyObject*)cls::static_class()->python_type());
+class PythonClass;
 
 namespace python
 {
@@ -46,6 +47,29 @@ namespace python
     private:
         PyObject* _m;
     };
+
+    /// @brief Adds a regular function the the given module
+    template<typename TFn>
+    void def(const Module& m, const char* name, TFn fn, const char* doc = nullptr);
+
+    /// @brief Adds a method as a regular function for the given module
+    /// @remark Be careful, this requires the given instance to be available as long as this function is callable from python
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    void def(const Module& m, const char* name, TClass* instance, TReturn (TClass::*fn)(TArgs...), const char* doc = nullptr);
+
+    /// @brief Adds a function accepting a varargs-tuple as argument to the given module
+    template<typename TReturn>
+    void def_varargs(const Module& m, const char* name, TReturn (*fn)(const Tuple&), const char* doc = nullptr);
+
+    /// @brief Adds a function accepting a varargs-tuple and a keywords-dict as arguments to the given module
+    template<typename TReturn>
+    void def_varargs_keywords(const Module& m, const char* name, TReturn(*fn)(const Tuple&, const Dict&), const char* doc = nullptr);
+
+    /// @brief Adds the specified class to the given module
+    void def(const Module& m, const char* name, PythonClass* cls);
+
 }
+
+#include "Module.inl"
 
 #endif // __PYTHON_MODULE_H__

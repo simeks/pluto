@@ -14,6 +14,7 @@
 #include "GraphOutputNode.h"
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
+#include "Qt/QtGraphFileLoader.h"
 #include "RunGraphNode.h"
 
 namespace
@@ -53,6 +54,10 @@ FlowModule::FlowModule() : _ui(nullptr)
 }
 FlowModule::~FlowModule()
 {
+    for (auto& l : _loaders)
+        delete l;
+    _loaders.clear();
+
     delete _ui;
     _ui = nullptr;
 
@@ -63,7 +68,7 @@ FlowModule::~FlowModule()
 void FlowModule::install()
 {
     _ui = new QtFlowUI();
-    FlowPythonModule::create(_ui);
+    flow::install_python_module();
 }
 void FlowModule::uninstall()
 {
@@ -88,6 +93,13 @@ void FlowModule::init()
 }
 void FlowModule::install_node_template(FlowNode* node)
 {
+    if (node->title() == nullptr)
+        PYTHON_ERROR(AttributeError, "'title' not set");
+    if (node->category() == nullptr)
+        PYTHON_ERROR(AttributeError, "'category' not set");
+    if (node->node_class() == nullptr)
+        PYTHON_ERROR(AttributeError, "'node_class' not set");
+
     bool reload = false;
 
     auto it = std::find_if(_node_templates.begin(), _node_templates.end(), [&](FlowNode* n) { return strcmp(n->node_class(), node->node_class()) == 0; });
@@ -129,6 +141,15 @@ FlowNode* FlowModule::node_template(const char* node_class) const
 const std::vector<FlowNode*>& FlowModule::node_templates() const
 {
     return _node_templates;
+}
+void FlowModule::add_graph_path(const char* path)
+{
+    for (auto& l : _loaders)
+    {
+        if (strcmp(path, l->path()) == 0)
+            return;
+    }
+    _loaders.push_back(new GraphFileLoader(path));
 }
 QtFlowUI* FlowModule::ui() const
 {

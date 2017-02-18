@@ -9,10 +9,11 @@
 #include "RegistrationModule.h"
 #include "Transform.h"
 
+namespace py = python;
 PYTHON_MODULE(registration)
 {
-    PYTHON_MODULE_FUNCTION("transform", &transform::transform);
-    PYTHON_MODULE_CLASS("RegistrationEngine", RegistrationEngine);
+    py::def(module, "transform", &transform::transform);
+    py::def(module, "RegistrationEngine", RegistrationEngine::static_class());
 }
 
 

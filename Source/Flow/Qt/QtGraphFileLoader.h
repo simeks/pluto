@@ -4,13 +4,12 @@
 #include "API.h"
 #include <QObject>
 
-class FlowPythonModule;
 class QFileSystemWatcher;
 class FLOW_API GraphFileLoader : public QObject
 {
     Q_OBJECT
 public:
-    GraphFileLoader(const char* path, FlowPythonModule* module);
+    GraphFileLoader(const char* path);
     ~GraphFileLoader();
 
     const char* path() const;
@@ -23,7 +22,6 @@ public slots:
 private:
     void load(const QString& path);
 
-    FlowPythonModule* _module;
     QFileSystemWatcher* _watcher;
     
     QString _root;

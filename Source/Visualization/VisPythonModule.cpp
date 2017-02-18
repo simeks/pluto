@@ -10,9 +10,11 @@
 #include "Qt/QtVisWindow.h"
 #include "VisPythonModule.h"
 
+namespace py = python;
+
 PYTHON_MODULE(vis)
 {
-    PYTHON_MODULE_FUNCTION("show", &vis::show);
+    py::def(module, "show", &vis::show);
 }
 
 namespace

@@ -9,7 +9,9 @@ namespace python
 {
     struct Function : PyObject
     {
-        Function(std::unique_ptr<function::CallerBase> caller) : _caller(std::move(caller)) {}
+        Function(std::unique_ptr<function::CallerBase> caller, 
+            const char* name, const char* doc) 
+            : _caller(std::move(caller)), _name(name), _doc(doc) {}
         ~Function() {}
 
         PyObject* call(PyObject* args, PyObject* kw)
@@ -21,15 +23,18 @@ namespace python
         }
 
         std::unique_ptr<function::CallerBase> _caller;
+
+        const char* _name;
+        const char* _doc;
     };
 }
 
 
-static void func_dealloc(python::Function* f)
+static void function_dealloc(python::Function* f)
 {
     delete f;
 }
-static PyObject* func_call(
+static PyObject* function_call(
     python::Function* f,
     PyObject* args,
     PyObject* kw)
@@ -48,13 +53,31 @@ static PyObject* func_call(
     }
 }
 
+static PyObject* function_get__doc__(python::Function* f, void*)
+{
+    if (f->_doc)
+        return _PyType_GetDocFromInternalDoc(f->_name, f->_doc);
+    Py_RETURN_NONE;
+}
+
+static PyObject* function_get__name__(python::Function* f, void*)
+{
+    return PyUnicode_FromString(f->_name);
+}
+
+static PyGetSetDef function_getsets[] = {
+    { "__doc__",  (getter)function_get__doc__,  NULL, NULL },
+    { "__name__", (getter)function_get__name__, NULL, NULL },
+    { 0 }
+};
+
 static PyTypeObject PythonFunction_Type =
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "pluto_function_or_method",
     sizeof(python::Function),
     0,
-    (destructor)func_dealloc,                   /* tp_dealloc */
+    (destructor)function_dealloc,                   /* tp_dealloc */
     0,                                          /* tp_print */
     0,                                          /* tp_getattr */
     0,                                          /* tp_setattr */
@@ -64,7 +87,7 @@ static PyTypeObject PythonFunction_Type =
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
     0,                                          /* tp_hash */
-    (ternaryfunc)func_call,                     /* tp_call */
+    (ternaryfunc)function_call,                     /* tp_call */
     0,                                          /* tp_str */
     0,                                          /* tp_getattro */
     0,                                          /* tp_setattro */
@@ -79,19 +102,19 @@ static PyTypeObject PythonFunction_Type =
     0,                                          /* tp_iternext */
     0,                                          /* tp_methods */
     0,                                          /* tp_members */
-    0,                                          /* tp_getset */
+    function_getsets,                           /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
 };
 
 namespace python
 {
-    Object make_function(std::unique_ptr<function::CallerBase> caller)
+    Object make_function(std::unique_ptr<function::CallerBase> caller, const char* name, const char* doc)
     {
         if (Py_TYPE(&PythonFunction_Type) == 0)
             PyType_Ready(&PythonFunction_Type);
 
-        PyObject* fn = new Function(std::move(caller));
+        PyObject* fn = new Function(std::move(caller), name, doc);
         PyObject_INIT(fn, &PythonFunction_Type);
 
         Object obj(fn);
