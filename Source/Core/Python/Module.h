@@ -29,7 +29,7 @@
 
 #define PYTHON_MODULE_INSTALL(name) \
     extern PyObject* PyInit_##name##(); \
-    PyImport_AppendInittab(#name, PyInit_##name##);
+    PyImport_AppendInittab(#name, ::PyInit_##name##);
 
 
 #define PYTHON_MODULE_FUNCTION(name, fn) python::setattr(m, name, python::make_function(fn));
