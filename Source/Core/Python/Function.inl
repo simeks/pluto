@@ -28,6 +28,32 @@ namespace python
             Py_RETURN_NONE;
         }
 
+        /// Returns the item at index i before incrementing i
+        PyObject* pop_item_from_tuple(PyObject* t, size_t& i)
+        {
+            return PyTuple_GetItem(t, i++);
+        }
+
+        template<typename ... TArgs>
+        std::tuple<typename std::decay<TArgs>::type...> unpack_args(PyObject* args)
+        {
+            if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)) 
+            {
+                PYTHON_ERROR_R(TypeError, 
+                    std::tuple<typename std::decay<TArgs>::type...>(), 
+                    "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+            }
+
+            size_t i = 0;
+            // Initializer lists are guaranteed to evaluate in order, therefore we can use them to first unpack all args
+            std::tuple<typename std::decay<TArgs>::type...> t{
+                python_convert::from_python<typename std::decay<TArgs>::type>(pop_item_from_tuple(args, i))...
+            };
+            i; args; // Avoid C4189 when having no args
+
+            return t;
+        }
+
         template<typename TReturn, typename ... TArgs>
         FunctionCaller<TReturn, TArgs...>::FunctionCaller(TReturn(*fn)(TArgs...)) : _fn(fn)
         {
@@ -36,12 +62,9 @@ namespace python
         template<typename TReturn, typename ... TArgs>
         PyObject* FunctionCaller<TReturn, TArgs...>::operator()(PyObject* args, PyObject* )
         {
-            size_t i = 0;
-            // Initializer lists are guaranteed to evaluate in order, therefore we can use them to first unpack all args
-            std::tuple<typename std::decay<TArgs>::type...> t{
-                python_convert::from_python<typename std::decay<TArgs>::type>(PyTuple_GetItem(args, i++))...
-            };
-            i; args; // Avoid C4189 when having no args
+            auto t = unpack_args<TArgs...>(args);
+            if (PyErr_Occurred())
+                return 0;
             // To unpack all args to actual function arguments we use a wrapper function which indexes all args and then unpacks them using ...-notation
             return invoke(_fn, t, std::index_sequence_for<TArgs...>{});
         }
@@ -54,10 +77,9 @@ namespace python
         template<typename TClass, typename TReturn, typename ... TArgs>
         PyObject* MethodCaller<TClass, TReturn, TArgs...>::operator()(PyObject* args, PyObject* )
         {
-            size_t i = 0;
-            std::tuple<typename std::decay<TArgs>::type...> t{
-                python_convert::from_python<typename std::decay<TArgs>::type>(PyTuple_GetItem(args, i++))...
-            };
+            auto t = unpack_args<TArgs...>(args);
+            if (PyErr_Occurred())
+                return 0;
             return invoke(_self, _fn, t, std::index_sequence_for<TArgs...>{});
         }
 
