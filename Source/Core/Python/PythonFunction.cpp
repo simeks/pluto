@@ -31,26 +31,54 @@ PyObject* PythonFunction::object()
 
 /// Python function type based on PythonCFunction
 
-typedef struct {
-    PyObject_HEAD
-    
-} PythonFunctionObject;
-
-static void func_dealloc(PythonFunctionObject* f)
+namespace python
 {
+    struct Function : PyObject
+    {
+        Function(std::unique_ptr<function::CallerBase> caller) : _caller(std::move(caller)) {}
+        ~Function() {}
+
+        PyObject* call(PyObject* args, PyObject* kw)
+        {
+            PyObject* ret = (*_caller)(args, kw);
+            if (PyErr_Occurred())
+                return nullptr;
+            return ret;
+        }
+
+        std::unique_ptr<function::CallerBase> _caller;
+    };
+}
+
+
+static void func_dealloc(python::Function* f)
+{
+    delete f;
 }
 static PyObject* func_call(
-    PythonFunctionObject* f,
-    PyObject* arg,
+    python::Function* f,
+    PyObject* args,
     PyObject* kw)
 {
+    try
+    {
+        return f->call(args, kw);
+    }
+    catch (const std::exception& e)
+    {
+        PYTHON_ERROR_R(RuntimeError, nullptr, "std::exception: %s", e.what());
+    }
+    catch (...)
+    {
+        PYTHON_ERROR_R(RuntimeError, nullptr, "Unknown C++ exception");
+    }
 }
 
 static PyTypeObject PythonFunction_Type = 
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "pluto_function_or_method",
-    sizeof(PythonFunctionObject),
+    sizeof(python::Function),
     0,
     (destructor)func_dealloc,                   /* tp_dealloc */
     0,                                          /* tp_print */
@@ -62,12 +90,12 @@ static PyTypeObject PythonFunction_Type =
     0,                                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
     0,                                          /* tp_hash */
-    func_call,                                  /* tp_call */
+    (ternaryfunc)func_call,                     /* tp_call */
     0,                                          /* tp_str */
     0,                                          /* tp_getattro */
     0,                                          /* tp_setattro */
     0,                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,    /* tp_flags */
+    Py_TPFLAGS_DEFAULT,    /* tp_flags */
     0,                                          /* tp_doc */
     0,                                          /* tp_traverse */
     0,                                          /* tp_clear */
@@ -81,3 +109,16 @@ static PyTypeObject PythonFunction_Type =
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
 };
+
+namespace python
+{
+    PyObject* make_function(std::unique_ptr<function::CallerBase> caller)
+    {
+        if (Py_TYPE(&PythonFunction_Type) == 0)
+            PyType_Ready(&PythonFunction_Type);
+
+        PyObject* obj = new Function(std::move(caller));
+        PyObject_INIT(obj, &PythonFunction_Type);
+        return obj;
+    }
+}

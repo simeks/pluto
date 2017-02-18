@@ -163,12 +163,6 @@ private:
     PyCFunctionObject* _fn;
 };
 
-template<ReturnT, Args...>
-struct Caller
-{
-    
-};
-
 
 namespace python
 {
@@ -188,7 +182,7 @@ namespace python
         };
 
         template<typename TReturn, typename ... TArgs>
-        struct FunctionCaller : public CallerBase
+        struct FunctionCaller : CallerBase
         {
             TReturn(*_fn)(TArgs...);
 
@@ -198,7 +192,7 @@ namespace python
         };
 
         template<typename TClass, typename TReturn, typename ... TArgs>
-        struct MethodCaller : public CallerBase
+        struct MethodCaller : CallerBase
         {
             TClass* _self;
             TReturn(TClass::*_fn)(TArgs...);
@@ -209,20 +203,19 @@ namespace python
         };
 
         template<typename TClass, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TReturn(*meth)(TArgs...));
+        std::unique_ptr<CallerBase> make_caller(TReturn(*fn)(TArgs...));
 
         template<typename TClass, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TClass* self, TReturn(TClass::*meth)(TArgs...));
+        std::unique_ptr<CallerBase> make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...));
     }
 }
 
 namespace python
 {
-    template<typename Fn>
-    PyObject* create_function(Fn* fn)
-    {
+    CORE_API PyObject* make_function(std::unique_ptr<function::CallerBase> caller);
 
-    }
+    template<typename Fn>
+    PyObject* make_function(Fn* fn);
 }
 
 
