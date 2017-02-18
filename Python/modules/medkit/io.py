@@ -160,10 +160,7 @@ class WriteNode(FlowNode):
         im = ctx.read_pin('Image')
         if im is not None:
             if os.path.splitext(f)[1] == '.png':
-                # TODO: What to do here? Add property? Move to write function?
-                # Normalize to 0-255
-                out = (255 * im / float(im.max())).astype(np.uint8)
-                write(out, f)
+                write(im.astype(np.uint8), f)
             else:
                 write(im, f)
 
