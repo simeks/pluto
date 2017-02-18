@@ -109,13 +109,19 @@ namespace python_convert
     template<>
     CORE_API const char* from_python(PyObject* obj)
     {
-        return PyUnicode_Check(obj) ? PyUnicode_AsUTF8(obj) : nullptr;
+        if (PyUnicode_Check(obj))
+            return PyUnicode_AsUTF8(obj);
+        PyErr_SetString(PyExc_ValueError, "Expected string");
+        return nullptr;
     }
 
     template<>
     CORE_API std::string from_python(PyObject* obj)
     {
-        return PyUnicode_Check(obj) ? PyUnicode_AsUTF8(obj) : nullptr;
+        if (PyUnicode_Check(obj))
+            return PyUnicode_AsUTF8(obj);
+        PyErr_SetString(PyExc_ValueError, "Expected string");
+        return "";
     }
 
     template<>
