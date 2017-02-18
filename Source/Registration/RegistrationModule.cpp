@@ -1,5 +1,6 @@
 #include <Core/Common.h>
-#include <Core/Python/PythonModule.h>
+#include <Core/Python/Function.h>
+#include <Core/Python/Module.h>
 
 #include <Flow/FlowModule.h>
 #include <Flow/FlowPin.h>
@@ -28,37 +29,6 @@ public:
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, Image, Image);
 
 
-#define PYTHON_MODULE(Name) \
-static struct PyModuleDef s_##Name##_module_def = { \
-    PyModuleDef_HEAD_INIT, \
-    #Name,   /* m_name */ \
-    "", /* m_doc */ \
-    -1,       /* m_size */ \
-    0, /* m_methods */ \
-    0,  /* m_reload */ \
-    0, /* m_traverse */ \
-    0, /* m_clear */ \
-    0,  /* m_free */ \
-}; \
-void init_module_##Name##(PyObject* m); \
-PyObject* PyInit_##Name##() \
-{ \
-    PyObject* m = PyModule_Create(&s_##Name##_module_def); \
-    if (!m) \
-        PyErr_Print(); \
-    else \
-        init_module_##Name##(m); \
-    return m; \
-} \
-void init_module_##Name##(PyObject* m)
-
-
-#define PYTHON_MODULE_INSTALL(name) \
-    extern PyObject* PyInit_##name##(); \
-    PyImport_AppendInittab(#name, PyInit_##name##);
-
-#define PYTHON_MODULE_FUNCTION(name, fn)
-#define PYTHON_MODULE_TYPE(name, cls)
 
 void hey()
 {
@@ -81,18 +51,12 @@ int hey4(int a, int b)
 
 PYTHON_MODULE(registration)
 {
-    m;
+    PYTHON_MODULE_FUNCTION("hey", &hey);
+    PYTHON_MODULE_FUNCTION("hey2", &hey2);
+    PYTHON_MODULE_FUNCTION("hey3", &hey3);
+    PYTHON_MODULE_FUNCTION("hey4", &hey4);
 
-    PyObject* fn = python::make_function(&hey);
-
-    int a = PyObject_SetAttrString(m, "hey", fn);
-    a;
-    PyObject_SetAttrString(m, "hey2", python::make_function(&hey2));
-    PyObject_SetAttrString(m, "hey3", python::make_function(&hey3));
-    PyObject_SetAttrString(m, "hey4", python::make_function(&hey4));
-
-    PYTHON_MODULE_TYPE("RegistrationEngine", RegistrationEngine::static_class());
-    PYTHON_MODULE_FUNCTION("transform", registration::transform);
+    PYTHON_MODULE_CLASS("RegistrationEngine", RegistrationEngine);
 }
 
 void RegistrationPythonModule::post_init()
