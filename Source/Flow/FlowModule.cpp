@@ -17,31 +17,6 @@
 #include "Qt/QtGraphFileLoader.h"
 #include "RunGraphNode.h"
 
-namespace
-{
-    void debug_output(FlowContext* ctx)
-    {
-        PYTHON_STDOUT("[Debug] ");
-        PyObject* obj = ctx->read_pin("In");
-        if (!obj)
-        {
-            PYTHON_STDOUT("NULL\n");
-            return;
-        }
-
-        if (Object::static_class()->check_type(obj))
-        {
-            Object* o = python_convert::from_python<Object*>(obj);
-            PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
-        }
-        else
-        {
-            PYTHON_STDOUT("PyObject, type=%s, ", obj->ob_type->tp_name);
-            PYTHON_STDOUT("%s", PyUnicode_AsUTF8(PyObject_Str(obj)));
-        }
-        PYTHON_STDOUT("\n");
-    }
-}
 
 PLUTO_IMPLEMENT_MODULE(FlowModule);
 
@@ -82,14 +57,6 @@ void FlowModule::init()
 {
     _node_templates.push_back(object_new<GraphInputNode>());
     _node_templates.push_back(object_new<GraphOutputNode>());
-
-    FlowPinDef pins[] = {
-        { "In", FlowPin::In, "" },
-        { 0, 0, 0 }
-    };
-    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "Debug", pins, debug_output, "" };
-
-    install_node_template(nd);
 }
 void FlowModule::install_node_template(FlowNode* node)
 {
@@ -118,25 +85,17 @@ void FlowModule::install_node_template(FlowNode* node)
     else
         emit _ui->node_template_added(node);
 }
-void FlowModule::install_node_template(const FlowNodeDef& def)
-{
-    FlowNode* node = object_new<FlowNode>(def);
-    node->set_attribute("node_class", def.class_name);
-    node->set_attribute("title", def.title);
-    node->set_attribute("category", def.category);
-    node->set_attribute("doc", def.doc);
-
-    install_node_template(node);
-    node->release();
-}
-FlowNode* FlowModule::node_template(const char* node_class) const
+FlowNode* FlowModule::node_template(const char* node_class)
 {
     for (auto& n : _node_templates)
     {
         if (strcmp(n->node_class(), node_class) == 0)
+        {
             return n;
+        }
     }
-    return nullptr;
+
+    PYTHON_ERROR_R(KeyError, nullptr, "no node of given class found");
 }
 const std::vector<FlowNode*>& FlowModule::node_templates() const
 {

@@ -24,9 +24,10 @@ public:
     void init() OVERRIDE;
 
     void install_node_template(FlowNode* node);
-    void install_node_template(const FlowNodeDef& def);
 
-    FlowNode* node_template(const char* node_class) const;
+    /// Attempts to find the specified node template.
+    /// Throws an error if no template was found.
+    FlowNode* node_template(const char* node_class);
 
     const std::vector<FlowNode*>& node_templates() const;
 

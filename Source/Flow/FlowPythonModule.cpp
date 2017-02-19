@@ -46,8 +46,7 @@ PYTHON_MODULE(flow_api)
                                                         "--\n"
                                                         "Runs a graph");
 
-    py::def(module, "install_node_template", &flow::install_node_template, "install_node_template(node)");
-    py::def(module, "node_template", &flow::node_template, "node_template(cls)");
+    py::def(module, "install_node_template", &FlowModule::instance(), &FlowModule::install_node_template, "install_node_template(node)");
     py::def(module, "node_templates", &flow::node_templates, "node_templates()");
     py::def(module, "create_node", &flow::create_node, "create_node(cls)");
     
@@ -151,29 +150,9 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     }
     return ret;
 }
-void flow::install_node_template(FlowNode* node)
-{
-    if (node->title() == nullptr)
-        PYTHON_ERROR(AttributeError, "'title' not set");
-    if (node->category() == nullptr)
-        PYTHON_ERROR(AttributeError, "'category' not set");
-    if (node->node_class() == nullptr)
-        PYTHON_ERROR(AttributeError, "'node_class' not set");
-
-    FlowModule::instance().install_node_template(node);
-}
-FlowNode* flow::node_template(const char* node_class)
-{
-    FlowNode* r = FlowModule::instance().node_template(node_class);
-    if (!r)
-        PYTHON_ERROR_R(KeyError, nullptr, "no node of given class found");
-
-    r->addref();
-    return r;
-}
 FlowNode* flow::create_node(const char* node_class)
 {
-    FlowNode* n = node_template(node_class);
+    FlowNode* n = FlowModule::instance().node_template(node_class);
     if (n)
         return object_clone(n);
     return nullptr;

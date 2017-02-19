@@ -30,8 +30,6 @@ namespace flow
 
     /// Graph node management
 
-    void install_node_template(FlowNode* node);
-    FlowNode* node_template(const char* node_class);
     FlowNode* create_node(const char* node_class);
 
     /// @brief Returns a tuple with all node templates
