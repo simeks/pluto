@@ -94,6 +94,19 @@ namespace python
         Py_DECREF(attr); // TODO: Can we avoid this redundant reference handling? 
         return ret;
     }
+    template<int N>
+    const char* getattr(const Object& obj, const char* key, const char(&default)[N])
+    {
+        PyObject* attr = PyObject_GetAttrString(obj.ptr(), key);
+        if (!attr)
+        {
+            PyErr_Clear();
+            return default;
+        }
+        const char* ret = python_convert::from_python<const char*>(attr);
+        Py_DECREF(attr); // TODO: Can we avoid this redundant reference handling? 
+        return ret;
+    }
 
     template<typename T>
     void setattr(const Object& obj, const char* key, const T& value)
