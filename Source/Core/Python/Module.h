@@ -31,7 +31,6 @@
     void init_module_##Name##(python::Module const& module)
 
 #define PYTHON_MODULE_INSTALL(name) \
-    extern PyObject* PyInit_##name##(); \
     PyImport_AppendInittab(#name, ::PyInit_##name##);
 
 

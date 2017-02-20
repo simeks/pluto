@@ -64,7 +64,15 @@ static PyObject* function_get__name__(python::Function* f, void*)
 {
     return PyUnicode_FromString(f->_name);
 }
-
+static PyObject* function_descr_get(PyObject* func, PyObject* obj, PyObject*)
+{
+    if (obj == Py_None || obj == NULL) 
+    {
+        Py_INCREF(func);
+        return func;
+    }
+    return PyMethod_New(func, obj);
+}
 static PyGetSetDef function_getsets[] = {
     { "__doc__",  (getter)function_get__doc__,  NULL, NULL },
     { "__name__", (getter)function_get__name__, NULL, NULL },
@@ -105,6 +113,8 @@ static PyTypeObject PythonFunction_Type =
     function_getsets,                           /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
+    function_descr_get,                 /* tp_descr_get */
+    0,                                  /* tp_descr_set */
 };
 
 namespace python
