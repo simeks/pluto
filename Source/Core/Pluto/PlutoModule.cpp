@@ -1,5 +1,6 @@
 #include "Common.h"
 
+#include "Object/Object.h"
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
@@ -25,7 +26,7 @@ PYTHON_MODULE(pluto_api)
     py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
     py::def(module, "Object", Object::static_class());
-    py::def(module, "StdStream", PyStdStream::static_class());
+//    py::def(module, "StdStream", PyStdStream::static_class());
     py::def(module, "__version__", pluto::s_version);
 }
 void pluto::install_python_module()
@@ -65,7 +66,7 @@ python::Object pluto::classes()
     PyObject* list = PyList_New(classes.size());
     for (size_t i = 0; i < classes.size(); ++i)
     {
-        PyList_SetItem(list, i, python_convert::to_python(classes[i]->name()));
+        PyList_SetItem(list, i, python::to_python(classes[i]->name()));
     }
     return list;
 }
@@ -74,7 +75,7 @@ Object* pluto::create_object(const Tuple& args)
     if (args.size() < 1)
         PYTHON_ERROR_R(AttributeError, nullptr, "expected at least one argument");
 
-    const char* class_name = python_convert::from_python<const char*>(args.get(0));
+    const char* class_name = python::from_python<const char*>(args.get(0));
     if (!class_name)
         PYTHON_ERROR_R(AttributeError, nullptr, "expected first argument to be string");
 

@@ -4,7 +4,7 @@
 
 #include <QString>
 
-namespace python_convert
+namespace python
 {
     template<>
     CORE_API PyObject* to_python<QString>(const QString& val)

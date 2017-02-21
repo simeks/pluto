@@ -29,7 +29,7 @@ namespace python_helpers
         if (PySequence_Check(args))
         {
             _PYTHON_PARSE_ARGS_ERROR_CHECK(1);
-            a = python_convert::from_python<A>(obj[0]);
+            a = python::from_python<A>(obj[0]);
         }
     }
     template<typename A, typename B>
@@ -38,8 +38,8 @@ namespace python_helpers
         if (PySequence_Check(args))
         {
             _PYTHON_PARSE_ARGS_ERROR_CHECK(2);
-            a = python_convert::from_python<A>(obj[0]);
-            b = python_convert::from_python<B>(obj[1]);
+            a = python::from_python<A>(obj[0]);
+            b = python::from_python<B>(obj[1]);
         }
     }
     template<typename A, typename B, typename C>
@@ -48,9 +48,9 @@ namespace python_helpers
         if (PySequence_Check(args))
         {
             _PYTHON_PARSE_ARGS_ERROR_CHECK(3);
-            a = python_convert::from_python<A>(obj[0]);
-            b = python_convert::from_python<B>(obj[1]);
-            c = python_convert::from_python<C>(obj[2]);
+            a = python::from_python<A>(obj[0]);
+            b = python::from_python<B>(obj[1]);
+            c = python::from_python<C>(obj[2]);
         }
     }
     template<typename A, typename B, typename C, typename D>
@@ -59,34 +59,34 @@ namespace python_helpers
         if (PySequence_Check(args))
         {
             _PYTHON_PARSE_ARGS_ERROR_CHECK(4);
-            a = python_convert::from_python<A>(obj[0]);
-            b = python_convert::from_python<B>(obj[1]);
-            c = python_convert::from_python<C>(obj[2]);
-            d = python_convert::from_python<D>(obj[3]);
+            a = python::from_python<A>(obj[0]);
+            b = python::from_python<B>(obj[1]);
+            c = python::from_python<C>(obj[2]);
+            d = python::from_python<D>(obj[3]);
         }
     }
     template<typename A>
     PyObject* build_args(const A& a)
     {
         PyObject* t = PyTuple_New(1);
-        PyTuple_SetItem(t, 0, python_convert::to_python(a));
+        PyTuple_SetItem(t, 0, python::to_python(a));
         return t;
     }
     template<typename A, typename B>
     PyObject* build_args(const A& a, const B& b)
     {
         PyObject* t = PyTuple_New(2);
-        PyTuple_SetItem(t, 0, python_convert::to_python(a));
-        PyTuple_SetItem(t, 1, python_convert::to_python(b));
+        PyTuple_SetItem(t, 0, python::to_python(a));
+        PyTuple_SetItem(t, 1, python::to_python(b));
         return t;
     }
     template<typename A, typename B, typename C>
     PyObject* build_args(const A& a, const B& b, const C& c)
     {
         PyObject* t = PyTuple_New(2);
-        PyTuple_SetItem(t, 0, python_convert::to_python(a));
-        PyTuple_SetItem(t, 1, python_convert::to_python(b));
-        PyTuple_SetItem(t, 2, python_convert::to_python(c));
+        PyTuple_SetItem(t, 0, python::to_python(a));
+        PyTuple_SetItem(t, 1, python::to_python(b));
+        PyTuple_SetItem(t, 2, python::to_python(c));
         return t;
     }
 }

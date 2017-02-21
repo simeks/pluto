@@ -29,7 +29,7 @@ namespace
     }
 }
 
-namespace python_convert
+namespace python
 {
     template<>
     CORE_API Image from_python(PyObject* obj)

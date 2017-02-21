@@ -17,7 +17,7 @@
         return 0;
 
 #define PYTHON_FUNCTION_RETURN(Fn) \
-    PyObject* ret = python_convert::to_python(Fn); \
+    PyObject* ret = python::to_python(Fn); \
     if (PyErr_Occurred()) \
         return 0; \
     return ret;
@@ -122,7 +122,7 @@
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* ) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
-        return python_convert::to_python(tself->Fn(Tuple(args))); \
+        return python::to_python(tself->Fn(Tuple(args))); \
     }
 
 #define PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT(TClass, Fn) \
@@ -137,7 +137,7 @@
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* kw) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
-        return python_convert::to_python(tself->Fn(Tuple(args), Dict(kw))); \
+        return python::to_python(tself->Fn(Tuple(args), Dict(kw))); \
     }
 
 

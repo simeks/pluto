@@ -3,18 +3,20 @@
 
 #include "Object.h"
 
+#define PYTHON_CLASS(cls, name)
+
 namespace python
 {
-    //Object make_class(const char* name, size_t size);
+    class Class;
 
-    //class CORE_API Class : public Object
-    //{
-    //public:
-    //    Class(const char* name);
-    //    
-    //};
+    typedef void(*ClassInit)(const python::Class& cls);
 
-
+    class CORE_API Class : public Object
+    {
+    public:
+        Class(const char* name, ClassInit init_class);
+        
+    };
 }
 
 #include "Class.inl"

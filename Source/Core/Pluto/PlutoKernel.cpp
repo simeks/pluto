@@ -30,12 +30,12 @@ PlutoKernel::~PlutoKernel()
     python::setattr(sys, "stdout", Py_None);
     python::setattr(sys, "stderr", Py_None);
 
-    if (_stdout)
-        _stdout->release();
-    if (_htmlout)
-        _htmlout->release();
-    if (_stderr)
-        _stderr->release();
+    //if (_stdout)
+    //    _stdout->release();
+    //if (_htmlout)
+    //    _htmlout->release();
+    //if (_stderr)
+    //    _stderr->release();
     
     _main_module = Py_None;
 }
@@ -44,16 +44,16 @@ void PlutoKernel::prepare()
     Py_Initialize();
     PythonClass::ready_all();
 
-    _stdout = object_new<PyStdStream>();
-    _htmlout = object_new<PyStdStream>();
-    _stderr = object_new<PyStdStream>();
+    //_stdout = object_new<PyStdStream>();
+    //_htmlout = object_new<PyStdStream>();
+    //_stderr = object_new<PyStdStream>();
 
     python::Object sys = python::import("sys");
-    _stdout->addref();
+    /*_stdout->addref();
     python::setattr(sys, "stdout", _stdout);
     _stderr->addref();
     python::setattr(sys, "stderr", _stderr);
-
+*/
     python::Object path = python::getattr(sys, "path");
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().python_dir())); // TODO: List object
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().module_dir()));
@@ -63,11 +63,11 @@ void PlutoKernel::prepare()
     PyObject* main = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
     _main_module = python::Object(main);
     Py_DECREF(main);
+/*
+    _htmlout->addref();*/
 
-    _htmlout->addref();
-
-    python::Object pluto_module = python::import("pluto_api");
-    python::setattr(pluto_module, "htmlout", _htmlout);
+    //python::Object pluto_module = python::import("pluto_api");
+    //python::setattr(pluto_module, "htmlout", _htmlout);
 
     _reloader = new AutoReloader();
 }

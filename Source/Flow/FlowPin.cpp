@@ -49,13 +49,13 @@ void FlowPin::object_python_init(const Tuple& args, const Dict& )
     if (args.size() < 2)
         PYTHON_ERROR(ValueError, "FlowPin expected at least 2 arguments");
 
-    std::string name = python_convert::from_python<std::string>(args.get(0));
+    std::string name = python::from_python<std::string>(args.get(0));
     if (!std::regex_match(name, flow_pin::pin_name_pattern))
     {
         PYTHON_ERROR(ValueError, "Invalid pin name: '%s'", name.c_str());
     }
     _name = name;
-    _pin_type = (FlowPin::Type)python_convert::from_python<int>(args.get(1));
+    _pin_type = (FlowPin::Type)python::from_python<int>(args.get(1));
 }
 FlowPin::Type FlowPin::pin_type() const
 {

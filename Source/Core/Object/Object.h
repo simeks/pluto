@@ -22,10 +22,10 @@
     type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
-    type->add_attr(Name, python_convert::to_python(Value));
+    type->add_attr(Name, python::to_python(Value));
 
 #define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) \
-    namespace python_convert { \
+    namespace python { \
         template<> \
         API TClass* from_python(PyObject* obj) { \
             if (obj == Py_None) { \
@@ -42,7 +42,7 @@
         } \
     }
 #define OBJECT_CONVERTER_TO_PYTHON(TClass, API) \
-    namespace python_convert { \
+    namespace python { \
         template<> \
         API PyObject* to_python(TClass* const& obj) { \
             if (obj) return obj->python_object(); \
@@ -163,24 +163,24 @@ protected:
 template<typename R, typename A>
 R Object::invoke_method(const char* name, const A& a)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 template<typename R, typename A, typename B>
 R Object::invoke_method(const char* name, const A& a, const B& b)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 template<typename R, typename A, typename B, typename C>
 R Object::invoke_method(const char* name, const A& a, const B& b, const C& c)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 
 
 template<typename T>
 void Object::set_attribute(const char* name, const T& attr)
 {
-    set_attribute(name, python_convert::to_python<T>(attr));
+    set_attribute(name, python::to_python<T>(attr));
 }
 template<int N>
 void Object::set_attribute(const char* name, const char(&value)[N])
@@ -191,7 +191,7 @@ void Object::set_attribute(const char* name, const char(&value)[N])
 template<typename T>
 T Object::attribute(const char* name) const
 {
-    return python_convert::from_python<T>(attribute(name));
+    return python::from_python<T>(attribute(name));
 }
 
 template<typename Type>

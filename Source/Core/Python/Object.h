@@ -40,11 +40,6 @@ namespace python
 
     CORE_API bool hasattr(const Object& obj, const char* key);
 
-    CORE_API Object getattr(const Object& obj, const char* key);
-    CORE_API Object getattr(const Object& obj, const char* key, const Object& default);
-
-    CORE_API void setattr(const Object& obj, const char* key, const Object& value);
-
     template<typename T>
     T getattr(const Object& obj, const char* key);
     template<typename T>

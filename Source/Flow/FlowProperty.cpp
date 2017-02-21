@@ -30,7 +30,7 @@ void FlowProperty::object_python_init(const Tuple& args, const Dict&)
 {
     _owner = nullptr;
     if (args.size() > 0)
-        _name = python_convert::from_python<std::string>(args.get(0));
+        _name = python::from_python<std::string>(args.get(0));
     _default_value = nullptr;
 }
 const char* FlowProperty::name() const
@@ -58,7 +58,7 @@ FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
 }
 
 
-namespace python_convert
+namespace python
 {
     template<>
     FLOW_API PyObject* to_python<FileProperty::FileMode>(const FileProperty::FileMode& type)
@@ -101,12 +101,12 @@ void FileProperty::object_python_init(const Tuple& args, const Dict& kw)
     }
 
     if (args.size() > 2)
-        _file_mode = python_convert::from_python<FileMode>(args.get(2));
+        _file_mode = python::from_python<FileMode>(args.get(2));
     else
         _file_mode = File_Open;
 
     if (args.size() > 3)
-        _file_filter = python_convert::from_python<std::string>(args.get(3));
+        _file_filter = python::from_python<std::string>(args.get(3));
     else
         _file_filter = "Files (*.*)";
 }
@@ -272,7 +272,7 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
         PyObject* def = args.get(2);
         if (PyLong_Check(def))
         {
-            _default_index = python_convert::from_python<int>(def);
+            _default_index = python::from_python<int>(def);
             if (_default_index >= 0 && _default_index < opts.size())
             {
                 _default_value = opts.get(_default_index);

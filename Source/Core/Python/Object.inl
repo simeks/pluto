@@ -79,7 +79,7 @@ namespace python
     template<typename T>
     T getattr(const Object& obj, const char* key)
     {
-        return python_convert::from_python<T>(getattr(obj, key));
+        return python::from_python<T>(getattr(obj, key));
     }
     template<typename T>
     T getattr(const Object& obj, const char* key, const T& default)
@@ -90,7 +90,7 @@ namespace python
             PyErr_Clear();
             return default;
         }
-        T ret = python_convert::from_python<T>(attr);
+        T ret = python::from_python<T>(attr);
         Py_DECREF(attr); // TODO: Can we avoid this redundant reference handling? 
         return ret;
     }
@@ -103,7 +103,7 @@ namespace python
             PyErr_Clear();
             return default;
         }
-        const char* ret = python_convert::from_python<const char*>(attr);
+        const char* ret = python::from_python<const char*>(attr);
         Py_DECREF(attr); // TODO: Can we avoid this redundant reference handling? 
         return ret;
     }
@@ -111,6 +111,6 @@ namespace python
     template<typename T>
     void setattr(const Object& obj, const char* key, const T& value)
     {
-        setattr(obj, key, Object(python_convert::to_python(value)));
+        setattr<Object>(obj, key, Object(python::to_python(value)));
     }
 }

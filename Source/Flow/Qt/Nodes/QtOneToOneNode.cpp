@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-using namespace python_convert;
+using namespace python;
 
 QtOneToOneNode::QtOneToOneNode(FlowNode* node, QGraphicsObject* parent) :
     QtFlowNode(node, parent)

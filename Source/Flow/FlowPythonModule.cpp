@@ -104,7 +104,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
 
     FlowGraph* graph = nullptr;
     if (FlowGraph::static_class()->check_type(args.get(0)))
-        graph = python_convert::from_python<FlowGraph*>(args.get(0));
+        graph = python::from_python<FlowGraph*>(args.get(0));
     else if (PyUnicode_Check(args.get(0)))
     {
         // First argument was a string so we assume its a path to a graph file
@@ -163,7 +163,7 @@ Tuple flow::node_templates()
     Tuple l(tpls.size());
     for (int i = 0; i < tpls.size(); ++i)
     {
-        l.set(i, python_convert::to_python(tpls[i]->node_class()));
+        l.set(i, python::to_python(tpls[i]->node_class()));
     }
     return l;
 }

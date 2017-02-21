@@ -193,7 +193,7 @@ size_t image::component_size(int type)
     return 0;
 }
 
-namespace python_convert
+namespace python
 {
     template<>
     CORE_API image::PixelType from_python(PyObject* obj)

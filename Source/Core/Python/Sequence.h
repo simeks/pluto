@@ -22,13 +22,13 @@ public:
     template<typename T>
     T get(size_t idx) const
     {
-        return python_convert::from_python<T>(get(idx));
+        return python::from_python<T>(get(idx));
     }
 
     template<typename T>
     void set(size_t idx, T value)
     {
-        set(idx, python_convert::to_python(value));
+        set(idx, python::to_python(value));
     }
 private:
     PyObject* _s;

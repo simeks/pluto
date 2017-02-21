@@ -7,7 +7,7 @@
 
 class Object;
 
-namespace python_convert
+namespace python
 {
     template<typename T>
     T from_python(PyObject* obj);

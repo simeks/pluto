@@ -7,7 +7,7 @@ namespace python
         PyObject* invoke(TReturn(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return python_convert::to_python<TReturn>(fn(std::get<Index>(args)...));
+            return python::to_python<TReturn>(fn(std::get<Index>(args)...));
         }
         template<typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(void(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -21,7 +21,7 @@ namespace python
         PyObject* invoke(TClass* self, TReturn(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return python_convert::to_python<TReturn>((self->*fn)(std::get<Index>(args)...));
+            return python::to_python<TReturn>((self->*fn)(std::get<Index>(args)...));
         }
         template<typename TClass, typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(TClass* self, void(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -49,7 +49,7 @@ namespace python
             size_t i = 0;
             // Initializer lists are guaranteed to evaluate in order, therefore we can use them to first unpack all args
             std::tuple<typename std::decay<TArgs>::type...> t{
-                python_convert::from_python<typename std::decay<TArgs>::type>(pop_item_from_tuple(args, i))...
+                python::from_python<typename std::decay<TArgs>::type>(pop_item_from_tuple(args, i))...
             };
             i; args; // Avoid C4189 when having no args
 

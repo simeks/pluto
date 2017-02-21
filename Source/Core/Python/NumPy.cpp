@@ -47,7 +47,7 @@ bool numpy::check_type(PyObject* obj)
     return obj && PyArray_Check(obj) != 0;
 }
 
-namespace python_convert
+namespace python
 {
     template<>
     CORE_API NumpyArray from_python(PyObject* obj)

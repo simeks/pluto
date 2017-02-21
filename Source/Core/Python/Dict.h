@@ -33,13 +33,13 @@ public:
     template<typename T>
     T get(const char* key) const
     {
-        return python_convert::from_python<T>(get(key));
+        return python::from_python<T>(get(key));
     }
 
     template<typename T>
     void set(const char* key, T value)
     {
-        set(key, python_convert::to_python(value));
+        set(key, python::to_python(value));
     }
 
 

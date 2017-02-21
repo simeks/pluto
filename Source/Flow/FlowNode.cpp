@@ -68,7 +68,7 @@ void FlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence pins = Sequence(d.get("pins"));
         for (size_t i = 0; i < pins.size(); ++i)
         {
-            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
+            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i));
             add_pin(object_clone(pin));
         }
     }
@@ -77,7 +77,7 @@ void FlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence props = Sequence(d.get("properties"));
         for (size_t i = 0; i < props.size(); ++i)
         {
-            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
+            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i));
             add_property(object_clone(prop));
         }
     }

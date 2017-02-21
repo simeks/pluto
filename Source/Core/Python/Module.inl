@@ -44,7 +44,7 @@ namespace python
     template<typename T>
     INLINE void def(const Module& m, const char* name, const T& obj)
     {
-        python::setattr(m, name, python_convert::to_python(obj));
+        python::setattr(m, name, python::to_python(obj));
     }
 
 }

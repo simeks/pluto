@@ -87,16 +87,14 @@ TEST_CASE(python_function)
 
     Py_Finalize();
 }
-//
+
 //#define PYTHON_CLASS()
-//#define PYTHON_CLASS_IMPLEMENT(name) void python_init_class_##name(const python::Class& cls)
+#define PYTHON_CLASS_IMPLEMENT(cls, name) void python_init_class_##name(const python::Class& cls)
 //
 //namespace
 //{
 //    class TestClass
 //    {
-//        PYTHON_CLASS();
-//
 //    public:
 //        TestClass() {}
 //        ~TestClass() {}
@@ -108,18 +106,25 @@ TEST_CASE(python_function)
 //    };
 //}
 //
-//PYTHON_CLASS_IMPLEMENT(TestClass)
+//PYTHON_CLASS_IMPLEMENT(TestClass, "TestClass")
 //{
 //    def(cls, )
 //}
-//
 
-void testfn()
+
+void testfn(const python::Object& obj)
 {
+    obj;
+    //int a = 1;
+    //a++;
 }
 
 PYTHON_MODULE(py_class_test)
 {
+    python::Class cls = python::Class("test", nullptr);
+    cls;
+
+    python::setattr(module, "Cls", (const Object&)cls);
     def(module, "testfn", &testfn);
 }
 
@@ -130,8 +135,7 @@ TEST_CASE(python_class)
     {
         PyRun_SimpleString(
             "import py_class_test as p\n"
-            "class A:\n"
-            "   pass\n"
+            "A = p.Cls\n"
             "A.fn = p.testfn\n"
             "a = A()\n"
             "print(a.fn, type(a.fn))\n"

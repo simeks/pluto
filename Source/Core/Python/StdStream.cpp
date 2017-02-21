@@ -2,29 +2,29 @@
 
 #include "StdStream.h"
 
-#include "PythonCommon.h"
+//
+//PYTHON_CLASS(PyStdStream, "StdStream")
+
+//
+//const python::Class& PyStdStream::python_class()
+//{
+//    static python::Class cls = python::make_class<PyStdStream>("StdStream", &init_python_class);
+//    return cls;
+//}
+//void init_python_class(const python::Class& cls)
+//{
+//    python::def(cls, "write", &PyStdStream::write);
+//    python::def(cls, "flush", &PyStdStream::flush);
+//}
 
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(PyStdStream, write, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(PyStdStream, flush);
-
-OBJECT_INIT_TYPE_FN(PyStdStream)
-{
-    OBJECT_PYTHON_ADD_METHOD(PyStdStream, write, "");
-    OBJECT_PYTHON_ADD_METHOD(PyStdStream, flush, "");
-}
-
-IMPLEMENT_OBJECT(PyStdStream, "StdStream", CORE_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(PyStdStream, Object);
-
-PyStdStream::~PyStdStream()
-{
-}
-
-void PyStdStream::object_init()
+PyStdStream::PyStdStream()
 {
     _fn = nullptr;
     _data = nullptr;
+}
+PyStdStream::~PyStdStream()
+{
 }
 void PyStdStream::write(const char* text)
 {
@@ -36,11 +36,9 @@ void PyStdStream::write(const char* text)
         }
     }
 }
-PyObject* PyStdStream::flush()
+void PyStdStream::flush()
 {
-    Py_RETURN_NONE;
 }
-
 void PyStdStream::set_callback(Callback* fn, void* data)
 {
     _fn = fn;

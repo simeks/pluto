@@ -69,7 +69,7 @@ void UiFlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence pins = Sequence(d.get("pins"));
         for (size_t i = 0; i < pins.size(); ++i)
         {
-            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
+            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i));
             add_pin(object_clone(pin));
         }
     }
@@ -78,7 +78,7 @@ void UiFlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence props = Sequence(d.get("properties"));
         for (size_t i = 0; i < props.size(); ++i)
         {
-            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
+            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i));
             add_property(object_clone(prop));
         }
     }
@@ -154,25 +154,25 @@ void UiFlowNode::invoke_ui_method(const Tuple& args)
         PyObject* obj = args.get(i + 1);
         if (PyUnicode_Check(obj))
         {
-            auto data = new ArgVariable<QString>(python_convert::from_python<QString>(obj));
+            auto data = new ArgVariable<QString>(python::from_python<QString>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(QString, data->p);
         }
         else if (PyLong_Check(obj))
         {
-            auto data = new ArgVariable<int>(python_convert::from_python<int>(obj));
+            auto data = new ArgVariable<int>(python::from_python<int>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(int, data->p);
         }
         else if (PyFloat_Check(obj))
         {
-            auto data = new ArgVariable<float>(python_convert::from_python<float>(obj));
+            auto data = new ArgVariable<float>(python::from_python<float>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(float, data->p);
         }
         else if (numpy::check_type(obj))
         {
-            auto data = new ArgVariable<Image>(python_convert::from_python<Image>(obj));
+            auto data = new ArgVariable<Image>(python::from_python<Image>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(Image, data->p);
         }

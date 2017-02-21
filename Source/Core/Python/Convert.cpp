@@ -85,7 +85,7 @@
         return t; \
     }
 
-namespace python_convert
+namespace python
 {
     INT_FROM_PYTHON(int8_t);
     INT_FROM_PYTHON(int16_t);
