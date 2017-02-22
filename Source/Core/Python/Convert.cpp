@@ -9,22 +9,22 @@
 
 #define INT_FROM_PYTHON(T) \
     template<> \
-    CORE_API T from_python(PyObject* obj) \
+    CORE_API T from_python(const python::Object& obj) \
     { \
-        return (T)PyLong_AsLongLong(obj); \
+        return (T)PyLong_AsLongLong(obj.ptr()); \
     }
 
 #define UINT_FROM_PYTHON(T) \
     template<> \
-    CORE_API T from_python(PyObject* obj) \
+    CORE_API T from_python(const python::Object& obj) \
     { \
-        if (PyLong_Check(obj)) \
+        if (PyLong_Check(obj.ptr())) \
         { \
-            return (T)PyLong_AsUnsignedLongLong(obj); \
+            return (T)PyLong_AsUnsignedLongLong(obj.ptr()); \
         } \
         else \
         { \
-            long long l = PyLong_AsLongLong(obj); \
+            long long l = PyLong_AsLongLong(obj.ptr()); \
             if (l < 0) \
                 PyErr_SetString(PyExc_OverflowError, "Cannot convert negative value to unsigned"); \
             return (T)l; \
@@ -33,21 +33,21 @@
 
 #define FLOAT_FROM_PYTHON(T) \
     template<> \
-    CORE_API T from_python(PyObject* obj) \
+    CORE_API T from_python(const python::Object& obj) \
     { \
-        return (T)PyFloat_AsDouble(obj); \
+        return (T)PyFloat_AsDouble(obj.ptr()); \
     }
 
 #define VEC3_FROM_PYTHON(T) \
     template<> \
-    CORE_API Vec3<T> from_python(PyObject* obj) \
+    CORE_API Vec3<T> from_python(const python::Object& obj) \
     { \
-        if (PySequence_Check(obj) && PySequence_Size(obj)) \
+        if (PySequence_Check(obj.ptr()) && PySequence_Size(obj.ptr())) \
         { \
             Vec3<T> v; \
-            for (int i = 0; i < std::min<Py_ssize_t>(PySequence_Size(obj), 3); ++i) \
+            for (int i = 0; i < std::min<Py_ssize_t>(PySequence_Size(obj.ptr()), 3); ++i) \
             { \
-                v[i] = from_python<T>(PySequence_GetItem(obj, i)); \
+                v[i] = from_python<T>(PySequence_GetItem(obj.ptr(), i)); \
             } \
             return v; \
         } \
@@ -58,30 +58,30 @@
 
 #define INT_TO_PYTHON(T) \
     template<> \
-    CORE_API PyObject* to_python(const T& value) \
+    CORE_API python::Object to_python(const T& value) \
     { \
         return PyLong_FromLongLong((long long)value); \
     }
 #define UINT_TO_PYTHON(T) \
     template<> \
-    CORE_API PyObject* to_python(const T& value) \
+    CORE_API python::Object to_python(const T& value) \
     { \
         return PyLong_FromUnsignedLongLong((unsigned long long)value); \
     }
 #define FLOAT_TO_PYTHON(T) \
     template<> \
-    CORE_API PyObject* to_python(const T& value) \
+    CORE_API python::Object to_python(const T& value) \
     { \
         return PyFloat_FromDouble((double)value); \
     }
 #define VEC3_TO_PYTHON(T) \
     template<> \
-    CORE_API PyObject* to_python(const Vec3<T>& value) \
+    CORE_API python::Object to_python(const Vec3<T>& value) \
     { \
         PyObject* t = PyTuple_New(3); \
-        PyTuple_SetItem(t, 0, to_python<T>(value.x)); \
-        PyTuple_SetItem(t, 1, to_python<T>(value.y)); \
-        PyTuple_SetItem(t, 2, to_python<T>(value.z)); \
+        PyTuple_SetItem(t, 0, to_python<T>(value.x).ptr()); \
+        PyTuple_SetItem(t, 1, to_python<T>(value.y).ptr()); \
+        PyTuple_SetItem(t, 2, to_python<T>(value.z).ptr()); \
         return t; \
     }
 
@@ -106,54 +106,54 @@ namespace python
     VEC3_FROM_PYTHON(double);
 
     template<>
-    CORE_API const char* from_python(PyObject* obj)
+    CORE_API const char* from_python(const python::Object& obj)
     {
-        if (PyUnicode_Check(obj))
-            return PyUnicode_AsUTF8(obj);
+        if (PyUnicode_Check(obj.ptr()))
+            return PyUnicode_AsUTF8(obj.ptr());
         PyErr_SetString(PyExc_ValueError, "Expected string");
         return nullptr;
     }
 
     template<>
-    CORE_API std::string from_python(PyObject* obj)
+    CORE_API std::string from_python(const python::Object& obj)
     {
-        if (PyUnicode_Check(obj))
-            return PyUnicode_AsUTF8(obj);
+        if (PyUnicode_Check(obj.ptr()))
+            return PyUnicode_AsUTF8(obj.ptr());
         PyErr_SetString(PyExc_ValueError, "Expected string");
         return "";
     }
 
     template<>
-    CORE_API Tuple from_python(PyObject* obj)
+    CORE_API Tuple from_python(const python::Object& obj)
     {
-        if (PySequence_Check(obj) || PyTuple_Check(obj))
+        if (PySequence_Check(obj.ptr()) || PyTuple_Check(obj.ptr()))
         {
-            return Tuple(obj);
+            return Tuple(obj.ptr());
         }
         Tuple t(1);
-        t.set(0, obj);
+        t.set(0, obj.ptr());
         return t;
     }
 
     template<>
-    CORE_API Dict from_python(PyObject* obj)
+    CORE_API Dict from_python(const python::Object& obj)
     {
-        if (PyDict_Check(obj))
-            return Dict(obj);
+        if (PyDict_Check(obj.ptr()))
+            return Dict(obj.ptr());
         PyErr_SetString(PyExc_ValueError, "Expected dict");
         return Dict();
     }
 
     template<>
-    CORE_API void from_python(PyObject* )
+    CORE_API void from_python(const python::Object& )
     {
     }
 
     template<>
-    CORE_API bool from_python(PyObject* obj)
+    CORE_API bool from_python(const python::Object& obj)
     {
-        if (PyBool_Check(obj))
-            return (obj == Py_True);
+        if (PyBool_Check(obj.ptr()))
+            return (obj.ptr() == Py_True);
         PyErr_SetString(PyExc_ValueError, "Expected bool");
         return false;
     }
@@ -178,18 +178,18 @@ namespace python
     VEC3_TO_PYTHON(double);
 
     template<>
-    CORE_API PyObject* to_python(const char* const& value)
+    CORE_API python::Object to_python(const char* const& value)
     {
         return PyUnicode_FromString(value);
     }
     template<>
-    CORE_API PyObject* to_python(const std::string& value)
+    CORE_API python::Object to_python(const std::string& value)
     {
         return PyUnicode_FromString(value.c_str());
     }
 
     template<>
-    CORE_API PyObject* to_python(const Tuple& value)
+    CORE_API python::Object to_python(const Tuple& value)
     {
         PyObject* o = value.tuple();
         Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
@@ -197,7 +197,7 @@ namespace python
     }
 
     template<>
-    CORE_API PyObject* to_python(const Dict& value)
+    CORE_API python::Object to_python(const Dict& value)
     {
         PyObject* o = value.dict();
         Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
@@ -205,12 +205,12 @@ namespace python
     }
 
     template<>
-    CORE_API PyObject* to_python(const Guid& value)
+    CORE_API python::Object to_python(const Guid& value)
     {
         return PyUnicode_FromString(guid::to_string(value).c_str());
     }
     template<>
-    CORE_API PyObject* to_python(const bool& value)
+    CORE_API python::Object to_python(const bool& value)
     {
         if (value)
         {
@@ -218,6 +218,18 @@ namespace python
         }
         Py_RETURN_FALSE;
     }
+
+    template<>
+    CORE_API python::Object from_python(const python::Object& value) { return value; }
+
+    template<>
+    CORE_API python::Object to_python(const python::Object& value) { return value; }
+
+    template<>
+    CORE_API python::Object to_python(PyObject* const& value) { return value; }
+
+    template<>
+    CORE_API PyObject* from_python(const python::Object& value) { return value.ptr(); }
 
 
 }

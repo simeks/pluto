@@ -1,7 +1,7 @@
 #ifndef __PYTHON_OBJECT_H__
 #define __PYTHON_OBJECT_H__
 
-#include "PythonCommon.h"
+#include "PythonWrapper.h"
 
 namespace python
 {
@@ -28,25 +28,11 @@ namespace python
     PyObject* decref(PyObject* obj);
     PyObject* xdecref(PyObject* obj);
 
-    template<typename T>
-    T incref(T obj);
-    template<typename T>
-    T xincref(T obj);
-
-    template<typename T>
-    T decref(T obj);
-    template<typename T>
-    T xdecref(T obj);
-
     CORE_API bool hasattr(const Object& obj, const char* key);
 
-    template<typename T>
-    T getattr(const Object& obj, const char* key);
-    template<typename T>
-    T getattr(const Object& obj, const char* key, const T& default);
-
-    template<typename T>
-    void setattr(const Object& obj, const char* key, const T& value);
+    CORE_API Object getattr(const Object& obj, const char* key);
+    CORE_API Object getattr(const Object& obj, const char* key, const Object& default);
+    CORE_API void setattr(const Object& obj, const char* key, const Object& value);
 
 } // namespace python
 

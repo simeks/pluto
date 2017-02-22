@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Json/JsonObject.h>
+#include <Core/Python/PythonFunction.h>
 
 #include "FlowGraph.h"
 #include "FlowNode.h"

@@ -55,8 +55,7 @@ python::Object pluto::register_class(const python::Object& cls)
     if (PyType_Check(cls.ptr()) == 0)
         PYTHON_ERROR_R(TypeError, nullptr, "expected class");
 
-    python::incref(cls);
-    PythonClass::python_class((PyTypeObject*)cls.ptr());
+    PythonClass::python_class((PyTypeObject*)python::incref(cls.ptr()));
 
     return cls;
 }
@@ -66,7 +65,7 @@ python::Object pluto::classes()
     PyObject* list = PyList_New(classes.size());
     for (size_t i = 0; i < classes.size(); ++i)
     {
-        PyList_SetItem(list, i, python::to_python(classes[i]->name()));
+        PyList_SetItem(list, i, python::to_python(classes[i]->name()).ptr());
     }
     return list;
 }

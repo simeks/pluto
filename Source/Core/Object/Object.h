@@ -1,9 +1,9 @@
 #ifndef __CORE_OBJECT_H__
 #define __CORE_OBJECT_H__
 
-#include "Class.h"
-#include "PythonClass.h"
-#include <Core/Python/PythonFunction.h>
+
+#include <Core/Object/PythonClass.h>
+#include <Core/Python/PythonCommon.h>
 
 
 #define OBJECT_INIT_TYPE_FN_NAME(TClass) TClass##_init_type
@@ -22,19 +22,19 @@
     type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
-    type->add_attr(Name, python::to_python(Value));
+    type->add_attr(Name, python::to_python(Value).ptr());
 
 #define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) \
     namespace python { \
         template<> \
-        API TClass* from_python(PyObject* obj) { \
-            if (obj == Py_None) { \
+        API ::TClass* from_python(const python::Object& obj) { \
+            if (obj.ptr() == Py_None) { \
                 return nullptr; \
             } \
-            if (TClass::static_class()->check_type(obj)) { \
-                Object* ret = python_object::object(obj); \
-                if (ret->is_a(TClass::static_class())) { \
-                    return object_cast<TClass>(ret); \
+            if (::TClass::static_class()->check_type(obj.ptr())) { \
+                ::Object* ret = python_object::object(obj.ptr()); \
+                if (ret->is_a(::TClass::static_class())) { \
+                    return object_cast<::TClass>(ret); \
                 } \
             } \
             PyErr_SetString(PyExc_ValueError, "Failed to convert Object"); \
@@ -44,7 +44,7 @@
 #define OBJECT_CONVERTER_TO_PYTHON(TClass, API) \
     namespace python { \
         template<> \
-        API PyObject* to_python(TClass* const& obj) { \
+        API python::Object to_python(::TClass* const& obj) { \
             if (obj) return obj->python_object(); \
             return nullptr; \
         } \
@@ -100,7 +100,9 @@
 #define IMPLEMENT_OBJECT_CONSTRUCTOR(TClass, TSuperClass) \
     TClass::TClass(PyObject* pyobj, PythonClass* cls) : TSuperClass(pyobj, cls) {}
 
+class Class;
 class Dict;
+class PythonClass;
 class PythonType;
 class Tuple;
 
@@ -136,7 +138,7 @@ public:
     template<typename R, typename A, typename B, typename C>
     R invoke_method(const char* name, const A& a, const B& b, const C& c);
 
-    void set_attribute(const char* name, PyObject* attr);
+    void set_attribute(const char* name, const python::Object& attr);
 
     bool has_attribute(const char* name) const;
     PyObject* attribute(const char* name) const;

@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Python/PythonFunction.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"

@@ -1,7 +1,7 @@
 #ifndef __PYTHON_FUNCTION_H__
 #define __PYTHON_FUNCTION_H__
 
-#include "Object.h"
+#include <Core/Python/PythonCommon.h>
 
 namespace python
 {

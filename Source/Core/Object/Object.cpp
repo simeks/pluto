@@ -3,6 +3,7 @@
 #include "Object.h"
 
 #include "Python/PythonCommon.h"
+#include "Python/PythonFunction.h"
 
 PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(Object, object_type);
 
@@ -72,9 +73,9 @@ PyObject* Object::invoke_method(const char* name, PyObject* args)
     Py_DECREF(method);
     return ret;
 }
-void Object::set_attribute(const char* name, PyObject* attr)
+void Object::set_attribute(const char* name, const python::Object& attr)
 {
-    if (PyObject_SetAttrString(_py_object, name, attr) != 0)
+    if (PyObject_SetAttrString(_py_object, name, attr.ptr()) != 0)
         PyErr_Print();
 }
 bool Object::has_attribute(const char* name) const

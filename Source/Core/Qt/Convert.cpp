@@ -7,13 +7,13 @@
 namespace python
 {
     template<>
-    CORE_API PyObject* to_python<QString>(const QString& val)
+    CORE_API python::Object to_python(const QString& val)
     {
         return to_python(val.toUtf8().constData());
     }
     template<>
-    CORE_API QString from_python<QString>(PyObject* obj)
+    CORE_API QString from_python(const python::Object& obj)
     {
-        return QString::fromUtf8(PyUnicode_AsUTF8(obj));
+        return QString::fromUtf8(PyUnicode_AsUTF8(obj.ptr()));
     }
 }

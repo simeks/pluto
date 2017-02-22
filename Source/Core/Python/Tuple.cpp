@@ -24,9 +24,9 @@ size_t Tuple::size() const
 {
     return PyTuple_Size(_t);
 }
-void Tuple::set(size_t idx, PyObject* obj)
+void Tuple::set(size_t idx, const python::Object& obj)
 {
-    PyTuple_SetItem(_t, idx, obj);
+    PyTuple_SetItem(_t, idx, obj.ptr());
 }
 PyObject* Tuple::get(size_t idx) const
 {

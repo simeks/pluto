@@ -61,14 +61,14 @@ FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
 namespace python
 {
     template<>
-    FLOW_API PyObject* to_python<FileProperty::FileMode>(const FileProperty::FileMode& type)
+    FLOW_API python::Object to_python(const FileProperty::FileMode& type)
     {
         return to_python((int)type);
     }
     template<>
-    FLOW_API FileProperty::FileMode from_python<FileProperty::FileMode>(PyObject* obj)
+    FLOW_API FileProperty::FileMode from_python(const python::Object& obj)
     {
-        return (FileProperty::FileMode)from_python<int>(obj);
+        return (FileProperty::FileMode)from_python<int>(obj.ptr());
     }
 }
 

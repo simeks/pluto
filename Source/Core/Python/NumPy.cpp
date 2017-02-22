@@ -50,18 +50,18 @@ bool numpy::check_type(PyObject* obj)
 namespace python
 {
     template<>
-    CORE_API NumpyArray from_python(PyObject* obj)
+    CORE_API NumpyArray from_python(const python::Object& obj)
     {
-        if (PyArray_Check(obj))
+        if (PyArray_Check(obj.ptr()))
         {
-            return NumpyArray((PyArrayObject*)obj);
+            return NumpyArray((PyArrayObject*)obj.ptr());
         }
 
-        PYTHON_ERROR_R(ValueError, NumpyArray(), "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
+        PYTHON_ERROR_R(ValueError, NumpyArray(), "Failed to convert object of type '%s' to NumpyArray", obj.ptr()->ob_type->tp_name);
     }
 
     template<>
-    CORE_API PyObject* to_python(const NumpyArray& value)
+    CORE_API python::Object to_python(const NumpyArray& value)
     {
         PyObject* obj = value.object();
         if (!obj)

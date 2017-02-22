@@ -20,7 +20,7 @@ void AutoReloader::add_module(const python::Object& module)
 {
     if (python::hasattr(module, "__file__"))
     {
-        QString file = python::getattr<QString>(module, "__file__", "");
+        QString file = python::from_python<QString>(python::getattr(module, "__file__"));
 
         auto it = _modules.find(file);
         if (it == _modules.end())

@@ -15,7 +15,7 @@ public:
     size_t size() const;
 
     PyObject* get(size_t idx) const;
-    void set(size_t idx, PyObject* obj);
+    void set(size_t idx, const python::Object& obj);
 
     bool valid() const;
 

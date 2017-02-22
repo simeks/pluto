@@ -196,19 +196,19 @@ size_t image::component_size(int type)
 namespace python
 {
     template<>
-    CORE_API image::PixelType from_python(PyObject* obj)
+    CORE_API image::PixelType from_python(const python::Object& obj)
     {
-        if (PyUnicode_Check(obj))
-            return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj));
-        if (PyLong_Check(obj))
-            return (image::PixelType)PyLong_AsLong(obj);
-        else if (obj)
-            PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "Failed to convert object of type '%s' to PixelType", obj->ob_type->tp_name);
+        if (PyUnicode_Check(obj.ptr()))
+            return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj.ptr()));
+        if (PyLong_Check(obj.ptr()))
+            return (image::PixelType)PyLong_AsLong(obj.ptr());
+        else if (obj.ptr())
+            PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "Failed to convert object of type '%s' to PixelType", obj.ptr()->ob_type->tp_name);
         PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "NULL object");
     }
 
     template<>
-    CORE_API PyObject* to_python(const image::PixelType& value)
+    CORE_API python::Object to_python(const image::PixelType& value)
     {
         return PyLong_FromLong((int)value);
     }

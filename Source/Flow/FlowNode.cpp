@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Python/PythonFunction.h>
 #include <Core/Python/Sequence.h>
 
 #include "FlowContext.h"
@@ -220,7 +221,7 @@ void FlowNode::set_property(const char* name, const char* value)
 {
     set_attribute(name, value);
 }
-void FlowNode::set_property(const char* name, PyObject* value)
+void FlowNode::set_property(const char* name, const python::Object& value)
 {
     set_attribute(name, value);
 }
