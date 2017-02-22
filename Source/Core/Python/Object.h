@@ -3,6 +3,8 @@
 
 #include "PythonWrapper.h"
 
+#include <Core/Object/PythonClass.h>
+
 namespace python
 {
     class CORE_API Object
@@ -33,6 +35,13 @@ namespace python
     CORE_API Object getattr(const Object& obj, const char* key);
     CORE_API Object getattr(const Object& obj, const char* key, const Object& default);
     CORE_API void setattr(const Object& obj, const char* key, const Object& value);
+
+    /// @brief Adds the specified class to the given module
+    void def(const Object& m, const char* name, PythonClass* cls);
+
+    /// @brief Adds the specified object to the given module
+    template<typename T>
+    void def(const Object& m, const char* name, const T& obj);
 
 } // namespace python
 

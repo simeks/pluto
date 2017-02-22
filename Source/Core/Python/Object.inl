@@ -50,4 +50,15 @@ namespace python
         return obj;
     }
 
+
+    INLINE void def(const Object& m, const char* name, PythonClass* cls)
+    {
+        python::setattr(m, name, (PyObject*)cls->python_type());
+    }
+
+    template<typename T>
+    INLINE void def(const Object& m, const char* name, const T& obj)
+    {
+        python::setattr(m, name, python::to_python(obj));
+    }
 }

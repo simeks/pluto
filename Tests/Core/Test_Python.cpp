@@ -1,6 +1,8 @@
 #include <Testing/Framework.h>
 
 #include <Core/Python/Class.h>
+#include <Core/Python/PythonCommon.h>
+#include <Core/Python/Function.h>
 #include <Core/Python/Module.h>
 #include <Core/Python/NumPy.h>
 #include <Core/Python/Object.h>
@@ -53,8 +55,8 @@ TEST_CASE(python_module)
     Py_Initialize();
     {
         python::Object m = python::import("py_test_module");
-        ASSERT_EQUAL(python::getattr(m, "constant_int", 0), 5);
-        ASSERT_EQUAL_STR(python::getattr(m, "constant_str", ""), "testtest");
+        ASSERT_EQUAL(python::from_python<int>(python::getattr(m, "constant_int")), 5);
+        ASSERT_EQUAL_STR(python::from_python<const char*>(python::getattr(m, "constant_str")), "testtest");
     }
     Py_Finalize();
 }
@@ -89,7 +91,7 @@ TEST_CASE(python_function)
 }
 
 //#define PYTHON_CLASS()
-#define PYTHON_CLASS_IMPLEMENT(cls, name) void python_init_class_##name(const python::Class& cls)
+//#define PYTHON_CLASS_IMPLEMENT(cls, name) void python_init_class_##name(const python::Class& cls)
 //
 //namespace
 //{
@@ -105,26 +107,30 @@ TEST_CASE(python_function)
 //        }
 //    };
 //}
-//
 //PYTHON_CLASS_IMPLEMENT(TestClass, "TestClass")
 //{
 //    def(cls, )
 //}
 
+namespace
+{
+    int _class_method_flag_a = 0;
+    int _class_method_flag_b = 0;
+}
 
 void testfn(const python::Object& obj)
 {
-    obj;
-    //int a = 1;
-    //a++;
+    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a"));
+    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b"));
 }
 
 PYTHON_MODULE(py_class_test)
 {
-    python::Class cls = python::Class("test", nullptr);
-    cls;
+    python::Object cls = python::Class("test", nullptr);
+    python::def(cls, "testfn", python::make_function(testfn, "testfn"));
 
-    python::setattr(module, "Cls", (const Object&)cls);
+    python::setattr(module, "Cls", cls);
+    python::setattr(cls, "a", python::to_python(143));
     def(module, "testfn", &testfn);
 }
 
@@ -136,18 +142,17 @@ TEST_CASE(python_class)
         PyRun_SimpleString(
             "import py_class_test as p\n"
             "A = p.Cls\n"
-            "A.fn = p.testfn\n"
             "a = A()\n"
-            "print(a.fn, type(a.fn))\n"
-            "a.fn()\n"
+            "a.b=1001\n"
+            "a.testfn()\n"
         );
         ASSERT_EXPR(!PyErr_Occurred());
+        ASSERT_EQUAL(_class_method_flag_a, 143);
+        ASSERT_EQUAL(_class_method_flag_b, 1001);
         if (PyErr_Occurred())
             PyErr_Print();
 
-        PyErr_Print();
     }
-
     Py_Finalize();
 }
 

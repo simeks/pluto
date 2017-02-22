@@ -1,6 +1,7 @@
 #include <Testing/Framework.h>
 
 #include <Core/Object/Object.h>
+#include <Core/Object/PythonClass.h>
 #include <Core/Python/Convert.h>
 #include <Core/Python/NumPy.h>
 

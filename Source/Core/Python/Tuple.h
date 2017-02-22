@@ -1,7 +1,10 @@
 #ifndef __PYTHON_TUPLE_H__
 #define __PYTHON_TUPLE_H__
 
-class Object;
+namespace python
+{
+    class Object;
+}
 
 /// Wrapper for python tuples
 class CORE_API Tuple

@@ -90,6 +90,24 @@ namespace python
     template<typename TClass, typename TReturn>
     Object make_varargs_keywords_function(TClass* self, TReturn(TClass::*fn)(const Tuple&, const Dict&), const char* name, const char* doc = nullptr);
 
+
+    /// @brief Adds a regular function the the given module or class
+    template<typename TReturn, typename ... TArgs>
+    void def(const Object& m, const char* name, TReturn(*fn)(TArgs...), const char* doc = nullptr);
+
+    /// @brief Adds a method as a regular function for the given module or class
+    /// @remark Be careful, this requires the given instance to be available as long as this function is callable from python
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    void def(const Object& m, const char* name, TClass* instance, TReturn(TClass::*fn)(TArgs...), const char* doc = nullptr);
+
+    /// @brief Adds a function accepting a varargs-tuple as argument to the given module or class
+    template<typename TReturn>
+    void def_varargs(const Object& m, const char* name, TReturn(*fn)(const Tuple&), const char* doc = nullptr);
+
+    /// @brief Adds a function accepting a varargs-tuple and a keywords-dict as arguments to the given module or class
+    template<typename TReturn>
+    void def_varargs_keywords(const Object& m, const char* name, TReturn(*fn)(const Tuple&, const Dict&), const char* doc = nullptr);
+
 }
 
 

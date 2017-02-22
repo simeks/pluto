@@ -1,10 +1,8 @@
 #ifndef __PYTHON_MODULE_H__
 #define __PYTHON_MODULE_H__
 
-#include "Function.h"
-#include "Object.h"
-
-#include <Core/Object/PythonClass.h>
+#include <Core/Python/Function.h>
+#include <Core/Python/Object.h>
 
 #define PYTHON_MODULE(Name) \
     void init_module_##Name##(python::Module const& m); \
@@ -34,8 +32,6 @@
     PyImport_AppendInittab(#name, ::PyInit_##name##);
 
 
-class PythonClass;
-
 namespace python
 {
     /// Module object wrapper
@@ -56,30 +52,6 @@ namespace python
 
     /// Returns the dictionary object belonging to the given module
     CORE_API Object get_dict(const Object& module);
-
-    /// @brief Adds a regular function the the given module
-    template<typename TReturn, typename ... TArgs>
-    void def(const Module& m, const char* name, TReturn(*fn)(TArgs...), const char* doc = nullptr);
-
-    /// @brief Adds a method as a regular function for the given module
-    /// @remark Be careful, this requires the given instance to be available as long as this function is callable from python
-    template<typename TClass, typename TReturn, typename ... TArgs>
-    void def(const Module& m, const char* name, TClass* instance, TReturn (TClass::*fn)(TArgs...), const char* doc = nullptr);
-
-    /// @brief Adds a function accepting a varargs-tuple as argument to the given module
-    template<typename TReturn>
-    void def_varargs(const Module& m, const char* name, TReturn (*fn)(const Tuple&), const char* doc = nullptr);
-
-    /// @brief Adds a function accepting a varargs-tuple and a keywords-dict as arguments to the given module
-    template<typename TReturn>
-    void def_varargs_keywords(const Module& m, const char* name, TReturn(*fn)(const Tuple&, const Dict&), const char* doc = nullptr);
-
-    /// @brief Adds the specified class to the given module
-    void def(const Module& m, const char* name, PythonClass* cls);
-
-    /// @brief Adds the specified object to the given module
-    template<typename T>
-    void def(const Module& m, const char* name, const T& obj);
 
 }
 
