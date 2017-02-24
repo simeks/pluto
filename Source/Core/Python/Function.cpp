@@ -127,9 +127,6 @@ namespace python
         PyObject* fn = new Function(std::move(caller), name, doc);
         PyObject_INIT(fn, &PythonFunction_Type);
 
-        Object obj(fn);
-        Py_DECREF(fn); // TODO: Remove redundant reference handling
-
-        return obj;
+        return fn;
     }
 }

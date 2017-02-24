@@ -4,7 +4,8 @@ namespace python
     {
         // Default constructor initializes object as None
     }
-    INLINE Object::Object(PyObject* obj) : _obj(incref(obj))
+    INLINE Object::Object(PyObject* obj, bool borrowed_ref)
+        : _obj(borrowed_ref ? incref(obj) : obj)
     {
     }
     INLINE Object::~Object()
@@ -27,6 +28,19 @@ namespace python
     {
         return _obj;
     }
+    INLINE bool Object::is_none() const
+    {
+        return (_obj == Py_None);
+    }
+    INLINE bool Object::is_instance(const Object& type) const
+    {
+        assert(PyType_Check(type.ptr()));
+        return PyObject_IsInstance(_obj, type.ptr()) == 1;
+    }
+    INLINE bool Object::is_instance(PyTypeObject* type) const
+    {
+        return PyObject_IsInstance(_obj, (PyObject*)type) == 1;
+    }
 
     INLINE PyObject* incref(PyObject* obj)
     {
@@ -48,12 +62,6 @@ namespace python
     {
         Py_XDECREF(obj);
         return obj;
-    }
-
-
-    INLINE void def(const Object& m, const char* name, PythonClass* cls)
-    {
-        python::setattr(m, name, (PyObject*)cls->python_type());
     }
 
     template<typename T>

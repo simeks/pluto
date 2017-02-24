@@ -156,3 +156,56 @@ TEST_CASE(python_class)
     Py_Finalize();
 }
 
+TEST_CASE(python_tuple)
+{
+    Py_Initialize();
+    {
+        Tuple t(4);
+        ASSERT_EQUAL(t.size(), 4);
+        t.set(0, 777);
+        t.set(1, 77.7f);
+        t.set(2, "asd");
+        t.set(3, true);
+
+        ASSERT_EXPR(t.get(0).is_instance(&PyLong_Type));
+        ASSERT_EQUAL(t.get<int>(0), 777);
+
+        ASSERT_EXPR(t.get(1).is_instance(&PyFloat_Type));
+        ASSERT_EQUAL_F(t.get<float>(1), 77.7f, 0.0001f);
+
+        ASSERT_EXPR(t.get(2).is_instance(&PyUnicode_Type));
+        ASSERT_EQUAL_STR(t.get<const char*>(2), "asd");
+
+        ASSERT_EXPR(t.get(3).is_instance(&PyBool_Type));
+        ASSERT_EQUAL(t.get<bool>(3), true);
+    }
+    Py_Finalize();
+}
+
+TEST_CASE(python_dict)
+{
+    Py_Initialize();
+    {
+        Dict d;
+
+        d.set("a", 777);
+        d.set("b", 77.7f);
+        d.set("c", "asd");
+        d.set("d", true);
+
+        ASSERT_EXPR(d.get("a").is_instance(&PyLong_Type));
+        ASSERT_EQUAL(d.get<int>("a"), 777);
+
+        ASSERT_EXPR(d.get("b").is_instance(&PyFloat_Type));
+        ASSERT_EQUAL_F(d.get<float>("b"), 77.7f, 0.0001f);
+
+        ASSERT_EXPR(d.get("c").is_instance(&PyUnicode_Type));
+        ASSERT_EQUAL_STR(d.get<const char*>("c"), "asd");
+
+        ASSERT_EXPR(d.get("d").is_instance(&PyBool_Type));
+        ASSERT_EQUAL(d.get<bool>("d"), true);
+    }
+    Py_Finalize();
+}
+
+

@@ -4,35 +4,29 @@
 #include "PythonCommon.h"
 #include "Sequence.h"
 
-Sequence::Sequence() : _s(nullptr)
+namespace python
 {
-}
-Sequence::Sequence(PyObject* s) : _s(s)
-{
-    if (s)
+    Sequence::Sequence()
     {
-        assert(PySequence_Check(s));
-        Py_XINCREF(_s);
     }
-}
-Sequence::~Sequence()
-{
-    Py_XDECREF(_s);
-}
-size_t Sequence::size() const
-{
-    return PySequence_Size(_s);
-}
-PyObject* Sequence::get(size_t idx) const
-{
-    return PySequence_GetItem(_s, idx);
-}
-bool Sequence::valid() const
-{
-    return _s != nullptr;
-}
-PyObject* Sequence::ptr() const
-{
-    return _s;
+    Sequence::Sequence(const python::Object& s) : python::Object(s)
+    {
+        assert(PySequence_Check(ptr()));
+    }
+    Sequence::~Sequence()
+    {
+    }
+    size_t Sequence::size() const
+    {
+        return PySequence_Size(ptr());
+    }
+    python::Object Sequence::get(size_t idx) const
+    {
+        return PySequence_GetItem(ptr(), idx);
+    }
+    bool Sequence::valid() const
+    {
+        return !is_none();
+    }
 }
 

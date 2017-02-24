@@ -3,25 +3,19 @@
 
 #include <Python/Class.h>
 
-class PyStdStream
+namespace python_stdio
 {
-//public:
-//    static const python::Class& python_class();
+    typedef void(*TextCallback)(void* data, const char* msg);
 
-public:
-    typedef void (Callback)(void* data, const char* msg);
-    
-    PyStdStream();
-    ~PyStdStream();
+    struct Stream
+    {
+        TextCallback cb;
+        void* data;
+    };
 
-    void write(const char* text);
-    void flush();
+    void write(Stream* self, const char* text);
+    void flush(Stream* self);
+}
 
-    void set_callback(Callback* fn, void* data);
-
-private:
-    Callback* _fn;
-    void* _data;
-};
 
 #endif // __PYTHON_STD_STREAM_H__

@@ -11,9 +11,9 @@ TEST_CASE(from_python)
 {
     Py_Initialize();
     {
-        PyObject* long_obj = PyLong_FromLong(53);
-        PyObject* float_obj = PyFloat_FromDouble(2.0);
-        PyObject* str_obj = PyUnicode_FromString("test");
+        python::Object long_obj = PyLong_FromLong(53);
+        python::Object float_obj = PyFloat_FromDouble(2.0);
+        python::Object str_obj = PyUnicode_FromString("test");
 
         ASSERT_EQUAL(python::from_python<int>(long_obj), 53);
         ASSERT_EXPR(PyErr_Occurred() == nullptr);

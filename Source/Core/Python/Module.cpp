@@ -5,10 +5,6 @@
 
 namespace python
 {
-    Module::Module(PyObject* m) : Object(m)
-    {
-    }
-
     Object import(const char* name)
     {
         PyObject* m = PyImport_ImportModule(name);
@@ -17,9 +13,7 @@ namespace python
             PyErr_Print(); // TODO: Error handling
             return Object();
         }
-        Module ret(m);
-        Py_DECREF(m);
-        return ret;
+        return m;
     }
     Object reload_module(const Object& module)
     {
@@ -29,12 +23,10 @@ namespace python
             PyErr_Print();
             return Object();
         }
-        Module ret(m);
-        Py_DECREF(m);
-        return ret;
+        return m;
     }
     Object get_dict(const Object& module)
     {
-        return Object(PyModule_GetDict(module.ptr()));
+        return Object(PyModule_GetDict(module.ptr()), true);
     }
 }

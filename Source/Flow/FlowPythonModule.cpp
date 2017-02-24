@@ -103,12 +103,12 @@ Dict flow::run(const Tuple& args, const Dict& kw)
         PYTHON_ERROR_R(ValueError, Dict(), "Expected at least 1 argument");
 
     FlowGraph* graph = nullptr;
-    if (FlowGraph::static_class()->check_type(args.get(0)))
+    if (FlowGraph::static_class()->check_type(args.get(0).ptr()))
         graph = python::from_python<FlowGraph*>(args.get(0));
-    else if (PyUnicode_Check(args.get(0)))
+    else if (PyUnicode_Check(args.get(0).ptr()))
     {
         // First argument was a string so we assume its a path to a graph file
-        const char* file = PyUnicode_AsUTF8(args.get(0));
+        const char* file = PyUnicode_AsUTF8(args.get(0).ptr());
 
         JsonObject obj;
         JsonReader reader;
@@ -126,7 +126,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     {
         for (auto& it : context->inputs())
         {
-            context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
+            context->set_input(it.first.c_str(), python::incref(kw.get(it.first.c_str())));
         }
     }
 
@@ -136,16 +136,14 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     Dict ret;
     for (auto& it : context->outputs())
     {
-        PyObject* obj = context->output(it.first.c_str());
-        if (obj)
+        python::Object obj = context->output(it.first.c_str());
+        if (!obj.is_none())
         {
-            Py_INCREF(obj);
-            ret.set(it.first.c_str(), obj);
+            ret.set(it.first.c_str(), python::incref(obj));
         }
         else
         {
-            Py_INCREF(Py_None);
-            ret.set(it.first.c_str(), Py_None);
+            ret.set(it.first.c_str(), python::incref(Py_None));
         }
     }
     return ret;

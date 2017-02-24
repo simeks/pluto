@@ -101,10 +101,8 @@
     TClass::TClass(PyObject* pyobj, PythonClass* cls) : TSuperClass(pyobj, cls) {}
 
 class Class;
-class Dict;
 class PythonClass;
 class PythonType;
-class Tuple;
 
 class CORE_API Object
 {

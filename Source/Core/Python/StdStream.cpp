@@ -1,46 +1,56 @@
 #include "Common.h"
 
+#include <Core/Python/Convert.h>
+#include <Core/Python/Function.h>
 #include "StdStream.h"
 
-//
-//PYTHON_CLASS(PyStdStream, "StdStream")
-
-//
-//const python::Class& PyStdStream::python_class()
-//{
-//    static python::Class cls = python::make_class<PyStdStream>("StdStream", &init_python_class);
-//    return cls;
-//}
-//void init_python_class(const python::Class& cls)
-//{
-//    python::def(cls, "write", &PyStdStream::write);
-//    python::def(cls, "flush", &PyStdStream::flush);
-//}
-
-
-PyStdStream::PyStdStream()
+void init_python_class_StdStream(const python::Class& cls);
+namespace python
 {
-    _fn = nullptr;
-    _data = nullptr;
-}
-PyStdStream::~PyStdStream()
-{
-}
-void PyStdStream::write(const char* text)
-{
-    if (text) 
+    template<>
+    const Object& class_object<python_stdio::Stream>()
     {
-        if (_fn)
+        static Object cls;
+        if (cls.is_none())
         {
-            _fn(_data, text);
+            cls = python::Class("StdStream", &::init_python_class_StdStream);
         }
+        return cls;
+    }
+    template<>
+    CORE_API python_stdio::Stream* from_python(const python::Object& obj)
+    {
+        if (obj.ptr() == Py_None)
+            return nullptr;
+
+        if (obj.is_instance(class_object<python_stdio::Stream>()))
+        {
+
+        }
+        PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+        return nullptr;
+    }
+    template<>
+    CORE_API python::Object to_python(python_stdio::Stream* const& obj)
+    {
+        obj;
+
+        PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+        return python::None();
     }
 }
-void PyStdStream::flush()
+void init_python_class_StdStream(const python::Class& cls)
 {
+    python::def(cls, "write", &python_stdio::write);
+    python::def(cls, "flush", &python_stdio::flush);
 }
-void PyStdStream::set_callback(Callback* fn, void* data)
+
+void python_stdio::write(Stream* self, const char* text)
 {
-    _fn = fn;
-    _data = data;
+    if (self && self->cb)
+        self->cb(self->data, text);
+}
+void python_stdio::flush(Stream*)
+{
+    // Do nothing
 }

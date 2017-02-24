@@ -152,26 +152,26 @@ void UiFlowNode::invoke_ui_method(const Tuple& args)
     {
         // TODO: Is there any better way to do this?
 
-        PyObject* obj = args.get(i + 1);
-        if (PyUnicode_Check(obj))
+        python::Object obj = args.get(i + 1);
+        if (PyUnicode_Check(obj.ptr()))
         {
             auto data = new ArgVariable<QString>(python::from_python<QString>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(QString, data->p);
         }
-        else if (PyLong_Check(obj))
+        else if (PyLong_Check(obj.ptr()))
         {
             auto data = new ArgVariable<int>(python::from_python<int>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(int, data->p);
         }
-        else if (PyFloat_Check(obj))
+        else if (PyFloat_Check(obj.ptr()))
         {
             auto data = new ArgVariable<float>(python::from_python<float>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
             qargs[i] = Q_ARG(float, data->p);
         }
-        else if (numpy::check_type(obj))
+        else if (numpy::check_type(obj.ptr()))
         {
             auto data = new ArgVariable<Image>(python::from_python<Image>(obj));
             qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));

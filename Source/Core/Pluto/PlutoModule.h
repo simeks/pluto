@@ -3,7 +3,11 @@
 
 class Object;
 class PyStdStream;
-class Tuple;
+
+namespace python
+{
+    class Tuple;
+}
 
 namespace pluto
 {
@@ -14,7 +18,6 @@ namespace pluto
     void run_file(const std::string& file);
 
     python::Object register_class(const python::Object& cls);
-    python::Object classes();
 
     Object* create_object(const Tuple& args);
 

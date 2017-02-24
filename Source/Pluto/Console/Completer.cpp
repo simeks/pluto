@@ -44,7 +44,7 @@ void Completer::complete_python(const QString& cmd, QStringList& out)
 
     Dict main_dict(python::get_dict(PlutoCore::instance().kernel()->main_module()).ptr());
 
-    PyObject* builtins_ = PyObject_GetAttrString(main_dict.get("__builtins__"), "__dict__"); // TODO:
+    PyObject* builtins_ = PyObject_GetAttrString(main_dict.get("__builtins__").ptr(), "__dict__"); // TODO:
     Dict builtins = Dict(builtins_);
     Py_XDECREF(builtins_);
 
@@ -60,7 +60,7 @@ void Completer::complete_python(const QString& cmd, QStringList& out)
             QString expr = re.cap(1);
             QString attr = re.cap(3);
 
-            PyObject* ret = PyRun_String(expr.toUtf8().constData(), Py_eval_input, main_dict.dict(), nullptr);
+            PyObject* ret = PyRun_String(expr.toUtf8().constData(), Py_eval_input, main_dict.ptr(), nullptr);
             if (ret)
             {
                 PyObject* l = PyObject_Dir(ret);

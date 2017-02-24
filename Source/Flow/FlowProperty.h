@@ -19,7 +19,7 @@ public:
     void object_python_init(const Tuple&, const Dict&);
 
     const char* name() const;
-    PyObject* default_value() const;
+    python::Object default_value() const;
 
     FlowNode* owner() const;
     void set_owner(FlowNode* node);
@@ -28,7 +28,7 @@ public:
 
 protected:
     std::string _name;
-    PyObject* _default_value;
+    python::Object _default_value;
 
     FlowNode* _owner;
 };

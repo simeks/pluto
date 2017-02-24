@@ -15,4 +15,8 @@
 #define PYTHON_STDOUT(Text, ...) PySys_FormatStdout(Text, __VA_ARGS__)
 #define PYTHON_STDERR(Text, ...) PySys_FormatStderr(Text, __VA_ARGS__)
 
+using python::Dict;
+using python::Sequence;
+using python::Tuple;
+
 #endif // __PYTHON_COMMON_H__

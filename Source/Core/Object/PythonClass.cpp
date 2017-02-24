@@ -237,7 +237,7 @@ Object* PythonClass::create_object()
 }
 Object* PythonClass::create_object(const Tuple& args)
 {
-    PyObject* ret = PyObject_Call((PyObject*)_type, args.tuple(), 0);
+    PyObject* ret = PyObject_Call((PyObject*)_type, args.ptr(), 0);
     if (!ret)
     {
         return nullptr;

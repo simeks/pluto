@@ -2,11 +2,13 @@
 
 #include "AutoReloader.h"
 #include "Image/ImageModule.h"
+#include "Object/PythonClass.h"
 #include "Platform/FilePath.h"
 #include "Platform/FileUtil.h"
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoModule.h"
+#include "Python/Class.h"
 #include "Python/NumPy.h"
 #include "Python/Module.h"
 #include "Python/PythonCommon.h"
@@ -60,9 +62,7 @@ void PlutoKernel::prepare()
 
     numpy::initialize();
 
-    PyObject* main = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
-    _main_module = python::Object(main);
-    Py_DECREF(main);
+    _main_module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
 /*
     _htmlout->addref();*/
 
@@ -120,7 +120,7 @@ void PlutoKernel::print(const std::string& text)
 }
 void PlutoKernel::print_html(const std::string& text)
 {
-    _htmlout->write(text.c_str());
+    text;//_htmlout->write(text.c_str());
 }
 void PlutoKernel::error(const std::string& text)
 {
@@ -143,18 +143,21 @@ void PlutoKernel::add_auto_reload(const python::Object& module)
 
 void PlutoKernel::set_stdout_callback(OutputCallback* fn, void* data)
 {
-    if (_stdout)
-        _stdout->set_callback(fn, data);
+    fn; data;
+    //if (_stdout)
+    //    _stdout->set_callback(fn, data);
 }
 void PlutoKernel::set_htmlout_callback(OutputCallback* fn, void* data)
 {
-    if (_htmlout)
-        _htmlout->set_callback(fn, data);
+    fn; data;
+    //if (_htmlout)
+    //    _htmlout->set_callback(fn, data);
 }
 void PlutoKernel::set_stderr_callback(OutputCallback* fn, void* data)
 {
-    if (_stderr)
-        _stderr->set_callback(fn, data);
+    fn; data;
+    //if (_stderr)
+    //    _stderr->set_callback(fn, data);
 }
 python::Object PlutoKernel::main_module()
 {

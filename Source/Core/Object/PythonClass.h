@@ -2,11 +2,8 @@
 #define __OBJECT_PYTHON_H__
 
 #include <Core/Object/Class.h>
-#include <Core/Python/Dict.h>
-#include <Core/Python/PythonWrapper.h>
+#include <Core/Python/PythonCommon.h>
 #include <structmember.h>
-
-class Tuple;
 
 namespace python_object
 {

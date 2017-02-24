@@ -21,7 +21,6 @@ PYTHON_MODULE(pluto_api)
     py::def(module, "module_dir", &pluto::module_dir, "module_dir()");
     py::def(module, "run_file", &pluto::run_file, "run_file(file)");
     py::def(module, "register_class", &pluto::register_class, "register_class(cls)");
-    py::def(module, "classes", &pluto::classes, "classes()");
     py::def(module, "create_object", &pluto::create_object, "create_object(cls, *args)");
     py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
@@ -58,16 +57,6 @@ python::Object pluto::register_class(const python::Object& cls)
     PythonClass::python_class((PyTypeObject*)python::incref(cls.ptr()));
 
     return cls;
-}
-python::Object pluto::classes()
-{
-    std::vector<PythonClass*> classes = PythonClass::classes();
-    PyObject* list = PyList_New(classes.size());
-    for (size_t i = 0; i < classes.size(); ++i)
-    {
-        PyList_SetItem(list, i, python::to_python(classes[i]->name()).ptr());
-    }
-    return list;
 }
 Object* pluto::create_object(const Tuple& args)
 {

@@ -1,39 +1,32 @@
 #ifndef __PYTHON_SEQUENCE_H__
 #define __PYTHON_SEQUENCE_H__
 
-class Object;
+#include <Core/Python/Object.h>
 
-/// Wrapper for python sequence
-class CORE_API Sequence
+namespace python
 {
-public:
-    Sequence();
-    explicit Sequence(PyObject* s);
-    ~Sequence();
-
-    size_t size() const;
-
-    PyObject* get(size_t idx) const;
-    
-    bool valid() const;
-
-    PyObject* ptr() const;
-
-    template<typename T>
-    T get(size_t idx) const
+    /// Wrapper for python sequence
+    class CORE_API Sequence : public python::Object
     {
-        return python::from_python<T>(get(idx));
-    }
+    public:
+        Sequence();
+        explicit Sequence(const python::Object& s);
+        ~Sequence();
 
-    template<typename T>
-    void set(size_t idx, T value)
-    {
-        set(idx, python::to_python(value));
-    }
-private:
-    PyObject* _s;
+        size_t size() const;
 
-};
+        /// Returns a borrowed reference
+        python::Object get(size_t idx) const;
+
+        bool valid() const;
+
+        template<typename T>
+        T get(size_t idx) const
+        {
+            return python::from_python<T>(get(idx));
+        }
+    };
+}
 
 
 

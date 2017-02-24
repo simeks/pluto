@@ -191,17 +191,13 @@ namespace python
     template<>
     CORE_API python::Object to_python(const Tuple& value)
     {
-        PyObject* o = value.tuple();
-        Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
-        return o;
+        return value;
     }
 
     template<>
     CORE_API python::Object to_python(const Dict& value)
     {
-        PyObject* o = value.dict();
-        Py_XINCREF(o); // Increase ref as the Tuple destructor will decrease it
-        return o;
+        return value;
     }
 
     template<>

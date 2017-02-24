@@ -9,21 +9,22 @@
 
 namespace
 {
-    PyObject* _image_py_type = nullptr;
-    PyObject* image_py_type()
+    const python::Object& image_py_type()
     {
-        if (!_image_py_type)
+        static python::Object _image_py_type;
+        if (_image_py_type.is_none())
         {
+            // TODO: What do if class does not exist?
+
             python::Object img_mod = python::import("image");
             if (!img_mod.ptr())
-                return nullptr;
+                return _image_py_type;
 
             python::Object image = python::getattr(img_mod, "Image");
-            if (!PyType_Check(image.ptr()))
-                return nullptr;
+            if (!image.is_instance((PyObject*)&PyType_Type))
+                return _image_py_type;
 
-            _image_py_type = image.ptr();
-            Py_INCREF(_image_py_type);
+            _image_py_type = image;
         }
         return _image_py_type;
     }
@@ -59,15 +60,14 @@ namespace python
         if (!value.valid())
             Py_RETURN_NONE;
 
-        PyObject* args = PyTuple_New(2);
-        PyTuple_SetItem(args, 0, to_python(value.data()).ptr());
-        PyTuple_SetItem(args, 1, to_python((image::PixelType)value.pixel_type()).ptr());
+        Tuple args(2);
+        args.set(0, to_python(value.data()).ptr());
+        args.set(1, to_python((image::PixelType)value.pixel_type()).ptr());
 
-        PyObject* imgobj = PyObject_Call(image_py_type(), args, nullptr);
-        Py_DECREF(args);
-
-        PyObject_SetAttrString(imgobj, "origin", to_python(value.origin()).ptr());
-        PyObject_SetAttrString(imgobj, "spacing", to_python(value.spacing()).ptr());
+        python::Object imgobj = python::call(image_py_type(), args, Dict());
+        
+        python::setattr(imgobj, "origin", to_python(value.origin()).ptr());
+        python::setattr(imgobj, "spacing", to_python(value.spacing()).ptr());
 
         return imgobj;
     }
