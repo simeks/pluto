@@ -126,7 +126,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     {
         for (auto& it : context->inputs())
         {
-            context->set_input(it.first.c_str(), python::incref(kw.get(it.first.c_str())));
+            context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
         }
     }
 
@@ -139,11 +139,11 @@ Dict flow::run(const Tuple& args, const Dict& kw)
         python::Object obj = context->output(it.first.c_str());
         if (!obj.is_none())
         {
-            ret.set(it.first.c_str(), python::incref(obj));
+            ret.set(it.first.c_str(), obj);
         }
         else
         {
-            ret.set(it.first.c_str(), python::incref(Py_None));
+            ret.set(it.first.c_str(), python::None());
         }
     }
     return ret;

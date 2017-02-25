@@ -207,7 +207,7 @@ python::Object FlowContext::read_pin(const char* name)
                 auto it = _state.find(pin->links()[0]);
                 if (it != _state.end())
                 {
-                    return python::incref(it->second);
+                    return it->second;
                 }
             }
         }

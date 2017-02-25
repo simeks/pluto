@@ -8,7 +8,7 @@ namespace python
         : _obj(obj)
     {
     }
-    INLINE Object::Object(BorrowedReference obj)
+    INLINE Object::Object(Borrowed obj)
         : _obj(incref((PyObject*)obj))
     {
     }

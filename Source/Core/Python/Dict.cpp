@@ -21,7 +21,7 @@ namespace python
 
     Object Dict::get(const char* key) const
     {
-        return Object(BorrowedReference(PyDict_GetItemString(ptr(), key)));
+        return Object(Borrowed(PyDict_GetItemString(ptr(), key)));
     }
 
     void Dict::set(const char* key, const Object& item)

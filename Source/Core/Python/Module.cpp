@@ -27,6 +27,6 @@ namespace python
     }
     Object get_dict(const Object& module)
     {
-        return Object(BorrowedReference(PyModule_GetDict(module.ptr())));
+        return Object(Borrowed(PyModule_GetDict(module.ptr())));
     }
 }

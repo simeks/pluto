@@ -11,17 +11,6 @@ namespace python
     Object True() { return Object(Py_True); }
     Object False() { return Object(Py_False); }
 
-    Object incref(const Object& obj)
-    {
-        Py_INCREF(obj.ptr());
-        return obj;
-    }
-    Object decref(const Object& obj)
-    {
-        Py_DECREF(obj.ptr());
-        return obj;
-    }
-
     bool hasattr(const Object& obj, const char* key)
     {
         return PyObject_HasAttrString(obj.ptr(), key) == 1;

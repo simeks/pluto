@@ -10,8 +10,8 @@ namespace python
     class Dict;
     class Tuple;
 
-    struct _BorrowedReference {};
-    typedef _BorrowedReference* BorrowedReference; /// Type trick to specifies that a PyObject* is borrowed reference
+    struct _Borrowed {};
+    typedef _Borrowed* Borrowed; /// Type trick to specifies that a PyObject* is borrowed reference
 
     class CORE_API Object
     {
@@ -19,7 +19,7 @@ namespace python
         Object();
         Object(PyObject* obj);
         /// Constructor for borrowed references, this will increase the ref count of obj
-        Object(BorrowedReference obj);
+        Object(Borrowed obj);
         ~Object();
 
         Object(const Object& other);
@@ -45,9 +45,6 @@ namespace python
 
     PyObject* decref(PyObject* obj);
     PyObject* xdecref(PyObject* obj);
-
-    CORE_API Object incref(const Object& obj);
-    CORE_API Object decref(const Object& obj);
 
     CORE_API bool hasattr(const Object& obj, const char* key);
 

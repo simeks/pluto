@@ -23,7 +23,7 @@
         if (!m) \
             PyErr_Print(); \
         else \
-            init_module_##Name##(python::Object(python::BorrowedReference(m))); \
+            init_module_##Name##(python::Object(python::Borrowed(m))); \
         return m; \
     } \
     void init_module_##Name##(python::Object const& module)
