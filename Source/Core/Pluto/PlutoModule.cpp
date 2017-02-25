@@ -52,7 +52,7 @@ void pluto::run_file(const std::string& file)
 python::Object pluto::register_class(const python::Object& cls)
 {
     if (PyType_Check(cls.ptr()) == 0)
-        PYTHON_ERROR_R(TypeError, nullptr, "expected class");
+        PYTHON_ERROR_R(TypeError, python::None(), "expected class");
 
     PythonClass::python_class((PyTypeObject*)python::incref(cls.ptr()));
 

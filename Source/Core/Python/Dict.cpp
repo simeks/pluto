@@ -10,7 +10,7 @@ namespace python
     Dict::Dict() : Object(PyDict_New())
     {
     }
-    Dict::Dict(const python::Object& d) : python::Object(d)
+    Dict::Dict(const Object& d) : Object(d)
     {
     }
 
@@ -19,12 +19,12 @@ namespace python
         return PyMapping_HasKeyString(ptr(), key) != 0;
     }
 
-    python::Object Dict::get(const char* key) const
+    Object Dict::get(const char* key) const
     {
-        return python::Object(PyDict_GetItemString(ptr(), key), true);
+        return Object(BorrowedReference(PyDict_GetItemString(ptr(), key)));
     }
 
-    void Dict::set(const char* key, const python::Object& item)
+    void Dict::set(const char* key, const Object& item)
     {
         PyDict_SetItemString(ptr(), key, item.ptr());
     }

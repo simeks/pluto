@@ -10,14 +10,16 @@ namespace python
     class Dict;
     class Tuple;
 
+    struct _BorrowedReference {};
+    typedef _BorrowedReference* BorrowedReference; /// Type trick to specifies that a PyObject* is borrowed reference
+
     class CORE_API Object
     {
     public:
         Object();
-        /// Constructor
-        /// @param borrowed_ref Indiciates whether the input is a borrowed reference or not, 
-        ///     if it is the reference count will be increased.
-        Object(PyObject* obj, bool borrowed_ref=false);
+        Object(PyObject* obj);
+        /// Constructor for borrowed references, this will increase the ref count of obj
+        Object(BorrowedReference obj);
         ~Object();
 
         Object(const Object& other);

@@ -274,14 +274,14 @@ python::Object FlowContext::input(const char* name) const
     auto it = _inputs.find(name);
     if (it != _inputs.end())
         return it->second;
-    return nullptr;
+    return python::None();
 }
 python::Object FlowContext::output(const char* name) const
 {
     auto it = _outputs.find(name);
     if (it != _outputs.end())
         return it->second;
-    return nullptr;
+    return python::None();
 }
 void FlowContext::set_input(const char* name, const python::Object& value)
 {
@@ -338,11 +338,11 @@ void FlowContext::initialize()
     {
         if (n.second->is_a(GraphInputNode::static_class()))
         {
-            _inputs[n.second->attribute<const char*>("name")] = nullptr;
+            _inputs[n.second->attribute<const char*>("name")] = python::None();
         }
         else if (n.second->is_a(GraphOutputNode::static_class()))
         {
-            _outputs[n.second->attribute<const char*>("name")] = nullptr;
+            _outputs[n.second->attribute<const char*>("name")] = python::None();
         }
     }
 

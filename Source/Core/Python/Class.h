@@ -11,22 +11,37 @@ namespace python
 
     typedef void(*ClassInit)(const python::Class& cls);
 
-    //class CORE_API InstanceFactory
-    //{
-    //public:
-    //    InstanceFactory();
-    //    virtual InstanceFactory();
-
-    //    virtual void construct(PyObject* args, PyObject* kw) = 0;
-    //    virtual void destruct() = 0;
-    //};
-
     class CORE_API Class : public Object
     {
     public:
         Class(const char* name, ClassInit init_class);
         
     };
+
+    //class CORE_API Instance
+    //{
+    //public:
+    //    Instance();
+    //    virtual ~Instance();
+
+    //    virtual void construct(PyObject* args, PyObject* kw) = 0;
+    //    virtual void destruct() = 0;
+    //};
+
+    //namespace ownership
+    //{
+    //    struct Cpp {};
+    //    struct Python {};
+    //}
+
+    //template<typename T, typename TOwnership>
+    //class PtrInstance
+    //{
+    //public:
+    //    PtrInstance();
+    //    ~PtrInstance();
+
+    //};
 
     template<typename T>
     Object make_class(const char* name, ClassInit init_class);
@@ -36,7 +51,10 @@ namespace python
     const Object& class_object();
 
     template<typename T>
-    Object make_ref_instance(T* obj);
+    Object make_ptr_instance(T* obj)
+    {
+
+    }
 
 }
 

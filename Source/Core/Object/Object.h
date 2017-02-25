@@ -46,7 +46,7 @@
         template<> \
         API python::Object to_python(::TClass* const& obj) { \
             if (obj) return obj->python_object(); \
-            return nullptr; \
+            return python::None(); \
         } \
     }
 

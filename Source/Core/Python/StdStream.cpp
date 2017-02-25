@@ -38,6 +38,24 @@ namespace python
         PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
         return python::None();
     }
+    //template<>
+    //CORE_API python_stdio::Stream& from_python(const python::Object& obj)
+    //{
+    //    if (obj.is_instance(class_object<python_stdio::Stream>()))
+    //    {
+
+    //    }
+    //    PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+    //    return python_stdio::Stream();
+    //}
+    //template<>
+    //CORE_API python::Object to_python(const python_stdio::Stream& obj)
+    //{
+    //    obj;
+
+    //    PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+    //    return python::None();
+    //}
 }
 void init_python_class_StdStream(const python::Class& cls)
 {

@@ -36,6 +36,14 @@ int function_2arg_return(int a, int b)
     _function_2arg_return_flag = true;
     return a + b;
 }
+const char* function_return_str()
+{
+    return "teststring";
+}
+std::string function_return_stdstr()
+{
+    return "stdteststring";
+}
 
 PYTHON_MODULE(py_test_module)
 {
@@ -46,6 +54,8 @@ PYTHON_MODULE(py_test_module)
     def(module, "function_1arg", &function_1arg);
     def(module, "function_2arg", &function_2arg);
     def(module, "function_2arg_return", &function_2arg_return);
+    def(module, "function_return_str", &function_return_str);
+    def(module, "function_return_stdstr", &function_return_stdstr);
 }
 
 
@@ -66,7 +76,6 @@ TEST_CASE(python_function)
     PYTHON_MODULE_INSTALL(py_test_module);
     Py_Initialize();
     {
-
         const char* script =
             "import py_test_module as m\n"
             "m.function_void()\n"
@@ -74,6 +83,10 @@ TEST_CASE(python_function)
             "m.function_2arg(7, 9)\n"
             "if m.function_2arg_return(15, 30) != 45:\n"
             "    raise ValueError('function_2arg_return(15, 30) != 45')\n"
+            "if m.function_return_str() != 'teststring':\n"
+            "    raise ValueError('function_return_str() != \\'teststring\\'')\n"
+            "if m.function_return_stdstr() != 'stdteststring':\n"
+            "    raise ValueError('function_return_stdstr() != \\'stdteststring\\'')\n"
             "\n"
             ;
         PyRun_SimpleString(script);
@@ -90,28 +103,6 @@ TEST_CASE(python_function)
     Py_Finalize();
 }
 
-//#define PYTHON_CLASS()
-//#define PYTHON_CLASS_IMPLEMENT(cls, name) void python_init_class_##name(const python::Class& cls)
-//
-//namespace
-//{
-//    class TestClass
-//    {
-//    public:
-//        TestClass() {}
-//        ~TestClass() {}
-//
-//        void hey() 
-//        {
-//            std::cout << "hey" << std::endl;
-//        }
-//    };
-//}
-//PYTHON_CLASS_IMPLEMENT(TestClass, "TestClass")
-//{
-//    def(cls, )
-//}
-
 namespace
 {
     int _class_method_flag_a = 0;
@@ -124,23 +115,24 @@ void testfn(const python::Object& obj)
     _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b"));
 }
 
-PYTHON_MODULE(py_class_test)
+PYTHON_MODULE(py_basic_class_test)
 {
     python::Object cls = python::Class("test", nullptr);
     python::def(cls, "testfn", python::make_function(testfn, "testfn"));
 
     python::setattr(module, "Cls", cls);
-    python::setattr(cls, "a", python::to_python(143));
+    auto obj = python::to_python(143);
+    python::setattr(cls, "a", obj);
     def(module, "testfn", &testfn);
 }
 
-TEST_CASE(python_class)
+TEST_CASE(python_basic_class)
 {
-    PYTHON_MODULE_INSTALL(py_class_test);
+    PYTHON_MODULE_INSTALL(py_basic_class_test);
     Py_Initialize();
     {
         PyRun_SimpleString(
-            "import py_class_test as p\n"
+            "import py_basic_class_test as p\n"
             "A = p.Cls\n"
             "a = A()\n"
             "a.b=1001\n"

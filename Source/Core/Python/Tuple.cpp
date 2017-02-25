@@ -25,7 +25,7 @@ namespace python
     }
     python::Object Tuple::get(size_t idx) const
     {
-        return python::Object(PyTuple_GetItem(ptr(), idx), true);
+        return python::Object(python::BorrowedReference(PyTuple_GetItem(ptr(), idx)));
     }
     bool Tuple::valid() const
     {

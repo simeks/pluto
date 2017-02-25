@@ -17,12 +17,12 @@ FlowProperty::~FlowProperty()
 void FlowProperty::object_init()
 {
     _owner = nullptr;
-    _default_value = nullptr;
+    _default_value = python::None();
 }
 void FlowProperty::object_init(const char* name)
 {
     _owner = nullptr;
-    _default_value = nullptr;
+    _default_value = python::None();
     _name = name;
 }
 void FlowProperty::object_python_init(const Tuple& args, const Dict&)
@@ -30,7 +30,7 @@ void FlowProperty::object_python_init(const Tuple& args, const Dict&)
     _owner = nullptr;
     if (args.size() > 0)
         _name = python::from_python<std::string>(args.get(0));
-    _default_value = nullptr;
+    _default_value = python::None();
 }
 const char* FlowProperty::name() const
 {

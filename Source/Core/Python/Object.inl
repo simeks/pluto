@@ -4,8 +4,12 @@ namespace python
     {
         // Default constructor initializes object as None
     }
-    INLINE Object::Object(PyObject* obj, bool borrowed_ref)
-        : _obj(borrowed_ref ? incref(obj) : obj)
+    INLINE Object::Object(PyObject* obj)
+        : _obj(obj)
+    {
+    }
+    INLINE Object::Object(BorrowedReference obj)
+        : _obj(incref((PyObject*)obj))
     {
     }
     INLINE Object::~Object()

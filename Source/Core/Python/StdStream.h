@@ -16,6 +16,11 @@ namespace python_stdio
     void write(Stream* self, const char* text);
     void flush(Stream* self);
 }
+//
+//class PyStdStream : public python::BaseObject
+//{
+//
+//};
 
 
 #endif // __PYTHON_STD_STREAM_H__
