@@ -1,18 +1,5 @@
 namespace python
 {
-    namespace class_registry
-    {
-        INLINE Entry::Entry(const std::type_info& cpp_type) :
-            cpp_type(cpp_type),
-            py_type(nullptr),
-            to_python(nullptr),
-            from_python(nullptr)
-        {
-        }
-    }
-
-    template<typename T>
-    const class_registry::Entry& ClassInfo<T>::info = class_registry::lookup(typeid(T));
 
     template<typename T>
     ValueHolder<T>::ValueHolder()

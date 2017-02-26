@@ -5,40 +5,8 @@
 
 #include <typeindex>
 
-#define PYTHON_CLASS(cls, name)
-
 namespace python
 {
-    typedef PyObject* (*ToPythonFunction)(void const*);
-    typedef void (*FromPythonFunction)(PyObject*, void const*);
-
-    namespace class_registry
-    {
-        struct Entry
-        {
-            Entry(const std::type_info& cpp_type);
-
-            /// Type info aquired by using typeid()
-            const std::type_index cpp_type;
-
-            /// The python class object for this type
-            PyTypeObject* py_type;
-
-            /// Converters
-
-            ToPythonFunction to_python;
-            FromPythonFunction from_python;
-        };
-
-        const Entry& lookup(const std::type_info& type);
-    }
-
-    template<typename T>
-    struct ClassInfo
-    {
-        static const class_registry::Entry& info;
-    };
-
     typedef void(*ClassInit)(const python::Object& cls);
 
     /// Holder: Responsible for holding a value of some sort for a python object instance.

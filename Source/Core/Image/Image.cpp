@@ -32,45 +32,45 @@ namespace
 
 namespace python
 {
-    template<>
-    CORE_API Image from_python(PyObject* obj)
-    {
-        if (numpy::check_type(obj))
-        {
-            image::PixelType pixel_type = image::PixelType_Unknown;
-            if (PyObject_HasAttrString(obj, "pixel_type"))
-                pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
-            
-            Image img(from_python<NumpyArray>(obj), pixel_type);
+    //template<>
+    //CORE_API Image from_python(PyObject* obj)
+    //{
+    //    if (numpy::check_type(obj))
+    //    {
+    //        image::PixelType pixel_type = image::PixelType_Unknown;
+    //        if (PyObject_HasAttrString(obj, "pixel_type"))
+    //            pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
+    //        
+    //        Image img(from_python<NumpyArray>(obj), pixel_type);
 
-            if (PyObject_HasAttrString(obj, "origin"))
-                img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
-            if (PyObject_HasAttrString(obj, "spacing"))
-                img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
-            
-            return img;
-        }
-        
-        PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
-    }
+    //        if (PyObject_HasAttrString(obj, "origin"))
+    //            img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+    //        if (PyObject_HasAttrString(obj, "spacing"))
+    //            img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
+    //        
+    //        return img;
+    //    }
+    //    
+    //    PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
+    //}
 
-    template<>
-    CORE_API PyObject* to_python(const Image& value)
-    {
-        if (!value.valid())
-            Py_RETURN_NONE;
+    //template<>
+    //CORE_API PyObject* to_python(const Image& value)
+    //{
+    //    if (!value.valid())
+    //        Py_RETURN_NONE;
 
-        Tuple args(2);
-        args.set(0, Object(to_python(value.data())));
-        args.set(1, Object(to_python((image::PixelType)value.pixel_type())));
+    //    Tuple args(2);
+    //    args.set(0, Object(to_python(value.data())));
+    //    args.set(1, Object(to_python((image::PixelType)value.pixel_type())));
 
-        python::Object imgobj = python::call(image_py_type(), args, Dict());
-        
-        python::setattr(imgobj, "origin", Object(to_python(value.origin())));
-        python::setattr(imgobj, "spacing", Object(to_python(value.spacing())));
+    //    python::Object imgobj = python::call(image_py_type(), args, Dict());
+    //    
+    //    python::setattr(imgobj, "origin", Object(to_python(value.origin())));
+    //    python::setattr(imgobj, "spacing", Object(to_python(value.spacing())));
 
-        return incref(imgobj.ptr());
-    }
+    //    return incref(imgobj.ptr());
+    //}
 }
 
 Image::Image() : 

@@ -24,7 +24,7 @@
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
     type->add_attr(Name, python::to_python(Value));
 
-#define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) \
+#define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) /*\
     namespace python { \
         template<> \
         API ::TClass* from_python<::TClass*>(PyObject* obj) { \
@@ -40,15 +40,15 @@
             PyErr_SetString(PyExc_ValueError, "Failed to convert Object"); \
             return nullptr; \
         } \
-    }
-#define OBJECT_CONVERTER_TO_PYTHON(TClass, API) \
+    }*/
+#define OBJECT_CONVERTER_TO_PYTHON(TClass, API) /*\
     namespace python { \
         template<> \
         API PyObject* to_python<::TClass*>(::TClass* const& obj) { \
             if (obj) return obj->python_object(); \
             Py_RETURN_NONE; \
         } \
-    }
+    }*/
 
 #define DECLARE_OBJECT(TClass, TSuperClass) \
     public: \

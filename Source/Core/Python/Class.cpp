@@ -22,7 +22,10 @@ namespace python
         assert(PyType_Check(type));
         PyObject* cap = PyObject_GetAttrString(type, "__cpp_class__");
         if (!cap)
+        {            
             PyErr_Print();
+            return nullptr;
+        }
 
         if (!PyCapsule_CheckExact(cap))
             return nullptr;
@@ -38,9 +41,8 @@ static PyObject* pluto_object_new(PyTypeObject* type, PyObject* , PyObject*)
     Instance* obj = (Instance*)type->tp_alloc(type, 0);
 
     CppClassBase* cls = cpp_class((PyObject*)type);
-    assert(cls);
-
-    obj->holder = cls->allocate();
+    if(cls)
+        obj->holder = cls->allocate();
 
     return (PyObject*)obj;
 }
@@ -161,31 +163,14 @@ namespace python
         if (!cls)
             PyErr_Print();
 
-        PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
-        PyObject_SetAttrString(cls, "__cpp_class__", cap);
-        Py_DECREF(cap);
+        if (cpp_class)
+        {
+            PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
+            PyObject_SetAttrString(cls, "__cpp_class__", cap);
+            Py_DECREF(cap);
+        }
 
         return cls;
     }
 
-    namespace class_registry
-    {
-        /// For std::set
-        bool operator<(const Entry& e0, const Entry& e1)
-        {
-            return e0.cpp_type < e1.cpp_type;
-        }
-
-        std::set<Entry>& registry()
-        {
-            static std::set<Entry> entries;
-            return entries;
-        }
-
-
-        const Entry& lookup(const std::type_info& type)
-        {
-            return *registry().insert(Entry(type)).first;
-        }
-    }
 }
