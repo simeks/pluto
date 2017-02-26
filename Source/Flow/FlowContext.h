@@ -73,7 +73,7 @@ public:
     template<typename T>
     void write_pin(const char* name, const T& obj)
     {
-        write_pin(name, python::to_python(obj));
+        write_pin(name, python::Object(python::to_python(obj)));
     }
     template<typename T>
     T read_pin(const char* name)

@@ -69,24 +69,24 @@ namespace python_helpers
     PyObject* build_args(const A& a)
     {
         PyObject* t = PyTuple_New(1);
-        PyTuple_SetItem(t, 0, python::to_python(a).ptr());
+        PyTuple_SetItem(t, 0, python::to_python(a));
         return t;
     }
     template<typename A, typename B>
     PyObject* build_args(const A& a, const B& b)
     {
         PyObject* t = PyTuple_New(2);
-        PyTuple_SetItem(t, 0, python::to_python(a).ptr());
-        PyTuple_SetItem(t, 1, python::to_python(b).ptr());
+        PyTuple_SetItem(t, 0, python::to_python(a));
+        PyTuple_SetItem(t, 1, python::to_python(b));
         return t;
     }
     template<typename A, typename B, typename C>
     PyObject* build_args(const A& a, const B& b, const C& c)
     {
         PyObject* t = PyTuple_New(2);
-        PyTuple_SetItem(t, 0, python::to_python(a).ptr());
-        PyTuple_SetItem(t, 1, python::to_python(b).ptr());
-        PyTuple_SetItem(t, 2, python::to_python(c).ptr());
+        PyTuple_SetItem(t, 0, python::to_python(a));
+        PyTuple_SetItem(t, 1, python::to_python(b));
+        PyTuple_SetItem(t, 2, python::to_python(c));
         return t;
     }
 }

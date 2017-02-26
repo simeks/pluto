@@ -7,7 +7,7 @@ namespace python
         PyObject* invoke(TReturn(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return incref(python::to_python<TReturn>(fn(std::get<Index>(args)...)).ptr());
+            return incref(python::to_python<TReturn>(fn(std::get<Index>(args)...)));
         }
         template<typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(void(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -21,7 +21,7 @@ namespace python
         PyObject* invoke(TClass* self, TReturn(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return incref(python::to_python<TReturn>((self->*fn)(std::get<Index>(args)...)).ptr());
+            return incref(python::to_python<TReturn>((self->*fn)(std::get<Index>(args)...)));
         }
         template<typename TClass, typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(TClass* self, void(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -96,15 +96,15 @@ namespace python
         }
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TReturn(*fn)(TArgs...))
+        CallerBase* make_caller(TReturn(*fn)(TArgs...))
         {
-            return std::make_unique<FunctionCaller<TArgPolicy, TReturn, TArgs ...>>(fn);
+            return new FunctionCaller<TArgPolicy, TReturn, TArgs ...>(fn);
         }
 
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...))
+        CallerBase* make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...))
         {
-            return std::make_unique<MethodCaller<TArgPolicy, TClass, TReturn, TArgs ...>>(self, fn);
+            return new MethodCaller<TArgPolicy, TClass, TReturn, TArgs ...>(self, fn);
         }
     }
 

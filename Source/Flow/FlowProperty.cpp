@@ -59,7 +59,7 @@ FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
 namespace python
 {
     template<>
-    FLOW_API python::Object to_python(const FileProperty::FileMode& type)
+    FLOW_API PyObject* to_python(const FileProperty::FileMode& type)
     {
         return to_python((int)type);
     }

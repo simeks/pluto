@@ -29,7 +29,7 @@ namespace python
         template<typename T>
         void set(size_t idx, T value)
         {
-            set(idx, python::to_python(value));
+            set(idx, Object(to_python(value)));
         }
 
 

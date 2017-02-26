@@ -33,43 +33,43 @@ namespace
 namespace python
 {
     template<>
-    CORE_API Image from_python(const python::Object& obj)
+    CORE_API Image from_python(PyObject* obj)
     {
-        if (numpy::check_type(obj.ptr()))
+        if (numpy::check_type(obj))
         {
             image::PixelType pixel_type = image::PixelType_Unknown;
-            if (python::hasattr(obj, "pixel_type"))
-                pixel_type = python::from_python<image::PixelType>(python::getattr(obj, "pixel_type"));
+            if (PyObject_HasAttrString(obj, "pixel_type"))
+                pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
             
             Image img(from_python<NumpyArray>(obj), pixel_type);
 
-            if (python::hasattr(obj, "origin"))
-                img.set_origin(python::from_python<Vec3d>(python::getattr(obj, "origin")));
-            if (python::hasattr(obj, "spacing"))
-                img.set_origin(python::from_python<Vec3d>(python::getattr(obj, "spacing")));
+            if (PyObject_HasAttrString(obj, "origin"))
+                img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+            if (PyObject_HasAttrString(obj, "spacing"))
+                img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
             
             return img;
         }
         
-        PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj.ptr()->ob_type->tp_name);
+        PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
     }
 
     template<>
-    CORE_API python::Object to_python(const Image& value)
+    CORE_API PyObject* to_python(const Image& value)
     {
         if (!value.valid())
             Py_RETURN_NONE;
 
         Tuple args(2);
-        args.set(0, to_python(value.data()).ptr());
-        args.set(1, to_python((image::PixelType)value.pixel_type()).ptr());
+        args.set(0, Object(to_python(value.data())));
+        args.set(1, Object(to_python((image::PixelType)value.pixel_type())));
 
         python::Object imgobj = python::call(image_py_type(), args, Dict());
         
-        python::setattr(imgobj, "origin", to_python(value.origin()).ptr());
-        python::setattr(imgobj, "spacing", to_python(value.spacing()).ptr());
+        python::setattr(imgobj, "origin", Object(to_python(value.origin())));
+        python::setattr(imgobj, "spacing", Object(to_python(value.spacing())));
 
-        return imgobj;
+        return incref(imgobj.ptr());
     }
 }
 

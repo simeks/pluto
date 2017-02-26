@@ -34,7 +34,7 @@ namespace python
         template<typename T>
         void set(const char* key, T value)
         {
-            set(key, to_python(value));
+            set(key, Object(to_python(value)));
         }
 
     };

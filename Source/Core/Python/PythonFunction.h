@@ -17,7 +17,7 @@
         return 0;
 
 #define PYTHON_FUNCTION_RETURN(Fn) \
-    PyObject* ret = python::to_python(Fn).ptr(); \
+    PyObject* ret = python::to_python(Fn); \
     if (PyErr_Occurred()) \
         return 0; \
     return ret;
@@ -137,7 +137,7 @@
     static PyObject* PYTHON_FUNCTION_NAME_CLASS(TClass, Fn)(PyObject* self, PyObject* args, PyObject* kw) \
     { \
         TClass* tself = (TClass*)pyobject_extract_instance<TClass>(self); \
-        return python::to_python(tself->Fn(Tuple(args), Dict(kw))).ptr(); \
+        return python::to_python(tself->Fn(Tuple(args), Dict(kw))); \
     }
 
 

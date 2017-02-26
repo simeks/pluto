@@ -58,18 +58,21 @@ namespace python
             PyObject* operator()(PyObject* args, PyObject* kw);
         };
 
+        /// Caller is responsible for deleting the returned pointer
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TReturn(*fn)(TArgs...));
+        CallerBase* make_caller(TReturn(*fn)(TArgs...));
 
+        /// Caller is responsible for deleting the returned pointer
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
-        std::unique_ptr<CallerBase> make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...));
+        CallerBase* make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...));
     }
 }
 
 namespace python
 {
+    /// @remark This function takes ownership of the caller object, deleting it whenever done with it.
     CORE_API Object make_function(
-        std::unique_ptr<function::CallerBase> caller, const char* name, 
+        function::CallerBase* caller, const char* name, 
         const char* doc = nullptr);
 
     template<typename Fn>

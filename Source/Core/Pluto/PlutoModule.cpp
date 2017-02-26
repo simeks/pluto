@@ -63,7 +63,7 @@ Object* pluto::create_object(const Tuple& args)
     if (args.size() < 1)
         PYTHON_ERROR_R(AttributeError, nullptr, "expected at least one argument");
 
-    const char* class_name = python::from_python<const char*>(args.get(0));
+    const char* class_name = python::from_python<const char*>(args.get(0).ptr());
     if (!class_name)
         PYTHON_ERROR_R(AttributeError, nullptr, "expected first argument to be string");
 

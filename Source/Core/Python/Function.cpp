@@ -7,32 +7,28 @@
 
 namespace python
 {
-    struct Function : PyObject
+    typedef struct
     {
-        Function(std::unique_ptr<function::CallerBase> caller, 
-            const char* name, const char* doc) 
-            : _caller(std::move(caller)), _name(name), _doc(doc) {}
-        ~Function() {}
-
-        PyObject* call(PyObject* args, PyObject* kw)
-        {
-            PyObject* ret = (*_caller)(args, kw);
-            if (PyErr_Occurred())
-                return nullptr;
-            return ret;
-        }
-
-        std::unique_ptr<function::CallerBase> _caller;
-
-        const char* _name;
-        const char* _doc;
-    };
+        PyObject_HEAD;
+        const char* name;
+        const char* doc;
+        function::CallerBase* caller;
+    } Function;
 }
 
-
-static void function_dealloc(python::Function* f)
+static PyObject*  function_new(PyTypeObject* type, PyObject*, PyObject*)
 {
-    delete f;
+    python::Function* obj = (python::Function*)type->tp_alloc(type, 0);
+    obj->name = nullptr;
+    obj->doc = nullptr;
+    obj->caller = nullptr;
+    
+    return (PyObject*)obj;
+}
+static void function_dealloc(python::Function* self)
+{
+    delete self->caller;
+    Py_TYPE(self)->tp_free(self);
 }
 static PyObject* function_call(
     python::Function* f,
@@ -41,7 +37,10 @@ static PyObject* function_call(
 {
     try
     {
-        return f->call(args, kw);
+        PyObject* ret = (*f->caller)(args, kw);
+        if (PyErr_Occurred())
+            return nullptr;
+        return ret;
     }
     catch (const std::exception& e)
     {
@@ -55,14 +54,14 @@ static PyObject* function_call(
 
 static PyObject* function_get__doc__(python::Function* f, void*)
 {
-    if (f->_doc)
-        return _PyType_GetDocFromInternalDoc(f->_name, f->_doc);
+    if (f->doc)
+        return _PyType_GetDocFromInternalDoc(f->name, f->doc);
     Py_RETURN_NONE;
 }
 
 static PyObject* function_get__name__(python::Function* f, void*)
 {
-    return PyUnicode_FromString(f->_name);
+    return PyUnicode_FromString(f->name);
 }
 static PyObject* function_descr_get(PyObject* func, PyObject* obj, PyObject*)
 {
@@ -113,20 +112,29 @@ static PyTypeObject PythonFunction_Type =
     function_getsets,                           /* tp_getset */
     0,                                          /* tp_base */
     0,                                          /* tp_dict */
-    function_descr_get,                 /* tp_descr_get */
-    0,                                  /* tp_descr_set */
+    function_descr_get,                         /* tp_descr_get */
+    0,                                          /* tp_descr_set */
+    0,                                          /* tp_dictoffset */
+    0,                                          /* tp_init */
+    PyType_GenericAlloc,                        /* tp_alloc */
+    function_new,                               /* tp_new */
 };
 
 namespace python
 {
-    Object make_function(std::unique_ptr<function::CallerBase> caller, const char* name, const char* doc)
+    Object make_function(function::CallerBase* caller, const char* name, const char* doc)
     {
         if (Py_TYPE(&PythonFunction_Type) == 0)
             PyType_Ready(&PythonFunction_Type);
 
-        PyObject* fn = new Function(std::move(caller), name, doc);
-        PyObject_INIT(fn, &PythonFunction_Type);
+        PyObject* args = PyTuple_New(0);
+        python::Function* fn = (python::Function*)PyObject_Call((PyObject*)&PythonFunction_Type, args, nullptr);
+        Py_DECREF(args);
 
-        return fn;
+        fn->caller = caller;
+        fn->name = name;
+        fn->doc = doc;
+
+        return (PyObject*)fn;
     }
 }

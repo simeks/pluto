@@ -65,8 +65,8 @@ TEST_CASE(python_module)
     Py_Initialize();
     {
         python::Object m = python::import("py_test_module");
-        ASSERT_EQUAL(python::from_python<int>(python::getattr(m, "constant_int")), 5);
-        ASSERT_EQUAL_STR(python::from_python<const char*>(python::getattr(m, "constant_str")), "testtest");
+        ASSERT_EQUAL(python::from_python<int>(python::getattr(m, "constant_int").ptr()), 5);
+        ASSERT_EQUAL_STR(python::from_python<const char*>(python::getattr(m, "constant_str").ptr()), "testtest");
     }
     Py_Finalize();
 }
@@ -111,14 +111,22 @@ namespace
 
 void testfn(const python::Object& obj)
 {
-    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a"));
-    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b"));
+    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a").ptr());
+    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b").ptr());
 }
+
+struct TestClass
+{
+    int _a;
+
+    TestClass(int a) : _a(a) {}
+};
 
 PYTHON_MODULE(py_basic_class_test)
 {
-    python::Object cls = python::Class("test", nullptr);
+    python::Object cls = python::make_class<TestClass>("test");
     python::def(cls, "testfn", python::make_function(testfn, "testfn"));
+    python::def_init<TestClass, int>(cls);
 
     python::setattr(module, "Cls", cls);
     auto obj = python::to_python(143);
@@ -134,7 +142,7 @@ TEST_CASE(python_basic_class)
         PyRun_SimpleString(
             "import py_basic_class_test as p\n"
             "A = p.Cls\n"
-            "a = A()\n"
+            "a = A(321)\n"
             "a.b=1001\n"
             "a.testfn()\n"
         );

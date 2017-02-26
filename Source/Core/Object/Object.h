@@ -22,17 +22,17 @@
     type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
-    type->add_attr(Name, python::to_python(Value).ptr());
+    type->add_attr(Name, python::to_python(Value));
 
 #define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) \
     namespace python { \
         template<> \
-        API ::TClass* from_python(const python::Object& obj) { \
-            if (obj.ptr() == Py_None) { \
+        API ::TClass* from_python<::TClass*>(PyObject* obj) { \
+            if (obj == Py_None) { \
                 return nullptr; \
             } \
-            if (::TClass::static_class()->check_type(obj.ptr())) { \
-                ::Object* ret = python_object::object(obj.ptr()); \
+            if (::TClass::static_class()->check_type(obj)) { \
+                ::Object* ret = python_object::object(obj); \
                 if (ret->is_a(::TClass::static_class())) { \
                     return object_cast<::TClass>(ret); \
                 } \
@@ -44,9 +44,9 @@
 #define OBJECT_CONVERTER_TO_PYTHON(TClass, API) \
     namespace python { \
         template<> \
-        API python::Object to_python(::TClass* const& obj) { \
+        API PyObject* to_python<::TClass*>(::TClass* const& obj) { \
             if (obj) return obj->python_object(); \
-            return python::None(); \
+            Py_RETURN_NONE; \
         } \
     }
 
@@ -180,7 +180,7 @@ R Object::invoke_method(const char* name, const A& a, const B& b, const C& c)
 template<typename T>
 void Object::set_attribute(const char* name, const T& attr)
 {
-    set_attribute(name, python::to_python<T>(attr));
+    set_attribute(name, python::Object(python::to_python<T>(attr)));
 }
 template<int N>
 void Object::set_attribute(const char* name, const char(&value)[N])
