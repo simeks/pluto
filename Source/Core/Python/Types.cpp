@@ -246,8 +246,8 @@ namespace
     {
         using namespace python;
 
-#define LONG_CONVERTER(T) type_registry::insert(typeid(T), &PyLong_Type, long_to_python<T>, long_from_python<T>);
-#define UNSIGNED_LONG_CONVERTER(T) type_registry::insert(typeid(T), &PyLong_Type, unsigned_long_to_python<T>, unsigned_long_from_python<T>);
+#define LONG_CONVERTER(T) type_registry::insert(typeid(T), long_to_python<T>, long_from_python<T>);
+#define UNSIGNED_LONG_CONVERTER(T) type_registry::insert(typeid(T), unsigned_long_to_python<T>, unsigned_long_from_python<T>);
 
         LONG_CONVERTER(int8_t);
         LONG_CONVERTER(int16_t);
@@ -260,28 +260,28 @@ namespace
 #undef LONG_TYPE_CONVERTER
 #undef UNSIGNED_LONG_TYPE_CONVERTER
 
-        type_registry::insert(typeid(int64_t), &PyLong_Type, int64_to_python, int64_from_python);
-        type_registry::insert(typeid(uint64_t), &PyLong_Type, uint64_to_python, uint64_from_python);
+        type_registry::insert(typeid(int64_t), int64_to_python, int64_from_python);
+        type_registry::insert(typeid(uint64_t), uint64_to_python, uint64_from_python);
 
-        type_registry::insert(typeid(float), &PyFloat_Type, float_to_python<float>, float_from_python<float>);
-        type_registry::insert(typeid(double), &PyFloat_Type, float_to_python<double>, float_from_python<double>);
+        type_registry::insert(typeid(float), float_to_python<float>, float_from_python<float>);
+        type_registry::insert(typeid(double), float_to_python<double>, float_from_python<double>);
 
-        type_registry::insert(typeid(Vec3<uint8_t>), &PyTuple_Type, vec3_to_python<uint8_t>, vec3_from_python<uint8_t>);
-        type_registry::insert(typeid(Vec3<int>), &PyTuple_Type, vec3_to_python<int>, vec3_from_python<int>);
-        type_registry::insert(typeid(Vec3<float>), &PyTuple_Type, vec3_to_python<float>, vec3_from_python<float>);
-        type_registry::insert(typeid(Vec3<double>), &PyTuple_Type, vec3_to_python<double>, vec3_from_python<double>);
+        type_registry::insert(typeid(Vec3<uint8_t>), vec3_to_python<uint8_t>, vec3_from_python<uint8_t>);
+        type_registry::insert(typeid(Vec3<int>), vec3_to_python<int>, vec3_from_python<int>);
+        type_registry::insert(typeid(Vec3<float>), vec3_to_python<float>, vec3_from_python<float>);
+        type_registry::insert(typeid(Vec3<double>), vec3_to_python<double>, vec3_from_python<double>);
 
-        type_registry::insert(typeid(bool), &PyBool_Type, bool_to_python, bool_from_python);
-        type_registry::insert(typeid(void), &_PyNone_Type, void_to_python, void_from_python);
+        type_registry::insert(typeid(bool), bool_to_python, bool_from_python);
+        type_registry::insert(typeid(void), void_to_python, void_from_python);
 
-        type_registry::insert(typeid(PyObject*), &PyBaseObject_Type, pyobject_to_python, pyobject_from_python);
-        type_registry::insert(typeid(python::Object), &PyBaseObject_Type, object_to_python, object_from_python);
+        type_registry::insert(typeid(PyObject*), pyobject_to_python, pyobject_from_python);
+        type_registry::insert(typeid(python::Object), object_to_python, object_from_python);
 
-        type_registry::insert(typeid(const char*), &PyUnicode_Type, cstring_to_python, cstring_from_python);
-        type_registry::insert(typeid(std::string), &PyUnicode_Type, string_to_python, string_from_python);
+        type_registry::insert(typeid(const char*), cstring_to_python, cstring_from_python);
+        type_registry::insert(typeid(std::string), string_to_python, string_from_python);
 
-        type_registry::insert(typeid(Tuple), &PyTuple_Type, tuple_to_python, tuple_from_python);
-        type_registry::insert(typeid(Dict), &PyDict_Type, dict_to_python, dict_from_python);
+        type_registry::insert(typeid(Tuple), tuple_to_python, tuple_from_python);
+        type_registry::insert(typeid(Dict), dict_to_python, dict_from_python);
 
     }
 }
@@ -329,7 +329,6 @@ namespace python
         }
 
         void insert(const std::type_info& type,
-                    PyTypeObject* py_type,
                     ToPythonFunction to_fn,
                     FromPythonFunction from_fn)
         {
@@ -339,11 +338,9 @@ namespace python
             Entry& e = const_cast<Entry&>(*registry().insert(Entry(type)).first);
 
             // This should be our first and only call for this particular type, if not, something has gone wrong.
-            assert(e.py_type == nullptr);
             assert(e.to_python == nullptr);
             assert(e.from_python == nullptr);
 
-            e.py_type = py_type;
             e.to_python = to_fn;
             e.from_python = from_fn;
         }

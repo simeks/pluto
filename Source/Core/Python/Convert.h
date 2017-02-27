@@ -36,7 +36,6 @@ namespace python
         return l;
     }
 
-
     template<>
     CORE_API Vec3d from_python<Vec3d>(PyObject*);
 }

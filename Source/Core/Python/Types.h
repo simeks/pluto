@@ -19,18 +19,18 @@ namespace python
             /// Type info aquired by using typeid()
             const std::type_index cpp_type;
 
-            PyTypeObject* py_type;
-
             /// Converters
 
             ToPythonFunction to_python;
             FromPythonFunction from_python;
+
+            /// Optional: Mainly used for new types
+            PyTypeObject* py_type;
         };
 
         CORE_API const Entry& lookup(const std::type_info& type);
 
         CORE_API void insert(const std::type_info& type,
-                             PyTypeObject* py_type,
                              ToPythonFunction to_fn, 
                              FromPythonFunction from_fn);
     }
