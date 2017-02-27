@@ -23,25 +23,15 @@ namespace python
     };
 
     template<typename T>
-    class ValueHolder : public Holder
+    class PtrHolder : public Holder
     {
     public:
-        ValueHolder();
+        PtrHolder();
+        ~PtrHolder();
 
     private:
-        T _v;
+        T* _p;
     };
-
-    //template<typename T>
-    //class PtrHolder : public Holder
-    //{
-    //public:
-    //    PtrHolder();
-    //    ~PtrHolder();
-
-    //private:
-    //    T* _p;
-    //};
 
     //template<typename T>
     //class SharedPtrHolder : public Holder
@@ -63,19 +53,19 @@ namespace python
     };
 
     template<typename T>
-    class CppClass
+    class CppClass : public CppClassBase
     {
     public:
         Holder* allocate() OVERRIDE
         {
-            return new ValueHolder<T>();
+            return new PtrHolder<T>();
         }
 
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
-    CORE_API Object make_class(const char* name, CppClassBase* cpp_class);
-
+    CORE_API Object make_class(const char* name, CppClassBase* cpp_class)
+    CORE_API Holder* holder(PyObject* obj);
 
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.

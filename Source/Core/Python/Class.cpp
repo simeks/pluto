@@ -41,8 +41,8 @@ static PyObject* pluto_object_new(PyTypeObject* type, PyObject* , PyObject*)
     Instance* obj = (Instance*)type->tp_alloc(type, 0);
 
     CppClassBase* cls = cpp_class((PyObject*)type);
-    if(cls)
-        obj->holder = cls->allocate();
+    assert(cls);
+    obj->holder = cls->allocate();
 
     return (PyObject*)obj;
 }
@@ -141,7 +141,6 @@ static void destruct___cpp_class__(PyObject* obj)
     delete ptr;
 }
 
-
 namespace python
 {
     Holder::Holder() {}
@@ -163,13 +162,11 @@ namespace python
         if (!cls)
             PyErr_Print();
 
-        if (cpp_class)
-        {
-            PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
-            PyObject_SetAttrString(cls, "__cpp_class__", cap);
-            Py_DECREF(cap);
-        }
-
+        assert(cpp_class);
+        PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
+        PyObject_SetAttrString(cls, "__cpp_class__", cap);
+        Py_DECREF(cap);
+    
         return cls;
     }
 
