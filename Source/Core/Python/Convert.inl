@@ -10,9 +10,9 @@ namespace python
                 TypeInfo<T>::info.cpp_type.name());
             return T();
         }
-        T val; // TODO: This will call the constructor for non primitives object, can this be avoided?
-        conv(obj, &val);
-        return val;
+        T* val = (T*)alloca(sizeof(T)); // Avoid calling the constructor, conv() will call copy-constructor
+        conv(obj, val);
+        return *val;
     }
 
     template<typename T>

@@ -6,30 +6,29 @@ namespace python
 
     }
     template<typename T>
-    void instance_from_python(PyObject* obj, void*)
+    void instance_from_python(PyObject* obj, void* val)
     {
         if (TypeInfo<T>::info.py_type && 
-            PyObject_IsInstance(obj, TypeInfo<T>::info.py_type))
+            PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
         {
-            Holder* h = holder(obj);
-            
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Cannot convert type %s to %s.",
+            PyErr_Format(PyExc_TypeError, "Cannot convert type %s to %s.",
                 Py_TYPE(obj)->tp_name, TypeInfo<T>:info.py_type->tp_name);
         }
     }
-
-    template<typename T>
-    PtrHolder<T>::PtrHolder() : _p(nullptr)
-    {
-    }
-
     template<typename T>
     Object make_class(const char* name)
     {
-        return make_class(name, new CppClass<T>());
+        Object cls = make_class(name, new CppClass<T>());
+
+        type_registry::insert(typeid(T*),
+            (PyTypeObject*)cls.ptr(),
+            instance_to_python<T*>,
+            instance_from_python<T*>);
+
+        return cls;
     }
 
     template<typename T, typename ... TArgs>

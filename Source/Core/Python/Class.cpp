@@ -15,7 +15,6 @@ namespace python
         Holder* holder;
     } Instance;
 
-
     /// Returns the CppClass object for the specified type
     CppClassBase* cpp_class(PyObject* type)
     {
@@ -33,8 +32,6 @@ namespace python
         return (CppClassBase*)PyCapsule_GetPointer(cap, "__cpp_class__");
     }
 }
-
-
 
 static PyObject* pluto_object_new(PyTypeObject* type, PyObject* , PyObject*)
 {
@@ -103,7 +100,7 @@ static PyTypeObject _instance_type = {
     0,                          /*tp_getattro*/
     0,                          /*tp_setattro*/
     0,                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                          /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
     0,                          /* tp_doc */
     0,                          /* tp_traverse */
     0,                          /* tp_clear */
@@ -145,6 +142,16 @@ namespace python
 {
     Holder::Holder() {}
     Holder::~Holder() {}
+
+    Holder* holder(PyObject* instance)
+    {
+        if (PyObject_IsInstance(instance, (PyObject*)&instance_type()))
+        {
+            return ((Instance*)instance)->holder;
+        }
+        PYTHON_ERROR_R(TypeError, nullptr, "Expected instance type");
+    }
+
 
     Object make_class(const char* name, CppClassBase* cpp_class)
     {

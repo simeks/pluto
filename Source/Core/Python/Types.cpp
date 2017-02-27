@@ -345,5 +345,24 @@ namespace python
             e.to_python = to_fn;
             e.from_python = from_fn;
         }
+        void insert(const std::type_info& type,
+            PyTypeObject* py_type,
+            ToPythonFunction to_fn,
+            FromPythonFunction from_fn)
+        {
+            // std::set iterators are constant, which is logical since it's sorted. However, we want
+            //  to modify the other fields in Entry, hence the const_cast. This should be fine as long
+            //  as we don't modify the field used as key; Entry::cpp_type
+            Entry& e = const_cast<Entry&>(*registry().insert(Entry(type)).first);
+
+            // This should be our first and only call for this particular type, if not, something has gone wrong.
+            assert(e.py_type == nullptr);
+            assert(e.to_python == nullptr);
+            assert(e.from_python == nullptr);
+
+            e.py_type = py_type;
+            e.to_python = to_fn;
+            e.from_python = from_fn;
+        }
     }
 }

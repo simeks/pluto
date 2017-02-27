@@ -20,30 +20,32 @@ namespace python
     public:
         Holder();
         virtual ~Holder();
+
+        virtual void* ptr() = 0;
     };
 
     template<typename T>
     class PtrHolder : public Holder
     {
     public:
-        PtrHolder();
-        ~PtrHolder();
+        PtrHolder()
+        {
+            /// Allocate memory but do not call any constructor
+            _p = (T*)::operator new(sizeof(T));
+        }
+        ~PtrHolder()
+        {
+            delete _p;
+        }
+
+        void* ptr()
+        {
+            return _p;
+        }
 
     private:
         T* _p;
     };
-
-    //template<typename T>
-    //class SharedPtrHolder : public Holder
-    //{
-    //public:
-    //    SharedPtrHolder();
-    //    ~SharedPtrHolder();
-
-    //private:
-    //    std::shared_ptr<T> _p;
-    //};
-
 
     class CORE_API CppClassBase
     {
@@ -60,28 +62,18 @@ namespace python
         {
             return new PtrHolder<T>();
         }
-
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
-    CORE_API Object make_class(const char* name, CppClassBase* cpp_class)
-    CORE_API Holder* holder(PyObject* obj);
+    CORE_API Object make_class(const char* name, CppClassBase* cpp_class);
+
+    /// Returns the value holder for the given instance.
+    CORE_API Holder* holder(PyObject* instance);
 
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.
     template<typename T>
     Object make_class(const char* name);
-
-    /// @brief Returns the python class object for the specified class
-    template<typename T>
-    const Object& class_object();
-
-    template<typename T>
-    Object make_instance(T* obj)
-    {
-        Object cls = class_object<T>();
-
-    }
 
     /// Python -> Constructor wrapper
     template<typename T, typename ... TArgs>

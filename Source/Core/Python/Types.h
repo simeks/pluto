@@ -33,6 +33,11 @@ namespace python
         CORE_API void insert(const std::type_info& type,
                              ToPythonFunction to_fn, 
                              FromPythonFunction from_fn);
+
+        CORE_API void insert(const std::type_info& type,
+                             PyTypeObject* py_type,
+                             ToPythonFunction to_fn,
+                             FromPythonFunction from_fn);
     }
 
     template<typename T>
