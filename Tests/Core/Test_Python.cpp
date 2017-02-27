@@ -7,6 +7,8 @@
 #include <Core/Python/NumPy.h>
 #include <Core/Python/Object.h>
 
+#include "Test_Python.h"
+
 using namespace testing;
 
 namespace
@@ -65,6 +67,7 @@ TEST_CASE(python_module)
     Py_Initialize();
     {
         python::Object m = python::import("py_test_module");
+        ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(python::from_python<int>(python::getattr(m, "constant_int").ptr()), 5);
         ASSERT_EQUAL_STR(python::from_python<const char*>(python::getattr(m, "constant_str").ptr()), "testtest");
     }
@@ -90,14 +93,12 @@ TEST_CASE(python_function)
             "\n"
             ;
         PyRun_SimpleString(script);
+        ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_function_void_flag, true);
         ASSERT_EQUAL(_function_1arg_flag, 5);
         ASSERT_EQUAL(_function_2arg_flag_a, 7);
         ASSERT_EQUAL(_function_2arg_flag_b, 9);
         ASSERT_EQUAL(_function_2arg_return_flag, true);
-        ASSERT_EXPR(!PyErr_Occurred());
-        if (PyErr_Occurred())
-            PyErr_Print();
     }
 
     Py_Finalize();
@@ -146,7 +147,7 @@ TEST_CASE(python_basic_class)
             "a.b=1001\n"
             "a.testfn()\n"
         );
-        ASSERT_EXPR(!PyErr_Occurred());
+        ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_class_method_flag_a, 143);
         ASSERT_EQUAL(_class_method_flag_b, 1001);
         if (PyErr_Occurred())
@@ -178,6 +179,8 @@ TEST_CASE(python_tuple)
 
         ASSERT_EXPR(t.get(3).is_instance(&PyBool_Type));
         ASSERT_EQUAL(t.get<bool>(3), true);
+
+        ASSERT_NO_PYTHON_ERROR();
     }
     Py_Finalize();
 }
@@ -204,6 +207,8 @@ TEST_CASE(python_dict)
 
         ASSERT_EXPR(d.get("d").is_instance(&PyBool_Type));
         ASSERT_EQUAL(d.get<bool>("d"), true);
+
+        ASSERT_NO_PYTHON_ERROR();
     }
     Py_Finalize();
 }

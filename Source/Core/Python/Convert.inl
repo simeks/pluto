@@ -34,5 +34,26 @@ namespace python
         return conv(&value);
     }
 
+
+    template<typename T, typename Converter>
+    PyObject* to_python_wrapper(void const* val)
+    {
+        return Converter::to_python(*((T*)val));
+    }
+
+    template<typename T, typename Converter>
+    void from_python_wrapper(PyObject* obj, void* val)
+    {
+        new (val) T(Converter::from_python(obj));
+    }
+
+    template<typename T, typename Converter>
+    TypeConverter<T, Converter>::TypeConverter()
+    {
+        type_registry::insert(typeid(T),
+            to_python_wrapper<T, Converter>,
+            from_python_wrapper<T, Converter>);
+    }
+
 }
 

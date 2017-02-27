@@ -16,7 +16,7 @@ namespace
     template<typename T>
     void long_from_python(PyObject* obj, void* val)
     {
-        *((T*)val) = (T)PyLong_AsLong(obj);
+        new (val) T((T)PyLong_AsLong(obj));
     }
 
     // unsigned integers <= 32bits
@@ -31,7 +31,7 @@ namespace
     {
         if (PyLong_Check(obj))
         {
-            *((T*)val) = (T)PyLong_AsUnsignedLong(obj);
+            new (val) T((T)PyLong_AsUnsignedLong(obj));
         }
         else
         {
@@ -43,7 +43,7 @@ namespace
                 PYTHON_ERROR(OverflowError, "overflow detected");
                 return;
             }
-            *((T*)val) = (T)v;
+            new (val) T((T)v);
         }
     }
 
@@ -55,7 +55,7 @@ namespace
     }
     void int64_from_python(PyObject* obj, void* val)
     {
-        *((int64_t*)val) = PyLong_AsLongLong(obj);
+        new (val) int64_t(PyLong_AsLongLong(obj));
     }
 
     // uint64_t
@@ -68,7 +68,7 @@ namespace
     {
         if (PyLong_Check(obj))
         {
-            *((uint64_t*)val) = (uint64_t)PyLong_AsUnsignedLongLong(obj);
+            new (val) uint64_t(PyLong_AsUnsignedLongLong(obj));
         }
         else
         {
@@ -80,7 +80,7 @@ namespace
                 PYTHON_ERROR(OverflowError, "overflow detected");
                 return;
             }
-            *((uint64_t*)val) = (uint64_t)v;
+            new (val) uint64_t(v);
         }
     }
 
@@ -94,7 +94,7 @@ namespace
     template<typename T>
     void float_from_python(PyObject* obj, void* val)
     {
-        *((T*)val) = (T)PyFloat_AsDouble(obj);
+        new (val) T((T)PyFloat_AsDouble(obj));
     }
 
     // bool
@@ -108,11 +108,11 @@ namespace
         Py_RETURN_FALSE;
     }
     void bool_from_python(PyObject* obj, void* val)
-    {
-        
+    {   
         if (PyBool_Check(obj))
         {
-            *((bool*)val) = (obj == Py_True);
+            new (val) bool(obj == Py_True);
+            return;
         }
         PyErr_SetString(PyExc_ValueError, "Expected bool");
     }
@@ -135,7 +135,7 @@ namespace
     }
     void pyobject_from_python(PyObject* obj, void* val)
     {
-        *((PyObject**)val) = obj;
+        new (val) (PyObject*)(obj);
     }
 
     // python::Object
@@ -146,7 +146,7 @@ namespace
     }
     void object_from_python(PyObject* obj, void* val)
     {
-        *((python::Object*)val) = python::Object(python::Borrowed(obj));
+        new (val) (python::Object)(python::Borrowed(obj));
     }
 
     // C-style string
@@ -157,7 +157,7 @@ namespace
     }
     void cstring_from_python(PyObject* obj, void* val)
     {
-        *((const char**)val) = PyUnicode_AsUTF8(obj);
+        new (val) (const char*)(PyUnicode_AsUTF8(obj));
     }
 
     // std::string
@@ -168,7 +168,7 @@ namespace
     }
     void string_from_python(PyObject* obj, void* val)
     {
-        *((std::string*)val) = PyUnicode_AsUTF8(obj);
+        new (val) std::string(PyUnicode_AsUTF8(obj));
     }
 
     // Tuple
@@ -181,7 +181,7 @@ namespace
     {
         if (PySequence_Check(obj) || PyTuple_Check(obj))
         {
-            *((Tuple*)val) = Tuple(python::incref(obj));
+            new (val) Tuple(python::incref(obj));
             return;
         }
 
@@ -192,8 +192,9 @@ namespace
 
         // Special case, if we didn't receive a tuple we take our input and put it inside 
         // a new tuple
-        *((Tuple*)val) = Tuple(1);
-        ((Tuple*)val)->set(0, python::Object(python::Borrowed(obj)));
+
+        Tuple* t = new (val) Tuple(1);
+        t->set(0, python::Object(python::Borrowed(obj)));
     }
 
     // Dict
@@ -206,7 +207,7 @@ namespace
     {
         if (PyDict_Check(obj))
         {
-            *((Dict*)val) = Dict(python::incref(obj));
+            new (val) Dict(python::incref(obj));
             return;
         }
         PyErr_SetString(PyExc_ValueError, "Expected dict");
@@ -232,7 +233,7 @@ namespace
     {
         if (PySequence_Check(obj) && PySequence_Size(obj))
         {
-            Vec3<T>& v = *((Vec3<T>*)val);
+            Vec3<T>& v = *(new (val) Vec3<T>());
             for (int i = 0; i < std::min<Py_ssize_t>(PySequence_Size(obj), 3); ++i)
             {
                 v[i] = python::from_python<T>(PySequence_GetItem(obj, i));

@@ -36,8 +36,11 @@ namespace python
         return l;
     }
 
-    template<>
-    CORE_API Vec3d from_python<Vec3d>(PyObject*);
+    template<typename T, typename Converter>
+    struct TypeConverter
+    {
+        TypeConverter();
+    };
 }
 
 #include "Convert.inl"

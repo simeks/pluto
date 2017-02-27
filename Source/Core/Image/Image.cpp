@@ -30,47 +30,48 @@ namespace
     }
 }
 
-namespace python
+namespace
 {
-    //template<>
-    //CORE_API Image from_python(PyObject* obj)
-    //{
-    //    if (numpy::check_type(obj))
-    //    {
-    //        image::PixelType pixel_type = image::PixelType_Unknown;
-    //        if (PyObject_HasAttrString(obj, "pixel_type"))
-    //            pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
-    //        
-    //        Image img(from_python<NumpyArray>(obj), pixel_type);
+    struct PythonImageConverter
+    {
+        static PyObject* to_python(const Image& value)
+        {
+            if (!value.valid())
+                Py_RETURN_NONE;
 
-    //        if (PyObject_HasAttrString(obj, "origin"))
-    //            img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
-    //        if (PyObject_HasAttrString(obj, "spacing"))
-    //            img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
-    //        
-    //        return img;
-    //    }
-    //    
-    //    PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
-    //}
+            Tuple args(2);
+            args.set(0, python::Object(python::to_python(value.data())));
+            args.set(1, python::Object(python::to_python((image::PixelType)value.pixel_type())));
 
-    //template<>
-    //CORE_API PyObject* to_python(const Image& value)
-    //{
-    //    if (!value.valid())
-    //        Py_RETURN_NONE;
+            python::Object imgobj = python::call(image_py_type(), args, Dict());
+                
+            python::setattr(imgobj, "origin", python::Object(python::to_python(value.origin())));
+            python::setattr(imgobj, "spacing", python::Object(python::to_python(value.spacing())));
 
-    //    Tuple args(2);
-    //    args.set(0, Object(to_python(value.data())));
-    //    args.set(1, Object(to_python((image::PixelType)value.pixel_type())));
+            return python::incref(imgobj.ptr());
+        }
+        static Image from_python(PyObject* obj)
+        {
+            if (numpy::check_type(obj))
+            {
+                image::PixelType pixel_type = image::PixelType_Unknown;
+                if (PyObject_HasAttrString(obj, "pixel_type"))
+                    pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
+                    
+                Image img(python::from_python<NumpyArray>(obj), pixel_type);
 
-    //    python::Object imgobj = python::call(image_py_type(), args, Dict());
-    //    
-    //    python::setattr(imgobj, "origin", Object(to_python(value.origin())));
-    //    python::setattr(imgobj, "spacing", Object(to_python(value.spacing())));
+                if (PyObject_HasAttrString(obj, "origin"))
+                    img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+                if (PyObject_HasAttrString(obj, "spacing"))
+                    img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
+                    
+                return img;
+            }
+            PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
+        }
+    };
 
-    //    return incref(imgobj.ptr());
-    //}
+    python::TypeConverter<Image, PythonImageConverter> python_image_converter;
 }
 
 Image::Image() : 

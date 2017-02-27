@@ -24,31 +24,38 @@
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
     type->add_attr(Name, python::to_python(Value));
 
-#define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) /*\
-    namespace python { \
-        template<> \
-        API ::TClass* from_python<::TClass*>(PyObject* obj) { \
-            if (obj == Py_None) { \
-                return nullptr; \
-            } \
-            if (::TClass::static_class()->check_type(obj)) { \
-                ::Object* ret = python_object::object(obj); \
-                if (ret->is_a(::TClass::static_class())) { \
-                    return object_cast<::TClass>(ret); \
-                } \
-            } \
-            PyErr_SetString(PyExc_ValueError, "Failed to convert Object"); \
-            return nullptr; \
-        } \
-    }*/
-#define OBJECT_CONVERTER_TO_PYTHON(TClass, API) /*\
-    namespace python { \
-        template<> \
-        API PyObject* to_python<::TClass*>(::TClass* const& obj) { \
-            if (obj) return obj->python_object(); \
-            Py_RETURN_NONE; \
-        } \
-    }*/
+
+template<typename TClass>
+struct ObjectPythonConverter
+{
+    static PyObject* to_python(TClass* const& obj)
+    {
+        if (obj) return obj->python_object();
+        Py_RETURN_NONE;
+    }
+    static TClass* from_python(PyObject* obj)
+    {
+        if (obj == Py_None)
+        {
+            return nullptr;
+        }
+        if (TClass::static_class()->check_type(obj))
+        {
+            ::Object* ret = python_object::object(obj);
+            if (ret->is_a(TClass::static_class()))
+            {
+                return object_cast<TClass>(ret);
+            }
+        }
+        PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+        return nullptr;
+    }
+};
+
+#define OBJECT_CONVERTER(TClass) \
+    namespace { \
+        python::TypeConverter<::TClass*, ObjectPythonConverter<::TClass>> _##TClass##_converter; \
+    }
 
 #define DECLARE_OBJECT(TClass, TSuperClass) \
     public: \
@@ -62,8 +69,7 @@
 
 
 #define IMPLEMENT_OBJECT_DOC(TClass, Name, API, Doc) \
-    OBJECT_CONVERTER_FROM_PYTHON(TClass, API); \
-    OBJECT_CONVERTER_TO_PYTHON(TClass, API); \
+    OBJECT_CONVERTER(TClass); \
     Object* TClass::create_object(PyObject* pyobj, PythonClass* cls) \
     { \
         return new TClass(pyobj, cls); \
@@ -151,7 +157,7 @@ public:
     T attribute(const char* name) const;
 
     PyObject* python_object();
-    
+
     void set_class(PythonClass* cls);
 
 protected:

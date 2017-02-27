@@ -47,29 +47,31 @@ bool numpy::check_type(PyObject* obj)
     return obj && PyArray_Check(obj) != 0;
 }
 
-namespace python
+namespace
 {
-    template<>
-    CORE_API NumpyArray from_python(PyObject* obj)
+    struct NDArrayConverter
     {
-        if (PyArray_Check(obj))
+        static PyObject* to_python(const NumpyArray& value)
         {
-            return NumpyArray((PyArrayObject*)obj);
+            PyObject* obj = value.object();
+            if (!obj)
+                Py_RETURN_NONE;
+
+            Py_INCREF(obj);
+            return obj;
         }
+        static NumpyArray from_python(PyObject* obj)
+        {
+            if (PyArray_Check(obj))
+            {
+                return NumpyArray((PyArrayObject*)obj);
+            }
 
-        PYTHON_ERROR_R(ValueError, NumpyArray(), "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
-    }
+            PYTHON_ERROR_R(ValueError, NumpyArray(), "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
+        }
+    };
 
-    template<>
-    CORE_API PyObject* to_python(const NumpyArray& value)
-    {
-        PyObject* obj = value.object();
-        if (!obj)
-            Py_RETURN_NONE;
-
-        Py_INCREF(obj);
-        return obj;
-    }
+    python::TypeConverter<NumpyArray, NDArrayConverter> ndarray_converter;
 }
 
 NumpyArray::NumpyArray() : _arr(nullptr)
