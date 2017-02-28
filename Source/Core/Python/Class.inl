@@ -85,6 +85,20 @@ namespace python
 
         return cls;
     }
+    template<typename TClass>
+    Object make_instance(TClass* value)
+    {
+        PyTypeObject* type = TypeInfo<TClass>::info.py_type;
+        if (type == nullptr)
+        {
+            PyErr_Format(PyExc_TypeError, "No python type found for type '%s'",
+                typeid(TClass).name());
+            return None();
+        }
+
+        return make_instance(type, new PtrHolder<TClass>(value));
+    }
+
 
     template<typename TClass, typename ... TArgs>
     void class_init(TClass* self, TArgs... args)

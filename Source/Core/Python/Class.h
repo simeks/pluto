@@ -73,6 +73,9 @@ namespace python
     template<typename TClass>
     Object make_class(const char* name);
 
+    template<typename TClass>
+    Object make_instance(TClass* value);
+
     /// Python -> Constructor wrapper
     template<typename TClass, typename ... TArgs>
     void class_init(TClass* self, TArgs... args);

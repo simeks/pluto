@@ -169,6 +169,25 @@ TEST_CASE(python_class_method)
     Py_Finalize();
 }
 
+TEST_CASE(python_class_make_instance)
+{
+    PYTHON_MODULE_INSTALL(py_class_test);
+    Py_Initialize();
+    {
+        TestClass data(567);
+        python::Object instance = python::make_instance<TestClass>(&data);
+        ASSERT_NO_PYTHON_ERROR();
+
+        TestClass* converted = python::from_python<TestClass*>(instance);
+        ASSERT_NO_PYTHON_ERROR();
+
+        ASSERT_EQUAL(converted->_a, data._a);
+
+    }
+    Py_Finalize();
+}
+
+
 
 TEST_CASE(python_tuple)
 {
