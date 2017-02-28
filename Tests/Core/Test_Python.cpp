@@ -106,63 +106,69 @@ TEST_CASE(python_function)
 
 namespace
 {
-    int _class_method_flag_a = 0;
-    int _class_method_flag_b = 0;
-    int _class_method_flag_c = 0;
+    int _class_some_value_1 = 0;
+    int _class_some_value_2 = 0;
 }
 
 struct TestClass
 {
     int _a;
 
-    TestClass(int a) : _a(a) {}
+    TestClass(int a) : _a(a) { _class_some_value_1 = a;  }
+
+    int some_method(int a)
+    {
+        _a = a;
+        _class_some_value_2 = a;
+        return _a + 10;
+    }
+
 };
 
-void testfn(const python::Object& obj)
-{
-    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a").ptr());
-    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b").ptr());
-}
-void testfn2(TestClass* self)
-{
-    _class_method_flag_c = self->_a;
-}
-
-PYTHON_MODULE(py_basic_class_test)
+PYTHON_MODULE(py_class_test)
 {
     python::Object cls = python::make_class<TestClass>("test");
-    python::def(cls, "testfn", python::make_function(&testfn, "testfn"));
-    python::def(cls, "testfn2", python::make_function(&testfn2, "testfn2"));
     python::def_init<TestClass, int>(cls);
+    python::def(cls, "some_method", &TestClass::some_method);
 
-    python::setattr(module, "Cls", cls);
-    auto obj = python::to_python(143);
-    python::setattr(cls, "a", obj);
+    python::def(module, "TestClass", cls);
 }
 
-TEST_CASE(python_basic_class)
+TEST_CASE(python_class_init)
 {
-    PYTHON_MODULE_INSTALL(py_basic_class_test);
+    PYTHON_MODULE_INSTALL(py_class_test);
     Py_Initialize();
     {
         PyRun_SimpleString(
-            "import py_basic_class_test as p\n"
-            "A = p.Cls\n"
+            "import py_class_test as p\n"
+            "A = p.TestClass\n"
             "a = A(321)\n"
-            "a.b=1001\n"
-            "a.testfn()\n"
-            "a.testfn2()\n"
         );
         ASSERT_NO_PYTHON_ERROR();
-        ASSERT_EQUAL(_class_method_flag_a, 143);
-        ASSERT_EQUAL(_class_method_flag_b, 1001);
-        ASSERT_EQUAL(_class_method_flag_c, 321);
-        
-        //python::Object instance = python::make_instance()
-
+        ASSERT_EQUAL(_class_some_value_1, 321);
     }
     Py_Finalize();
 }
+
+TEST_CASE(python_class_method)
+{
+    PYTHON_MODULE_INSTALL(py_class_test);
+    Py_Initialize();
+    {
+        PyRun_SimpleString(
+            "import py_class_test as p\n"
+            "A = p.TestClass\n"
+            "a = A(1)\n"
+            "ret = a.some_method(200)\n"
+            "if ret != 210:\n"
+            "    raise ValueError('Expected 210, got %d' % ret)\n"
+        );
+        ASSERT_NO_PYTHON_ERROR();
+        ASSERT_EQUAL(_class_some_value_2, 200);
+    }
+    Py_Finalize();
+}
+
 
 TEST_CASE(python_tuple)
 {

@@ -54,10 +54,7 @@ namespace python
     class CppClass : public CppClassBase
     {
     public:
-        Holder* allocate() OVERRIDE
-        {
-            return new PtrHolder<T>();
-        }
+        Holder* allocate() OVERRIDE;
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
@@ -73,18 +70,31 @@ namespace python
 
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.
-    template<typename T>
+    template<typename TClass>
     Object make_class(const char* name);
 
     /// Python -> Constructor wrapper
-    template<typename T, typename ... TArgs>
-    void class_init(T* self, TArgs... args);
+    template<typename TClass, typename ... TArgs>
+    void class_init(TClass* self, TArgs... args);
 
     /// @brief Defines a __init__ method for the given class
-    template<typename T, typename ... TArgs>
+    template<typename TClass, typename ... TArgs>
     void def_init(const Object& cls);
 
+    /// @brief Defines a class method
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    void def(const Object& cls, const char* name, 
+        TReturn(TClass::*meth)(TArgs...), const char* doc = nullptr);
 
+    /// @brief Defines a varargs class method
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    void def_varargs(const Object& cls, const char* name, 
+        TReturn(TClass::*meth)(const Tuple&), const char* doc = nullptr);
+
+    /// @brief Defines a varargs/keywords class method
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    void def_varargs_keywords(const Object& cls, const char* name,
+        TReturn(TClass::*meth)(const Tuple&, const Dict&), const char* doc = nullptr);
 }
 
 #include "Class.inl"

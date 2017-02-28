@@ -89,10 +89,34 @@ namespace python
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
         PyObject* MethodCaller<TArgPolicy, TClass, TReturn, TArgs...>::operator()(PyObject* args, PyObject* kw)
         {
-            auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
-            if (PyErr_Occurred())
-                return 0;
-            return invoke(_self, _fn, t, std::index_sequence_for<TArgs...>{});
+            /// If no _self is set we assume this is called through a bound function,
+            /// in this case our _self is located in the first argument in args.
+            if (!_self)
+            {
+                assert(sizeof...(TArgs) == PyTuple_Size(args) - 1); // Self should be first in args
+                if (PyTuple_Size(args) < 1)
+                    PYTHON_ERROR_R(TypeError, nullptr, "Expected at least 1 argument");
+                TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
+                PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args) - 1); // Strip away self from args (args[1:])
+
+                auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
+                Py_DECREF(args_slice);
+                
+                if (PyErr_Occurred())
+                    return 0;
+                
+                return invoke(self, _fn, t, std::index_sequence_for<TArgs...>{});
+            }
+            else
+            {
+                assert(sizeof...(TArgs) == PyTuple_Size(args));
+
+                auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
+                if (PyErr_Occurred())
+                    return 0;
+
+                return invoke(_self, _fn, t, std::index_sequence_for<TArgs...>{});
+            }
         }
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
