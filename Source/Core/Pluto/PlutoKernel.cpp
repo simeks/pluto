@@ -55,8 +55,7 @@ void PlutoKernel::prepare()
 
     _main_module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
 
-
-    python::Object pluto_module = python::import("pluto_api");
+    python::Object pluto_module = python::import("_pluto");
     python::setattr(pluto_module, "htmlout", python::make_instance<python_stdio::Stream>(&_stderr));
 
     _reloader = new AutoReloader();

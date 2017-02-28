@@ -45,7 +45,7 @@ static int py_object_init(PyObject* self, PyObject* arg, PyObject* kw)
 {
     if (!PyCapsule_CheckExact(arg))
     {
-        ((PyPlutoObject*)self)->obj->object_python_init(Tuple(arg), Dict(kw));
+        ((PyPlutoObject*)self)->obj->object_python_init(Tuple(arg), kw ? Dict(kw) : Dict());
         if (PyErr_Occurred())
             return -1;
     }

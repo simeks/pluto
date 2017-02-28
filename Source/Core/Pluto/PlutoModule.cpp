@@ -14,7 +14,7 @@ namespace pluto
     std::string s_version = "0.1";
 }
 
-PYTHON_MODULE(pluto_api)
+PYTHON_MODULE(_pluto)
 {
     py::def(module, "user_dir", &pluto::user_dir, "user_dir()");
     py::def(module, "python_dir", &pluto::python_dir, "python_dir()");
@@ -25,12 +25,13 @@ PYTHON_MODULE(pluto_api)
     py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
     py::def(module, "Object", Object::static_class());
-//    py::def(module, "StdStream", PyStdStream::static_class());
     py::def(module, "__version__", pluto::s_version);
+
+    py::def(module, "StdStream", python_stdio::stream_class());
 }
 void pluto::install_python_module()
 {
-    PYTHON_MODULE_INSTALL(pluto_api);
+    PYTHON_MODULE_INSTALL(_pluto);
 }
 
 const char* pluto::user_dir()

@@ -4,16 +4,19 @@
 
 #include <QString>
 
-//namespace python
-//{
-//    template<>
-//    CORE_API PyObject* to_python(const QString& val)
-//    {
-//        return to_python(val.toUtf8().constData());
-//    }
-//    template<>
-//    CORE_API QString from_python(PyObject* obj)
-//    {
-//        return QString::fromUtf8(PyUnicode_AsUTF8(obj));
-//    }
-//}
+namespace
+{
+    struct QStringConverter
+    {
+        static PyObject* to_python(const QString& val)
+        {
+            return python::to_python(val.toUtf8().constData());
+        }
+        static QString from_python(PyObject* obj)
+        {
+            return QString::fromUtf8(PyUnicode_AsUTF8(obj));
+        }
+    };
+
+    python::TypeConverter<QString, QStringConverter> qstring_converter;
+}
