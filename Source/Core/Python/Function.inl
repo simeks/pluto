@@ -97,7 +97,7 @@ namespace python
                 if (PyTuple_Size(args) < 1)
                     PYTHON_ERROR_R(TypeError, nullptr, "Expected at least 1 argument");
                 TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
-                PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args) - 1); // Strip away self from args (args[1:])
+                PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
                 Py_DECREF(args_slice);
