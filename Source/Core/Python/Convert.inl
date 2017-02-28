@@ -8,7 +8,7 @@ namespace python
         {
             PyErr_Format(PyExc_TypeError, "from_python: No converter found for type %s", 
                 TypeInfo<T>::info.cpp_type.name());
-            return T();
+            throw; // TODO:
         }
         T* val = (T*)alloca(sizeof(T)); // Avoid calling the constructor, conv() will call copy-constructor
         conv(obj, val);

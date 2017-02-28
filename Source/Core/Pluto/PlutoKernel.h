@@ -3,6 +3,7 @@
 
 #include <Core/API.h>
 #include <Core/Python/Object.h>
+#include <Core/Python/StdStream.h>
 
 namespace python
 {
@@ -15,12 +16,12 @@ public:
     virtual void print_html(const char* text) = 0;
 };
 
+
 class AutoReloader;
 class FlowModule;
 class ImageModule;
 class PlutoModule;
 class PythonModule;
-class PyStdStream;
 class CORE_API PlutoKernel
 {
 public:
@@ -61,9 +62,9 @@ private:
 
     python::Object _main_module;
     
-    PyStdStream* _stdout;
-    PyStdStream* _stderr;
-    PyStdStream* _htmlout;
+    python_stdio::Stream _stdout;
+    python_stdio::Stream _stderr;
+    python_stdio::Stream _htmlout;
 
     AutoReloader* _reloader;
 };

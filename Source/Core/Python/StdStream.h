@@ -1,7 +1,7 @@
 #ifndef __PYTHON_STD_STREAM_H__
 #define __PYTHON_STD_STREAM_H__
 
-#include <Python/Class.h>
+#include <Core/Python/Class.h>
 
 namespace python_stdio
 {
@@ -15,12 +15,9 @@ namespace python_stdio
 
     void write(Stream* self, const char* text);
     void flush(Stream* self);
+
+    python::Object stream_class();
 }
-//
-//class PyStdStream : public python::BaseObject
-//{
-//
-//};
 
 
 #endif // __PYTHON_STD_STREAM_H__

@@ -57,6 +57,36 @@ namespace python
         }
         else
         {
+            PyErr_Format(PyExc_TypeError, "Cannot convert pointer type %s to %s.",
+                Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
+        }
+    }
+    template<typename T>
+    PyObject* instance_value_to_python(void const* val)
+    {
+        PyTypeObject* type = TypeInfo<T>::info.py_type;
+        if (!type)
+        {
+            PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+                typeid(T).name());
+            return nullptr;
+        }
+
+        PtrHolder<T>* h = new PtrHolder<T>(); // Instance will delete this
+        new (h->ptr()) T(*((T*)val));
+        return incref(make_instance(type, h).ptr());
+    }
+
+    template<typename T>
+    void instance_value_from_python(PyObject* obj, void* val)
+    {
+        if (TypeInfo<T>::info.py_type &&
+            PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
+        {
+            new (val) T(*((T*)holder(obj)->ptr()));
+        }
+        else
+        {
             PyErr_Format(PyExc_TypeError, "Cannot convert type %s to %s.",
                 Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
         }
@@ -80,8 +110,8 @@ namespace python
         // No by-value converters implemented
         type_registry::insert(typeid(TClass),
             (PyTypeObject*)cls.ptr(),
-            nullptr,
-            nullptr);
+            instance_value_to_python<TClass>,
+            instance_value_from_python<TClass>);
 
         return cls;
     }
