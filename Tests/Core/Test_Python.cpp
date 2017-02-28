@@ -108,12 +108,7 @@ namespace
 {
     int _class_method_flag_a = 0;
     int _class_method_flag_b = 0;
-}
-
-void testfn(const python::Object& obj)
-{
-    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a").ptr());
-    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b").ptr());
+    int _class_method_flag_c = 0;
 }
 
 struct TestClass
@@ -123,16 +118,26 @@ struct TestClass
     TestClass(int a) : _a(a) {}
 };
 
+void testfn(const python::Object& obj)
+{
+    _class_method_flag_a = python::from_python<int>(python::getattr(obj, "a").ptr());
+    _class_method_flag_b = python::from_python<int>(python::getattr(obj, "b").ptr());
+}
+void testfn2(TestClass* self)
+{
+    _class_method_flag_c = self->_a;
+}
+
 PYTHON_MODULE(py_basic_class_test)
 {
     python::Object cls = python::make_class<TestClass>("test");
-    python::def(cls, "testfn", python::make_function(testfn, "testfn"));
+    python::def(cls, "testfn", python::make_function(&testfn, "testfn"));
+    python::def(cls, "testfn2", python::make_function(&testfn2, "testfn2"));
     python::def_init<TestClass, int>(cls);
 
     python::setattr(module, "Cls", cls);
     auto obj = python::to_python(143);
     python::setattr(cls, "a", obj);
-    def(module, "testfn", &testfn);
 }
 
 TEST_CASE(python_basic_class)
@@ -146,12 +151,14 @@ TEST_CASE(python_basic_class)
             "a = A(321)\n"
             "a.b=1001\n"
             "a.testfn()\n"
+            "a.testfn2()\n"
         );
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_class_method_flag_a, 143);
         ASSERT_EQUAL(_class_method_flag_b, 1001);
-        if (PyErr_Occurred())
-            PyErr_Print();
+        ASSERT_EQUAL(_class_method_flag_c, 321);
+        
+        //python::Object instance = python::make_instance()
 
     }
     Py_Finalize();

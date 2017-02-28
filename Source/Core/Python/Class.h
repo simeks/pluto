@@ -9,12 +9,7 @@ namespace python
 {
     typedef void(*ClassInit)(const python::Object& cls);
 
-    /// Holder: Responsible for holding a value of some sort for a python object instance.
-    ///
-    /// Two available holders are for raw pointers (PtrHolder) and shared_ptr (SharedPtrHolder).
-    /// PtrHolder : Holds a raw pointer, this is mainly used when we have a object instance created from
-    ///             converting from a raw pointer. In this case we don't have a lot of information about
-    ///             ownership and so on, therefore this will assume the user is responsible for not 
+    /// Holder: Responsible for holding a value of some sort for a python object instance. 
     class CORE_API Holder
     {
     public:
@@ -28,23 +23,24 @@ namespace python
     class PtrHolder : public Holder
     {
     public:
-        PtrHolder()
-        {
-            /// Allocate memory but do not call any constructor
-            _p = (T*)::operator new(sizeof(T));
-        }
-        ~PtrHolder()
-        {
-            delete _p;
-        }
+        /// Default constructor:
+        /// Allocates memory for the given type but performs no initialization.
+        /// The allocated memory will be deleted whenever the holder is destroyed
+        PtrHolder();
 
-        void* ptr()
-        {
-            return _p;
-        }
+        /// Constructor
+        /// This constructor takes an already existing pointer, here we take no ownership
+        /// of the pointer so it is still the users responsibility. Be careful, this of course
+        /// requires the pointer to be valid as long as the python instance is available.
+        /// The holder will not free the memory pointed to when destroyed.
+        PtrHolder(T* ptr);
+
+        ~PtrHolder();
+        void* ptr();
 
     private:
         T* _p;
+        bool _own; // Do we own the pointer?
     };
 
     class CORE_API CppClassBase
@@ -66,6 +62,11 @@ namespace python
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
     CORE_API Object make_class(const char* name, CppClassBase* cpp_class);
+
+    /// Creates a new instance of the specified type
+    /// @param holder Value holder, this will be deleted whenever GC collects the created instance.
+    /// @return The new instance or None if failed
+    CORE_API Object make_instance(PyTypeObject* type, Holder* holder);
 
     /// Returns the value holder for the given instance.
     CORE_API Holder* holder(PyObject* instance);

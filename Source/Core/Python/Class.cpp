@@ -177,4 +177,10 @@ namespace python
         return cls;
     }
 
+    Object make_instance(PyTypeObject* type, Holder* holder)
+    {
+        Instance* obj = (Instance*)type->tp_alloc(type, 0);
+        obj->holder = holder;
+        return (PyObject*)obj;
+    }
 }
