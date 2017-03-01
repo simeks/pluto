@@ -44,9 +44,9 @@ void PlutoKernel::prepare()
     _htmlout = { nullptr, nullptr };
 
     python::Object sys = python::import("sys");
-    python::setattr(sys, "stdout", python::make_instance<python_stdio::Stream>(&_stdout));
+    /*python::setattr(sys, "stdout", python::make_instance<python_stdio::Stream>(&_stdout));
     python::setattr(sys, "stderr", python::make_instance<python_stdio::Stream>(&_stderr));
-
+*/
     python::Object path = python::getattr(sys, "path");
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().python_dir())); // TODO: List object
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().module_dir()));
@@ -94,6 +94,9 @@ void PlutoKernel::run_file(const std::string& filename)
     {
         std::stringstream buf;
         buf << f.rdbuf();
+
+        if (PyErr_Occurred())
+            PyErr_Print();
 
         PyRun_SimpleString(buf.str().c_str());
         f.close();

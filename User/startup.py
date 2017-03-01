@@ -4,8 +4,8 @@ print('* Running Pluto startup script')
 
 try:
     import pluto
-except ImportError:
-    print('Failed to import pluto')
+except ImportError as e:
+    print('Failed to import pluto:',e)
 else:
     print('Import module: pluto [Version: %s]' % pluto.__version__)
 
