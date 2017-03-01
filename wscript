@@ -66,16 +66,16 @@ def configure(conf):
 
     # Finds the installed python version, ideally through anaconda
     conf.check_python_version()
+    conf.check_python_headers('pyembed')
+
 
     # TODO: waf-tools doesn't play well with debug build of python, we should clean this up,
     #       however, a lot of this will be invalid when we move to distributing python ourself.
 
-    conf.check_python_headers('pyembed')
-
     # Use our own-built python lib
-    v.LIBPATH_PYEMBED.insert(0, r'C:\dev\cpython\PCbuild\amd64') 
-    v.INCLUDES_PYEMBED.insert(0, r'C:\dev\cpython\PC') 
-    v.INCLUDES_PYEMBED.insert(0, r'C:\dev\cpython\Include')
+    #v.LIBPATH_PYEMBED.insert(0, r'C:\dev\cpython\PCbuild\amd64') 
+    #v.INCLUDES_PYEMBED.insert(0, r'C:\dev\cpython\PC') 
+    #v.INCLUDES_PYEMBED.insert(0, r'C:\dev\cpython\Include')
 
     # Python header imports lib, no need to do it twice
     v.LIB_PYEMBED = []

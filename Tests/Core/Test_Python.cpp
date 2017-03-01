@@ -261,5 +261,3 @@ TEST_CASE(python_dict)
     }
     Py_Finalize();
 }
-
-

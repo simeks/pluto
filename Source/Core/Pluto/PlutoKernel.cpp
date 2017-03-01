@@ -28,9 +28,9 @@ PlutoKernel::~PlutoKernel()
 {
     delete _reloader;
 
-    python::Object sys = python::import("sys");
-    python::setattr(sys, "stdout", Py_None);
-    python::setattr(sys, "stderr", Py_None);
+    //python::Object sys = python::import("sys");
+    //python::setattr(sys, "stdout", Py_None);
+    //python::setattr(sys, "stderr", Py_None);
     
     _main_module = Py_None;
 }
@@ -44,9 +44,9 @@ void PlutoKernel::prepare()
     _htmlout = { nullptr, nullptr };
 
     python::Object sys = python::import("sys");
-    /*python::setattr(sys, "stdout", python::make_instance<python_stdio::Stream>(&_stdout));
-    python::setattr(sys, "stderr", python::make_instance<python_stdio::Stream>(&_stderr));
-*/
+    //python::setattr(sys, "stdout", python::make_instance<python_stdio::Stream>(&_stdout));
+    //python::setattr(sys, "stderr", python::make_instance<python_stdio::Stream>(&_stderr));
+
     python::Object path = python::getattr(sys, "path");
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().python_dir())); // TODO: List object
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().module_dir()));

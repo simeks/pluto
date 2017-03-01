@@ -11,19 +11,19 @@ namespace python
 
 namespace pluto
 {
-    const char* user_dir();
-    const char* python_dir();
-    const char* module_dir();
+    CORE_API const char* user_dir();
+    CORE_API const char* python_dir();
+    CORE_API const char* module_dir();
 
-    void run_file(const std::string& file);
+    CORE_API void run_file(const std::string& file);
 
-    python::Object register_class(const python::Object& cls);
+    CORE_API python::Object register_class(const python::Object& cls);
 
-    Object* create_object(const Tuple& args);
+    CORE_API Object* create_object(const Tuple& args);
 
-    void auto_reload(const python::Object& module);
+    CORE_API void auto_reload(const python::Object& module);
 
-    void install_python_module();
+    CORE_API void install_python_module();
 }
 
 #endif // __CORE_PLUTO_MODULE_H__
