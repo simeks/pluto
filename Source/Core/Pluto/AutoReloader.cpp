@@ -1,6 +1,8 @@
 #include <Core/Common.h>
 
 #include "AutoReloader.h"
+#include "Python/Module.h"
+#include "Python/Object.h"
 #include "Python/PythonCommon.h"
 
 #include <QFileSystemWatcher>
@@ -14,11 +16,11 @@ AutoReloader::~AutoReloader()
 {
     delete _watcher;
 }
-void AutoReloader::add_module(PyObject* module)
+void AutoReloader::add_module(const python::Object& module)
 {
-    if (PyObject_HasAttrString(module, "__file__"))
+    if (python::hasattr(module, "__file__"))
     {
-        QString file = PyUnicode_AsUTF8(PyObject_GetAttrString(module, "__file__"));
+        QString file = python::from_python<QString>(python::getattr(module, "__file__").ptr());
 
         auto it = _modules.find(file);
         if (it == _modules.end())
@@ -33,7 +35,6 @@ void AutoReloader::file_changed(const QString& path)
 {
     auto it = _modules.find(path);
     assert(it != _modules.end());
-    if (!PyImport_ReloadModule(it->second))
-        PyErr_Print();
+    python::reload_module(it->second);
 }
 

@@ -4,12 +4,12 @@
 #include "API.h"
 
 #include <Core/Modules/ModuleInterface.h>
-#include <Core/Python/PythonModule.h>
 
 class FlowContext;
 class FlowNode;
 class FlowPythonModule;
 class FlowWindow;
+class GraphFileLoader;
 class QtFlowUI;
 struct FlowNodeDef;
 class FLOW_API FlowModule : public ModuleInterface
@@ -24,11 +24,17 @@ public:
     void init() OVERRIDE;
 
     void install_node_template(FlowNode* node);
-    void install_node_template(const FlowNodeDef& def);
 
-    FlowNode* node_template(const char* node_class) const;
+    /// Attempts to find the specified node template.
+    /// Throws an error if no template was found.
+    FlowNode* node_template(const char* node_class);
 
     const std::vector<FlowNode*>& node_templates() const;
+
+    /// @brief Auto-reload graphs in the given path
+    /// First all graphs in the specified path will be loaded and added as nodes in the UI.
+    /// If any of the graphs changes while the application is running it will be automatically reloaded.
+    void add_graph_path(const char* path);
 
     QtFlowUI* ui() const;
 
@@ -41,6 +47,8 @@ private:
 
     std::vector<FlowNode*> _node_templates;
     std::vector<FlowWindow*> _flow_windows;
+
+    std::vector<GraphFileLoader*> _loaders;
 };
 
 

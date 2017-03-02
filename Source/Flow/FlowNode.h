@@ -89,7 +89,7 @@ public:
     const std::vector<FlowProperty*>& properties() const;
 
     void set_property(const char* name, const char* value);
-    void set_property(const char* name, PyObject* value);
+    void set_property(const char* name, const python::Object& value);
     
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);

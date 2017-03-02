@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <memory>
 #include <type_traits>
+#include <typeinfo>
+#include <typeindex>
 #include <cstdarg>
 #include <stdio.h>
 #include <string.h>

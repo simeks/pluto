@@ -1,9 +1,9 @@
 #ifndef __CORE_OBJECT_H__
 #define __CORE_OBJECT_H__
 
-#include "Class.h"
-#include "PythonClass.h"
-#include <Core/Python/PythonFunction.h>
+
+#include <Core/Object/PythonClass.h>
+#include <Core/Python/PythonCommon.h>
 
 
 #define OBJECT_INIT_TYPE_FN_NAME(TClass) TClass##_init_type
@@ -22,32 +22,39 @@
     type->add_method(#Name, (PyCFunction)PYTHON_FUNCTION_NAME_CLASS(TClass, Name), METH_VARARGS|METH_KEYWORDS, PyDoc_STR(Doc));
 
 #define OBJECT_PYTHON_ADD_CLASS_ATTR(Name, Value) \
-    type->add_attr(Name, python_convert::to_python(Value));
+    type->add_attr(Name, python::to_python(Value));
 
-#define OBJECT_CONVERTER_FROM_PYTHON(TClass, API) \
-    namespace python_convert { \
-        template<> \
-        API TClass* from_python(PyObject* obj) { \
-            if (obj == Py_None) { \
-                return nullptr; \
-            } \
-            if (TClass::static_class()->check_type(obj)) { \
-                Object* ret = python_object::object(obj); \
-                if (ret->is_a(TClass::static_class())) { \
-                    return object_cast<TClass>(ret); \
-                } \
-            } \
-            PyErr_SetString(PyExc_ValueError, "Failed to convert Object"); \
-            return nullptr; \
-        } \
+
+template<typename TClass>
+struct ObjectPythonConverter
+{
+    static PyObject* to_python(TClass* const& obj)
+    {
+        if (obj) return obj->python_object();
+        Py_RETURN_NONE;
     }
-#define OBJECT_CONVERTER_TO_PYTHON(TClass, API) \
-    namespace python_convert { \
-        template<> \
-        API PyObject* to_python(TClass* const& obj) { \
-            if (obj) return obj->python_object(); \
-            return nullptr; \
-        } \
+    static TClass* from_python(PyObject* obj)
+    {
+        if (obj == Py_None)
+        {
+            return nullptr;
+        }
+        if (TClass::static_class()->check_type(obj))
+        {
+            ::Object* ret = python_object::object(obj);
+            if (ret->is_a(TClass::static_class()))
+            {
+                return object_cast<TClass>(ret);
+            }
+        }
+        PyErr_SetString(PyExc_ValueError, "Failed to convert Object");
+        return nullptr;
+    }
+};
+
+#define OBJECT_CONVERTER(TClass) \
+    namespace { \
+        python::TypeConverter<::TClass*, ObjectPythonConverter<::TClass>> _##TClass##_converter; \
     }
 
 #define DECLARE_OBJECT(TClass, TSuperClass) \
@@ -62,8 +69,7 @@
 
 
 #define IMPLEMENT_OBJECT_DOC(TClass, Name, API, Doc) \
-    OBJECT_CONVERTER_FROM_PYTHON(TClass, API); \
-    OBJECT_CONVERTER_TO_PYTHON(TClass, API); \
+    OBJECT_CONVERTER(TClass); \
     Object* TClass::create_object(PyObject* pyobj, PythonClass* cls) \
     { \
         return new TClass(pyobj, cls); \
@@ -100,9 +106,9 @@
 #define IMPLEMENT_OBJECT_CONSTRUCTOR(TClass, TSuperClass) \
     TClass::TClass(PyObject* pyobj, PythonClass* cls) : TSuperClass(pyobj, cls) {}
 
-class Dict;
+class Class;
+class PythonClass;
 class PythonType;
-class Tuple;
 
 class CORE_API Object
 {
@@ -136,7 +142,7 @@ public:
     template<typename R, typename A, typename B, typename C>
     R invoke_method(const char* name, const A& a, const B& b, const C& c);
 
-    void set_attribute(const char* name, PyObject* attr);
+    void set_attribute(const char* name, const python::Object& attr);
 
     bool has_attribute(const char* name) const;
     PyObject* attribute(const char* name) const;
@@ -151,7 +157,7 @@ public:
     T attribute(const char* name) const;
 
     PyObject* python_object();
-    
+
     void set_class(PythonClass* cls);
 
 protected:
@@ -163,24 +169,24 @@ protected:
 template<typename R, typename A>
 R Object::invoke_method(const char* name, const A& a)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 template<typename R, typename A, typename B>
 R Object::invoke_method(const char* name, const A& a, const B& b)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 template<typename R, typename A, typename B, typename C>
 R Object::invoke_method(const char* name, const A& a, const B& b, const C& c)
 {
-    return python_convert::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
+    return python::from_python<R>(invoke_method(name, python_helpers::build_args(a)));
 }
 
 
 template<typename T>
 void Object::set_attribute(const char* name, const T& attr)
 {
-    set_attribute(name, python_convert::to_python<T>(attr));
+    set_attribute(name, python::Object(python::to_python<T>(attr)));
 }
 template<int N>
 void Object::set_attribute(const char* name, const char(&value)[N])
@@ -191,7 +197,7 @@ void Object::set_attribute(const char* name, const char(&value)[N])
 template<typename T>
 T Object::attribute(const char* name) const
 {
-    return python_convert::from_python<T>(attribute(name));
+    return python::from_python<T>(attribute(name));
 }
 
 template<typename Type>

@@ -4,56 +4,31 @@
 #include "PythonCommon.h"
 #include "Tuple.h"
 
-Tuple::Tuple() : _t(nullptr)
+namespace python
 {
+    Tuple::Tuple()
+    {
+    }
+    Tuple::Tuple(size_t size) : python::Object(PyTuple_New(size))
+    {
+    }
+    Tuple::Tuple(const python::Object& t) : python::Object(PySequence_Tuple(t.ptr()))
+    {
+    }
+    size_t Tuple::size() const
+    {
+        return PyTuple_Size(ptr());
+    }
+    void Tuple::set(size_t idx, const python::Object& obj)
+    {
+        PyTuple_SetItem(ptr(), idx, incref(obj.ptr()));
+    }
+    python::Object Tuple::get(size_t idx) const
+    {
+        return python::Object(python::Borrowed(PyTuple_GetItem(ptr(), idx)));
+    }
+    bool Tuple::valid() const
+    {
+        return !is_none();
+    }
 }
-Tuple::Tuple(size_t size)
-{
-    _t = PyTuple_New(size);
-}
-Tuple::Tuple(PyObject* t)
-{
-    _t = PySequence_Tuple(t);
-    assert(_t);
-}
-Tuple::~Tuple()
-{
-    Py_XDECREF(_t);
-}
-size_t Tuple::size() const
-{
-    return PyTuple_Size(_t);
-}
-void Tuple::set(size_t idx, PyObject* obj)
-{
-    PyTuple_SetItem(_t, idx, obj);
-}
-PyObject* Tuple::get(size_t idx) const
-{
-    return PyTuple_GetItem(_t, idx);
-}
-bool Tuple::valid() const
-{
-    return _t != nullptr;
-}
-PyObject* Tuple::tuple() const
-{
-    return _t;
-}
-PyObject* Tuple::new_reference() const
-{
-    Py_XINCREF(_t);
-    return _t;
-}
-Tuple::Tuple(const Tuple& other)
-{
-    _t = other._t;
-    Py_XINCREF(_t);
-}
-Tuple& Tuple::operator=(const Tuple& other)
-{
-    _t = other._t;
-    Py_XINCREF(_t);
-    return *this;
-}
-

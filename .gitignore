@@ -11,3 +11,5 @@ Pluto.lastbuildstate
 .depproj/
 **/__pycache__/*
 _sandbox/
+Releases/
+Win64/

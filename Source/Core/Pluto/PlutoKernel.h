@@ -2,6 +2,13 @@
 #define __CORE_PLUTO_KERNEL_H__
 
 #include <Core/API.h>
+#include <Core/Python/Object.h>
+#include <Core/Python/StdStream.h>
+
+namespace python
+{
+    class Object;
+}
 
 class PlutoModuleCallback
 {
@@ -9,12 +16,12 @@ public:
     virtual void print_html(const char* text) = 0;
 };
 
+
 class AutoReloader;
 class FlowModule;
 class ImageModule;
 class PlutoModule;
 class PythonModule;
-class PyStdStream;
 class CORE_API PlutoKernel
 {
 public:
@@ -42,22 +49,22 @@ public:
     /// Interrupts the kernel, aborting any ongoing execution. This may be called from any thread.
     void interrupt();
 
-    void add_auto_reload(PyObject* module);
+    void add_auto_reload(const python::Object& module);
 
     void set_stdout_callback(OutputCallback* fn, void* data);
     void set_stderr_callback(OutputCallback* fn, void* data);
     void set_htmlout_callback(OutputCallback* fn, void* data);
 
-    PythonModule* main_module();
+    python::Object main_module();
 
 private:
     void perform_startup();
 
-    PythonModule* _main_module;
+    python::Object _main_module;
     
-    PyStdStream* _stdout;
-    PyStdStream* _stderr;
-    PyStdStream* _htmlout;
+    python::Stream _stdout;
+    python::Stream _stderr;
+    python::Stream _htmlout;
 
     AutoReloader* _reloader;
 };

@@ -1,7 +1,8 @@
 #include <Core/Common.h>
 #include <Core/Image/Image.h>
 #include <Core/Pluto/PlutoCore.h>
-#include <Core/Python/PythonFunction.h>
+#include <Core/Python/Function.h>
+#include <Core/Python/Module.h>
 #include <Core/Qt/WindowManager.h>
 
 #include <Flow/FlowModule.h>
@@ -9,19 +10,19 @@
 #include "Qt/QtVisWindow.h"
 #include "VisPythonModule.h"
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(VisPythonModule, show, Image);
+namespace py = python;
 
-VisPythonModule::VisPythonModule() : _current_window(nullptr)
+PYTHON_MODULE(vis)
 {
+    py::def(module, "show", &vis::show);
 }
-VisPythonModule::~VisPythonModule()
+
+namespace
 {
+    QtVisWindow* _current_window = nullptr;
 }
-void VisPythonModule::post_init()
-{
-    MODULE_ADD_PYTHON_FUNCTION(VisPythonModule, show, "show(img)");
-}
-void VisPythonModule::show(const Image& img)
+
+void vis::show(const Image& img)
 {
     if (!_current_window)
     {
@@ -30,7 +31,8 @@ void VisPythonModule::show(const Image& img)
     QMetaObject::invokeMethod(_current_window, "show", Qt::BlockingQueuedConnection);
     QMetaObject::invokeMethod(_current_window, "set_image", Qt::BlockingQueuedConnection, Q_ARG(const Image&, img));
 }
-const char* VisPythonModule::name()
+void vis::install_python_module()
 {
-    return "vis";
+    PYTHON_MODULE_INSTALL(vis);
 }
+

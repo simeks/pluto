@@ -1,74 +1,77 @@
 #include "Common.h"
 
 #include "Image.h"
+#include "Python/Module.h"
 #include "Python/NumPy.h"
+#include "Python/Object.h"
 #include "Python/PythonCommon.h"
 #include "Types.h"
 
 namespace
 {
-    PyObject* _image_py_type = nullptr;
-    PyObject* image_py_type()
+    const python::Object& image_py_type()
     {
-        if (!_image_py_type)
+        static python::Object _image_py_type;
+        if (_image_py_type.is_none())
         {
-            PyObject* img_mod = PyImport_ImportModule("image");
-            if (!img_mod)
-                return nullptr;
+            // TODO: What do if class does not exist?
 
-            PyObject* image = PyObject_GetAttrString(img_mod, "Image");
-            if (!PyType_Check(image))
-                return nullptr;
+            python::Object img_mod = python::import("image");
+            if (!img_mod.ptr())
+                return _image_py_type;
+
+            python::Object image = python::getattr(img_mod, "Image");
+            if (!image.is_instance((PyObject*)&PyType_Type))
+                return _image_py_type;
 
             _image_py_type = image;
-            Py_INCREF(_image_py_type);
         }
         return _image_py_type;
     }
 }
 
-namespace python_convert
+namespace
 {
-    template<>
-    CORE_API Image from_python(PyObject* obj)
+    struct PythonImageConverter
     {
-        if (numpy::check_type(obj))
+        static PyObject* to_python(const Image& value)
         {
-            image::PixelType pixel_type = image::PixelType_Unknown;
-            if (PyObject_HasAttrString(obj, "pixel_type"))
-                pixel_type = from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
+            if (!value.valid())
+                Py_RETURN_NONE;
 
-            Image img(from_python<NumpyArray>(obj), pixel_type);
+            Tuple args(2);
+            args.set(0, python::Object(python::to_python(value.data())));
+            args.set(1, python::Object(python::to_python((image::PixelType)value.pixel_type())));
 
-            if (PyObject_HasAttrString(obj, "origin"))
-                img.set_origin(from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
-            if (PyObject_HasAttrString(obj, "spacing"))
-                img.set_spacing(from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
-            
-            return img;
+            python::Object imgobj = python::call(image_py_type(), args, Dict());
+                
+            python::setattr(imgobj, "origin", python::Object(python::to_python(value.origin())));
+            python::setattr(imgobj, "spacing", python::Object(python::to_python(value.spacing())));
+
+            return python::incref(imgobj.ptr());
         }
-        
-        PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
-    }
+        static Image from_python(PyObject* obj)
+        {
+            if (numpy::check_type(obj))
+            {
+                image::PixelType pixel_type = image::PixelType_Unknown;
+                if (PyObject_HasAttrString(obj, "pixel_type"))
+                    pixel_type = python::from_python<image::PixelType>(PyObject_GetAttrString(obj, "pixel_type"));
+                    
+                Image img(python::from_python<NumpyArray>(obj), pixel_type);
 
-    template<>
-    CORE_API PyObject* to_python(const Image& value)
-    {
-        if (!value.valid())
-            Py_RETURN_NONE;
+                if (PyObject_HasAttrString(obj, "origin"))
+                    img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "origin")));
+                if (PyObject_HasAttrString(obj, "spacing"))
+                    img.set_origin(python::from_python<Vec3d>(PyObject_GetAttrString(obj, "spacing")));
+                    
+                return img;
+            }
+            PYTHON_ERROR_R(ValueError, Image(), "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
+        }
+    };
 
-        PyObject* args = PyTuple_New(2);
-        PyTuple_SetItem(args, 0, to_python(value.data()));
-        PyTuple_SetItem(args, 1, to_python((image::PixelType)value.pixel_type()));
-
-        PyObject* imgobj = PyObject_Call(image_py_type(), args, nullptr);
-        Py_DECREF(args);
-
-        PyObject_SetAttrString(imgobj, "origin", to_python(value.origin()));
-        PyObject_SetAttrString(imgobj, "spacing", to_python(value.spacing()));
-
-        return imgobj;
-    }
+    python::TypeConverter<Image, PythonImageConverter> python_image_converter;
 }
 
 Image::Image() : 

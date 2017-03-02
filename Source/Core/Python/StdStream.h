@@ -1,28 +1,28 @@
 #ifndef __PYTHON_STD_STREAM_H__
 #define __PYTHON_STD_STREAM_H__
 
-#include <Object/Object.h>
+#include <Core/Python/Class.h>
 
-class PyStdStream : public Object
+namespace python
 {
-    DECLARE_OBJECT(PyStdStream, Object);
+    class Stream
+    {
+    public:
+        typedef void(*Callback)(void*, const char*);
 
-public:
-    typedef void (Callback)(void* data, const char* msg);
-    
-    DECLARE_OBJECT_CONSTRUCTOR(PyStdStream);
-    ~PyStdStream();
+        Stream();
 
-    void object_init();
+        void write(const char* text);
+        void flush();
 
-    void write(const char* text);
-    PyObject* flush();
+        void set_callback(Callback cb, void* data);
 
-    void set_callback(Callback* fn, void* data);
+        static Object stream_class();
 
-private:
-    Callback* _fn;
-    void* _data;
-};
+    private:
+        Callback _cb;
+        void* _data;
+    };
+}
 
 #endif // __PYTHON_STD_STREAM_H__

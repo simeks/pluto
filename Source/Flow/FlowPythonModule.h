@@ -1,44 +1,42 @@
 #ifndef __FLOW_PYTHON_MODULE_H__
 #define __FLOW_PYTHON_MODULE_H__
 
-#include <Core/Python/PythonModule.h>
-
 class FlowContext;
 class FlowGraph;
 class FlowNode;
 class FlowWindow;
 class GraphFileLoader;
-class QtFlowUI;
-class FlowPythonModule : public PythonModuleHelper<FlowPythonModule>
+
+namespace flow
 {
-public:
-    FlowPythonModule(QtFlowUI* ui);
-    ~FlowPythonModule();
-
-    void post_init() OVERRIDE;
-
+    /// Window handling
+    
+    /// @brief Loads a graph from the specified file into a new editor window.
     FlowWindow* open(const char* file);
+
+    /// @brief Opens a new window.
     FlowWindow* window();
 
+    /// Graph management
+
+    /// @brief Loads graph from a file
     FlowGraph* load(const char* file);
+
+    /// @brief Saves the given graph to a file
     void save(const char* file, FlowGraph* graph);
 
-    void install_node_template(FlowNode* node);
-    FlowNode* node_template(const char* node_class) const;
-    FlowNode* create_node(const char* node_class) const;
-
-    void add_graph_path(const char* path);
-
-    Tuple node_templates() const;
-
+    /// @brief Runs a graph
     Dict run(const Tuple& args, const Dict& kw);
 
-    static const char* name();
+    /// Graph node management
 
-private:
-    QtFlowUI* _ui;
-    std::vector<GraphFileLoader*> _loaders;
-};
+    FlowNode* create_node(const char* node_class);
 
+    /// @brief Returns a tuple with all node templates
+    Tuple node_templates();
+
+    void install_python_module();
+
+}
 
 #endif // __FLOW_PYTHON_MODULE_H__

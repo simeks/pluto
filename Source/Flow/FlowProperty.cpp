@@ -13,31 +13,30 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(FlowProperty, Object);
 
 FlowProperty::~FlowProperty()
 {
-    Py_XDECREF(_default_value);
 }
 void FlowProperty::object_init()
 {
     _owner = nullptr;
-    _default_value = nullptr;
+    _default_value = python::None();
 }
 void FlowProperty::object_init(const char* name)
 {
     _owner = nullptr;
-    _default_value = nullptr;
+    _default_value = python::None();
     _name = name;
 }
 void FlowProperty::object_python_init(const Tuple& args, const Dict&)
 {
     _owner = nullptr;
     if (args.size() > 0)
-        _name = python_convert::from_python<std::string>(args.get(0));
-    _default_value = nullptr;
+        _name = python::from_python<std::string>(args.get(0));
+    _default_value = python::None();
 }
 const char* FlowProperty::name() const
 {
     return _name.c_str();
 }
-PyObject* FlowProperty::default_value() const
+python::Object FlowProperty::default_value() const
 {
     return _default_value;
 }
@@ -53,20 +52,19 @@ FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
 {
     _name = other._name;
     _default_value = other._default_value;
-    Py_XINCREF(_default_value);
     _owner = other._owner;
 }
 
 
-namespace python_convert
+namespace python
 {
     template<>
-    FLOW_API PyObject* to_python<FileProperty::FileMode>(const FileProperty::FileMode& type)
+    FLOW_API PyObject* to_python(const FileProperty::FileMode& type)
     {
         return to_python((int)type);
     }
     template<>
-    FLOW_API FileProperty::FileMode from_python<FileProperty::FileMode>(PyObject* obj)
+    FLOW_API FileProperty::FileMode from_python(const python::Object& obj)
     {
         return (FileProperty::FileMode)from_python<int>(obj);
     }
@@ -97,16 +95,15 @@ void FileProperty::object_python_init(const Tuple& args, const Dict& kw)
     if (args.size() > 1)
     {
         _default_value = args.get(1);
-        Py_XINCREF(_default_value);
     }
 
     if (args.size() > 2)
-        _file_mode = python_convert::from_python<FileMode>(args.get(2));
+        _file_mode = python::from_python<FileMode>(args.get(2));
     else
         _file_mode = File_Open;
 
     if (args.size() > 3)
-        _file_filter = python_convert::from_python<std::string>(args.get(3));
+        _file_filter = python::from_python<std::string>(args.get(3));
     else
         _file_filter = "Files (*.*)";
 }
@@ -144,14 +141,13 @@ void BoolProperty::object_python_init(const Tuple& args, const Dict& kw)
 {
     FlowProperty::object_python_init(args, kw);
 
-    _default_value = nullptr;
+    _default_value = python::None();
     if (args.size() > 1)
     {
-        PyObject* def = args.get(1);
-        if (PyBool_Check(def))
+        python::Object def = args.get(1);
+        if (PyBool_Check(def.ptr()))
         {
             _default_value = def;
-            Py_XINCREF(_default_value);
         }
         else
         {
@@ -182,11 +178,10 @@ void IntProperty::object_python_init(const Tuple& args, const Dict& kw)
 
     if (args.size() > 1)
     {
-        PyObject* def = args.get(1);
-        if (PyLong_Check(def))
+        python::Object def = args.get(1);
+        if (PyLong_Check(def.ptr()))
         {
-            _default_value = args.get(1);
-            Py_XINCREF(_default_value);
+            _default_value = def;
         }
         else
         {
@@ -219,11 +214,10 @@ void FloatProperty::object_python_init(const Tuple& args, const Dict& kw)
 
     if (args.size() > 1)
     {
-        PyObject* def = args.get(1);
-        if (PyNumber_Check(def))
+        python::Object def = args.get(1);
+        if (PyNumber_Check(def.ptr()))
         {
             _default_value = args.get(1);
-            Py_XINCREF(_default_value);
         }
         else
         {
@@ -260,23 +254,22 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
     Sequence opts(args.get(1));
     for (int i = 0; i < opts.size(); ++i)
     {
-        PyObject* str = opts.get(i);
-        if (!PyUnicode_Check(str))
+        python::Object str = opts.get(i);
+        if (!PyUnicode_Check(str.ptr()))
             PYTHON_ERROR(TypeError, "Expected all options to be strings");
 
-        _options.push_back(PyUnicode_AsUTF8(str));
+        _options.push_back(PyUnicode_AsUTF8(str.ptr()));
     }
 
     if (args.size() > 2)
     {
-        PyObject* def = args.get(2);
-        if (PyLong_Check(def))
+        python::Object def = args.get(2);
+        if (PyLong_Check(def.ptr()))
         {
-            _default_index = python_convert::from_python<int>(def);
+            _default_index = python::from_python<int>(def);
             if (_default_index >= 0 && _default_index < opts.size())
             {
                 _default_value = opts.get(_default_index);
-                Py_XINCREF(_default_value);
             }
             else
             {
@@ -325,11 +318,10 @@ void StringProperty::object_python_init(const Tuple& args, const Dict& kw)
 
     if (args.size() > 1)
     {
-        PyObject* def = args.get(1);
-        if (PyUnicode_Check(def))
+        python::Object def = args.get(1);
+        if (PyUnicode_Check(def.ptr()))
         {
             _default_value = args.get(1);
-            Py_XINCREF(_default_value);
         }
         else
         {

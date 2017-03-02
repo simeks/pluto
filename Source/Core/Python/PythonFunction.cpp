@@ -27,3 +27,4 @@ PyObject* PythonFunction::object()
 {
     return (PyObject*)_fn;
 }
+

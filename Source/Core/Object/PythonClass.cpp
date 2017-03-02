@@ -15,6 +15,7 @@ typedef struct {
 static PyObject* py_object_new(PyTypeObject* type, PyObject* args, PyObject*)
 {
     PyObject* pyobj = type->tp_alloc(type, 0);
+    assert(pyobj);
     if (PyCapsule_CheckExact(args))
     {
         ((PyPlutoObject*)pyobj)->obj = (Object*)PyCapsule_GetPointer(args, "cpp_object");
@@ -45,7 +46,7 @@ static int py_object_init(PyObject* self, PyObject* arg, PyObject* kw)
 {
     if (!PyCapsule_CheckExact(arg))
     {
-        ((PyPlutoObject*)self)->obj->object_python_init(Tuple(arg), Dict(kw));
+        ((PyPlutoObject*)self)->obj->object_python_init(Tuple(arg), kw ? Dict(kw) : Dict());
         if (PyErr_Occurred())
             return -1;
     }
@@ -71,8 +72,8 @@ static PyObject* py_object_get_dict(PyObject* self, void*)
 static int py_object_set_dict(PyObject* self, PyObject* dict, void*)
 {
     PyPlutoObject* o = (PyPlutoObject*)self;
-    Py_DECREF(o->dict);
     Py_INCREF(dict);
+    Py_DECREF(o->dict);
     o->dict = dict;
     return 0;
 }
@@ -170,8 +171,8 @@ PythonClass::PythonClass(const char* name, size_t size, CreateObjectFn creator, 
         _head = this;
     }
 
-    _type = (PyTypeObject*)malloc(sizeof(py_blank_type_object));
-    memcpy(_type, &py_blank_type_object, sizeof(py_blank_type_object));
+    _type = new PyTypeObject;
+    memset(_type, 0, sizeof(*_type));
     
     _type->tp_name = name;
     _type->tp_basicsize = sizeof(PyPlutoObject);
@@ -227,7 +228,7 @@ PythonClass::~PythonClass()
     Py_XDECREF(_dict);
     
     if (_owned)
-        free(_type);
+        delete _type;
     else
         Py_DECREF(_type);
 }
@@ -237,7 +238,7 @@ Object* PythonClass::create_object()
 }
 Object* PythonClass::create_object(const Tuple& args)
 {
-    PyObject* ret = PyObject_Call((PyObject*)_type, args.tuple(), 0);
+    PyObject* ret = PyObject_Call((PyObject*)_type, args.ptr(), 0);
     if (!ret)
     {
         return nullptr;
@@ -283,7 +284,7 @@ void PythonClass::set_super(PythonClass* super)
 }
 Dict PythonClass::dict()
 {
-    return Dict(_dict);
+    return Dict(python::incref(_dict));
 }
 PyObject* PythonClass::create_python_object(Object* owner)
 {
@@ -315,13 +316,17 @@ int PythonClass::ready()
     _type->tp_methods = _methods.data();
     _type->tp_members = _members.data();
     _type->tp_getset = _getsets.data();
+
     int r = PyType_Ready(_type);
+    if (r != 0)
+        PyErr_Print();
 
     PyObject* dict = _type->tp_dict;
     assert(dict);
 
     PyDict_SetItemString(dict, "__cpp_class__", PyCapsule_New(this, "cpp_class", nullptr));
-    PyDict_Merge(dict, _dict, 1);
+    if (PyDict_Merge(dict, _dict, 1 != 0) != 0)
+        PyErr_Print();
 
     Py_INCREF(dict);
     Py_DECREF(_dict);

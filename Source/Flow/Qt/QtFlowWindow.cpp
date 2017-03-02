@@ -3,6 +3,7 @@
 #include <Core/Json/JsonObject.h>
 #include <Core/Pluto/PlutoCore.h>
 #include <Core/Pluto/PlutoKernelProxy.h>
+#include <Core/Python/PythonCommon.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
@@ -90,16 +91,14 @@ Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
     Dict ret;
     for (auto& it : _context->outputs())
     {
-        PyObject* obj = _context->output(it.first.c_str());
-        if (obj)
+        python::Object obj = _context->output(it.first.c_str());
+        if (!obj.is_none())
         {
-            Py_INCREF(obj);
             ret.set(it.first.c_str(), obj);
         }
         else
         {
-            Py_INCREF(Py_None);
-            ret.set(it.first.c_str(), Py_None);
+            ret.set(it.first.c_str(), python::None());
         }
     }
 

@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Python/PythonFunction.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
@@ -49,11 +50,11 @@ void FlowContext::object_python_init(const Tuple& t, const Dict&)
     if (t.size() != 1)
         PYTHON_ERROR(ValueError, "expected 1 argument");
 
-    PyObject* o = t.get(0);
-    if (!o || !python_object::object(o))
+    python::Object o = t.get(0);
+    if (!python_object::object(o.ptr()))
         PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
 
-    Object* obj = python_object::object(o);
+    Object* obj = python_object::object(o.ptr());
     if (!obj->is_a(FlowGraph::static_class()))
         PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
 
@@ -168,21 +169,6 @@ bool FlowContext::run(Callback* cb)
 }
 void FlowContext::clean_up()
 {
-    for (auto& o : _state)
-    {
-        Py_XDECREF(o.second);
-    }
-    for (auto& i : _inputs)
-    {
-        Py_XDECREF(i.second);
-        i.second = nullptr;
-    }
-    for (auto& i : _outputs)
-    {
-        Py_XDECREF(i.second);
-        i.second = nullptr;
-    }
-
     _state.clear();
     _env_dict.clear();
     _nodes_to_execute.clear();
@@ -197,20 +183,19 @@ FlowNode* FlowContext::current_node()
 {
     return _current_node;
 }
-void FlowContext::write_pin(const char* name, PyObject* obj)
+void FlowContext::write_pin(const char* name, const python::Object& obj)
 {
     if (_current_node)
     {
         FlowPin* pin = _current_node->pin(name);
         if (pin && pin->pin_type() == FlowPin::Out)
         {
-            Py_XINCREF(obj);
             _state[pin] = obj;
         }
         // else TODO: Error
     }
 }
-PyObject* FlowContext::read_pin(const char* name)
+python::Object FlowContext::read_pin(const char* name)
 {
     if (_current_node)
     {
@@ -222,7 +207,6 @@ PyObject* FlowContext::read_pin(const char* name)
                 auto it = _state.find(pin->links()[0]);
                 if (it != _state.end())
                 {
-                    Py_XINCREF(it->second);
                     return it->second;
                 }
             }
@@ -242,11 +226,10 @@ PyObject* FlowContext::read_pin(const char* name)
                     auto it = _state.find(pin_array[i]->links()[0]);
                     if (it != _state.end())
                     {
-                        Py_XINCREF(it->second);
                         t.set(i, it->second);
                     }
                 }
-                return t.new_reference();
+                return t;
             }
         }
         // else TODO: Error
@@ -265,10 +248,10 @@ bool FlowContext::has_env_var(const char* key) const
 }
 const char* FlowContext::env_get(const char* key) const
 {
-    PyObject* obj = _env_dict.get(key);
-    if (obj && PyUnicode_Check(obj))
+    python::Object obj = _env_dict.get(key);
+    if (PyUnicode_Check(obj.ptr()))
     {
-        return PyUnicode_AsUTF8(obj);
+        return PyUnicode_AsUTF8(obj.ptr());
     }
     return nullptr;
 }
@@ -277,41 +260,37 @@ void FlowContext::env_set(const char* key, const char* value)
     _env_dict.set(key, PyUnicode_FromString(value));
 }
 
-const std::map<std::string, PyObject*>& FlowContext::inputs() const
+const std::map<std::string, python::Object>& FlowContext::inputs() const
 {
     return _inputs;
 }
-const std::map<std::string, PyObject*>& FlowContext::outputs() const
+const std::map<std::string, python::Object>& FlowContext::outputs() const
 {
     return _outputs;
 }
 
-PyObject* FlowContext::input(const char* name) const
+python::Object FlowContext::input(const char* name) const
 {
     auto it = _inputs.find(name);
     if (it != _inputs.end())
         return it->second;
-    return nullptr;
+    return python::None();
 }
-PyObject* FlowContext::output(const char* name) const
+python::Object FlowContext::output(const char* name) const
 {
     auto it = _outputs.find(name);
     if (it != _outputs.end())
         return it->second;
-    return nullptr;
+    return python::None();
 }
-void FlowContext::set_input(const char* name, PyObject* value)
+void FlowContext::set_input(const char* name, const python::Object& value)
 {
     auto it = _inputs.find(name);
-    Py_XDECREF(it->second);
-    Py_XINCREF(value);
     it->second = value;
 }
-void FlowContext::set_output(const char* name, PyObject* value)
+void FlowContext::set_output(const char* name, const python::Object& value)
 {
     auto it = _outputs.find(name);
-    Py_XDECREF(it->second);
-    Py_XINCREF(value);
     it->second = value;
 }
 const char* FlowContext::temp_dir() const
@@ -359,11 +338,11 @@ void FlowContext::initialize()
     {
         if (n.second->is_a(GraphInputNode::static_class()))
         {
-            _inputs[n.second->attribute<const char*>("name")] = nullptr;
+            _inputs[n.second->attribute<const char*>("name")] = python::None();
         }
         else if (n.second->is_a(GraphOutputNode::static_class()))
         {
-            _outputs[n.second->attribute<const char*>("name")] = nullptr;
+            _outputs[n.second->attribute<const char*>("name")] = python::None();
         }
     }
 

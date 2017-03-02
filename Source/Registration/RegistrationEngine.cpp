@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Image/Image.h>
+#include <Core/Python/PythonFunction.h>
 #include <Core/Python/PythonCommon.h>
 
 #include "BlockedGraphCutOptimizer.h"
@@ -244,7 +245,7 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
     }
     if (args.size() >= 3)
     {
-        settings = python_convert::from_python<Dict>(args.get(2));
+        settings = python::from_python<Dict>(args.get(2));
     }
 
     _optimizer = create_optimizer(optimizer_name, _image_type, settings);

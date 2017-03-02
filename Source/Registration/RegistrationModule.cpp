@@ -1,5 +1,6 @@
 #include <Core/Common.h>
-#include <Core/Python/PythonModule.h>
+#include <Core/Python/Function.h>
+#include <Core/Python/Module.h>
 
 #include <Flow/FlowModule.h>
 #include <Flow/FlowPin.h>
@@ -8,39 +9,11 @@
 #include "RegistrationModule.h"
 #include "Transform.h"
 
-class RegistrationPythonModule : public PythonModuleHelper<RegistrationPythonModule>
+namespace py = python;
+PYTHON_MODULE(registration)
 {
-public:
-    RegistrationPythonModule() {}
-    ~RegistrationPythonModule() {}
-
-    void post_init() OVERRIDE;
-
-    Image transform(const Image& img, const Image& def);
-
-    static const char* name()
-    {
-        return "registration";
-    }
-
-};
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationPythonModule, transform, Image, Image);
-
-void RegistrationPythonModule::post_init()
-{
-    add_type("RegistrationEngine", RegistrationEngine::static_class());
-
-    MODULE_ADD_PYTHON_FUNCTION(RegistrationPythonModule, transform,
-        "transform(image, deformation)\n"
-        "--\n"
-        "Args:\n"
-        "   image(Image) : Image to transform\n"
-        "   deformation(Image) : Deformation field to apply\n");
-}
-
-Image RegistrationPythonModule::transform(const Image& img, const Image& def)
-{
-    return transform::transform(img, def);
+    py::def(module, "transform", &transform::transform);
+    py::def(module, "RegistrationEngine", RegistrationEngine::static_class());
 }
 
 
@@ -54,5 +27,5 @@ RegistrationModule::~RegistrationModule()
 }
 void RegistrationModule::install()
 {
-    RegistrationPythonModule::create();
+    PYTHON_MODULE_INSTALL(registration);
 }

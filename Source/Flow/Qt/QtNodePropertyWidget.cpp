@@ -158,7 +158,7 @@ void QtNodePropertyWidget::property_changed(QtProperty *prop, const QString &val
     if (_selected_node)
     {
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(), 
-            python_convert::to_python(val.toUtf8().constData()));
+            python::to_python(val.toUtf8().constData()));
         _selected_node->node_updated();
     }
 }
@@ -167,7 +167,7 @@ void QtNodePropertyWidget::property_changed(QtProperty *prop, int val)
     if (_selected_node)
     {
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(), 
-            python_convert::to_python(val));
+            python::to_python(val));
         _selected_node->node_updated();
     }
 }
@@ -176,7 +176,7 @@ void QtNodePropertyWidget::property_changed(QtProperty *prop, double val)
     if (_selected_node)
     {
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(), 
-            python_convert::to_python(val));
+            python::to_python(val));
         _selected_node->node_updated();
     }
 }
@@ -185,7 +185,7 @@ void QtNodePropertyWidget::property_changed(QtProperty *prop, bool val)
     if (_selected_node)
     {
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(), 
-            python_convert::to_python(val));
+            python::to_python(val));
         _selected_node->node_updated();
     }
 }
@@ -197,7 +197,7 @@ void QtNodePropertyWidget::enum_property_changed(QtProperty* prop, int i)
         const QString& val = enum_names[i];
 
         _selected_node->node()->set_property(prop->propertyName().toUtf8().constData(),
-            python_convert::to_python(val));
+            python::to_python(val));
 
         _selected_node->node_updated();
     }

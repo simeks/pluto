@@ -129,8 +129,8 @@ void QtVisNode::show_image(const Image& image)
     {
         PYTHON_ERROR(TypeError, "Invalid image format");
     }
-
-    _thumbnail = _qimage.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    // TODO: Dynamic rescaling
+    _thumbnail = _qimage.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     
     calculate_size();
     update();

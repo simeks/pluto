@@ -14,33 +14,9 @@
 #include "GraphOutputNode.h"
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
+#include "Qt/QtGraphFileLoader.h"
 #include "RunGraphNode.h"
 
-namespace
-{
-    void debug_output(FlowContext* ctx)
-    {
-        PYTHON_STDOUT("[Debug] ");
-        PyObject* obj = ctx->read_pin("In");
-        if (!obj)
-        {
-            PYTHON_STDOUT("NULL\n");
-            return;
-        }
-
-        if (Object::static_class()->check_type(obj))
-        {
-            Object* o = python_convert::from_python<Object*>(obj);
-            PYTHON_STDOUT("Object, class=%s", o->get_class()->name());
-        }
-        else
-        {
-            PYTHON_STDOUT("PyObject, type=%s, ", obj->ob_type->tp_name);
-            PYTHON_STDOUT("%s", PyUnicode_AsUTF8(PyObject_Str(obj)));
-        }
-        PYTHON_STDOUT("\n");
-    }
-}
 
 PLUTO_IMPLEMENT_MODULE(FlowModule);
 
@@ -53,6 +29,10 @@ FlowModule::FlowModule() : _ui(nullptr)
 }
 FlowModule::~FlowModule()
 {
+    for (auto& l : _loaders)
+        delete l;
+    _loaders.clear();
+
     delete _ui;
     _ui = nullptr;
 
@@ -63,7 +43,7 @@ FlowModule::~FlowModule()
 void FlowModule::install()
 {
     _ui = new QtFlowUI();
-    FlowPythonModule::create(_ui);
+    flow::install_python_module();
 }
 void FlowModule::uninstall()
 {
@@ -77,17 +57,16 @@ void FlowModule::init()
 {
     _node_templates.push_back(object_new<GraphInputNode>());
     _node_templates.push_back(object_new<GraphOutputNode>());
-
-    FlowPinDef pins[] = {
-        { "In", FlowPin::In, "" },
-        { 0, 0, 0 }
-    };
-    FlowNodeDef nd = { "flow.DebugOutput", "DebugOutput", "Debug", pins, debug_output, "" };
-
-    install_node_template(nd);
 }
 void FlowModule::install_node_template(FlowNode* node)
 {
+    if (node->title() == nullptr)
+        PYTHON_ERROR(AttributeError, "'title' not set");
+    if (node->category() == nullptr)
+        PYTHON_ERROR(AttributeError, "'category' not set");
+    if (node->node_class() == nullptr)
+        PYTHON_ERROR(AttributeError, "'node_class' not set");
+
     bool reload = false;
 
     auto it = std::find_if(_node_templates.begin(), _node_templates.end(), [&](FlowNode* n) { return strcmp(n->node_class(), node->node_class()) == 0; });
@@ -106,29 +85,30 @@ void FlowModule::install_node_template(FlowNode* node)
     else
         emit _ui->node_template_added(node);
 }
-void FlowModule::install_node_template(const FlowNodeDef& def)
-{
-    FlowNode* node = object_new<FlowNode>(def);
-    node->set_attribute("node_class", def.class_name);
-    node->set_attribute("title", def.title);
-    node->set_attribute("category", def.category);
-    node->set_attribute("doc", def.doc);
-
-    install_node_template(node);
-    node->release();
-}
-FlowNode* FlowModule::node_template(const char* node_class) const
+FlowNode* FlowModule::node_template(const char* node_class)
 {
     for (auto& n : _node_templates)
     {
         if (strcmp(n->node_class(), node_class) == 0)
+        {
             return n;
+        }
     }
-    return nullptr;
+
+    PYTHON_ERROR_R(KeyError, nullptr, "no node of given class found");
 }
 const std::vector<FlowNode*>& FlowModule::node_templates() const
 {
     return _node_templates;
+}
+void FlowModule::add_graph_path(const char* path)
+{
+    for (auto& l : _loaders)
+    {
+        if (strcmp(path, l->path()) == 0)
+            return;
+    }
+    _loaders.push_back(new GraphFileLoader(path));
 }
 QtFlowUI* FlowModule::ui() const
 {

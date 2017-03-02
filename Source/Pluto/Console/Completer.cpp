@@ -1,8 +1,8 @@
 #include <Core/Common.h>
 #include <Core/Pluto/PlutoCore.h>
 #include <Core/Pluto/PlutoKernel.h>
+#include <Core/Python/Module.h>
 #include <Core/Python/PythonCommon.h>
-#include <Core/Python/PythonModule.h>
 
 #include "Completer.h"
 
@@ -42,8 +42,11 @@ void Completer::complete_python(const QString& cmd, QStringList& out)
     if (cmd.isEmpty())
         return;
 
-    Dict main_dict = PlutoCore::instance().kernel()->main_module()->object<Dict>("__dict__");
-    Dict builtins = Dict(PyObject_GetAttrString(main_dict.get("__builtins__"), "__dict__"));
+    Dict main_dict(python::get_dict(PlutoCore::instance().kernel()->main_module()).ptr());
+
+    PyObject* builtins_ = PyObject_GetAttrString(main_dict.get("__builtins__").ptr(), "__dict__"); // TODO:
+    Dict builtins = Dict(builtins_);
+    Py_XDECREF(builtins_);
 
     if (cmd.contains("."))
     {
@@ -57,7 +60,7 @@ void Completer::complete_python(const QString& cmd, QStringList& out)
             QString expr = re.cap(1);
             QString attr = re.cap(3);
 
-            PyObject* ret = PyRun_String(expr.toUtf8().constData(), Py_eval_input, main_dict.dict(), nullptr);
+            PyObject* ret = PyRun_String(expr.toUtf8().constData(), Py_eval_input, main_dict.ptr(), nullptr);
             if (ret)
             {
                 PyObject* l = PyObject_Dir(ret);

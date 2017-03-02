@@ -1,47 +1,40 @@
 #ifndef __PYTHON_TUPLE_H__
 #define __PYTHON_TUPLE_H__
 
-class Object;
+#include <Core/Python/Object.h>
 
-/// Wrapper for python tuples
-class CORE_API Tuple
+namespace python
 {
-public:
-    Tuple();
-    explicit Tuple(size_t size);
-    explicit Tuple(PyObject* t);
-    ~Tuple();
-
-    size_t size() const;
-
-    PyObject* get(size_t idx) const;
-    void set(size_t idx, PyObject* obj);
-
-    bool valid() const;
-
-    PyObject* tuple() const;
-    PyObject* new_reference() const;
-
-    Tuple(const Tuple& other);
-    Tuple& operator=(const Tuple& other);
-
-    template<typename T>
-    T get(size_t idx) const
+    /// Wrapper for python tuples
+    class CORE_API Tuple : public python::Object
     {
-        return python_convert::from_python<T>(get(idx));
-    }
+    public:
+        Tuple();
+        explicit Tuple(size_t size);
+        explicit Tuple(const python::Object& t);
 
-    template<typename T>
-    void set(size_t idx, T value)
-    {
-        set(idx, python_convert::to_python(value));
-    }
+        size_t size() const;
 
-private:
-    PyObject* _t;
+        python::Object get(size_t idx) const;
+        void set(size_t idx, const python::Object& obj);
 
-};
+        bool valid() const;
 
+        template<typename T>
+        T get(size_t idx) const
+        {
+            return python::from_python<T>(get(idx));
+        }
+
+        template<typename T>
+        void set(size_t idx, T value)
+        {
+            set(idx, Object(to_python(value)));
+        }
+
+
+    };
+}
 
 
 #endif // __PYTHON_TUPLE_H__

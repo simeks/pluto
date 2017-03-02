@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Python/PythonFunction.h>
 #include <Core/Python/Sequence.h>
 
 #include "FlowContext.h"
@@ -68,7 +69,7 @@ void FlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence pins = Sequence(d.get("pins"));
         for (size_t i = 0; i < pins.size(); ++i)
         {
-            FlowPin* pin = python_convert::from_python<FlowPin*>(pins.get(i));
+            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i));
             add_pin(object_clone(pin));
         }
     }
@@ -77,7 +78,7 @@ void FlowNode::object_python_init(const Tuple&, const Dict&)
         Sequence props = Sequence(d.get("properties"));
         for (size_t i = 0; i < props.size(); ++i)
         {
-            FlowProperty* prop = python_convert::from_python<FlowProperty*>(props.get(i));
+            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i));
             add_property(object_clone(prop));
         }
     }
@@ -107,6 +108,7 @@ void FlowNode::run(FlowContext* ctx)
     {
         _function(ctx);
     }
+    Py_XDECREF(method);
 }
 const std::vector<FlowPin*>& FlowNode::pins() const
 {
@@ -219,7 +221,7 @@ void FlowNode::set_property(const char* name, const char* value)
 {
     set_attribute(name, value);
 }
-void FlowNode::set_property(const char* name, PyObject* value)
+void FlowNode::set_property(const char* name, const python::Object& value)
 {
     set_attribute(name, value);
 }

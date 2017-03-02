@@ -193,23 +193,25 @@ size_t image::component_size(int type)
     return 0;
 }
 
-namespace python_convert
+namespace
 {
-    template<>
-    CORE_API image::PixelType from_python(PyObject* obj)
+    struct PixelTypeConverter
     {
-        if (PyUnicode_Check(obj))
-            return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj));
-        if (PyLong_Check(obj))
-            return (image::PixelType)PyLong_AsLong(obj);
-        else if (obj)
-            PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "Failed to convert object of type '%s' to PixelType", obj->ob_type->tp_name);
-        PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "NULL object");
-    }
+        static PyObject* to_python(const image::PixelType& value)
+        {
+            return PyLong_FromLong((int)value);
+        }
+        static image::PixelType from_python(PyObject* obj)
+        {
+            if (PyUnicode_Check(obj))
+                return (image::PixelType)image::string_to_pixel_type(PyUnicode_AsUTF8(obj));
+            if (PyLong_Check(obj))
+                return (image::PixelType)PyLong_AsLong(obj);
+            else if (obj)
+                PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "Failed to convert object of type '%s' to PixelType", obj->ob_type->tp_name);
+            PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "NULL object");
+        }
+    };
 
-    template<>
-    CORE_API PyObject* to_python(const image::PixelType& value)
-    {
-        return PyLong_FromLong((int)value);
-    }
+    python::TypeConverter<image::PixelType, PixelTypeConverter> pixel_type_converter;
 }

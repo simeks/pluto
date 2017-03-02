@@ -1,52 +1,43 @@
 #ifndef __PYTHON_DICT_H__
 #define __PYTHON_DICT_H__
 
-class Object;
+#include <Core/Python/Object.h>
 
-/// Wrapper for python dicts
-class CORE_API Dict
+namespace python
 {
-public:
-    Dict();
-    explicit Dict(PyObject* d);
-    ~Dict();
-
-    bool has_key(const char* key) const;
-
-    PyObject* get(const char* key) const;
-    
-    void set(const char* key, PyObject* item);
-    void set(const char* key, Object* item);
-    void clear();
-
-    int next(size_t* pos, PyObject** key, PyObject** value) const;
-
-    bool valid() const;
-
-    Dict copy() const;
-
-    PyObject* dict() const;
-
-    Dict(const Dict& other);
-    Dict& operator=(const Dict& other);
-
-    template<typename T>
-    T get(const char* key) const
+    /// Wrapper for python dicts
+    class CORE_API Dict : public Object
     {
-        return python_convert::from_python<T>(get(key));
-    }
+    public:
+        Dict();
+        explicit Dict(const Object& d);
 
-    template<typename T>
-    void set(const char* key, T value)
-    {
-        set(key, python_convert::to_python(value));
-    }
+        bool has_key(const char* key) const;
 
+        Object get(const char* key) const;
 
-private:
-    PyObject* _d;
+        void set(const char* key, const Object& item);
+        void clear();
 
-};
+        int next(size_t* pos, PyObject** key, PyObject** value) const;
 
+        bool valid() const;
+
+        Dict copy() const;
+
+        template<typename T>
+        T get(const char* key) const
+        {
+            return from_python<T>(get(key));
+        }
+
+        template<typename T>
+        void set(const char* key, T value)
+        {
+            set(key, Object(to_python(value)));
+        }
+
+    };
+}
 
 #endif // __PYTHON_DICT_H__

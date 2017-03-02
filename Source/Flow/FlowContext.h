@@ -38,8 +38,8 @@ public:
 
     FlowNode* current_node();
 
-    void write_pin(const char* name, PyObject* obj);
-    PyObject* read_pin(const char* name);
+    void write_pin(const char* name, const python::Object& obj);
+    python::Object read_pin(const char* name);
     
     bool is_pin_linked(const char* name);
 
@@ -47,16 +47,16 @@ public:
     const char* env_get(const char* key) const;
     void env_set(const char* key, const char* value);
 
-    const std::map<std::string, PyObject*>& inputs() const;
-    const std::map<std::string, PyObject*>& outputs() const;
+    const std::map<std::string, python::Object>& inputs() const;
+    const std::map<std::string, python::Object>& outputs() const;
 
     /// Returns a borrowed reference
-    PyObject* input(const char* name) const;
+    python::Object input(const char* name) const;
     /// Returns a borrowed reference
-    PyObject* output(const char* name) const;
+    python::Object output(const char* name) const;
 
-    void set_input(const char* name, PyObject* value);
-    void set_output(const char* name, PyObject* value);
+    void set_input(const char* name, const python::Object& value);
+    void set_output(const char* name, const python::Object& value);
 
     const char* temp_dir() const;
 
@@ -73,12 +73,12 @@ public:
     template<typename T>
     void write_pin(const char* name, const T& obj)
     {
-        write_pin(name, python_convert::to_python(obj));
+        write_pin(name, python::Object(python::to_python(obj)));
     }
     template<typename T>
     T read_pin(const char* name)
     {
-        T ret = python_convert::from_python<T>(read_pin(name));
+        T ret = python::from_python<T>(read_pin(name));
         if (PyErr_Occurred())
         {
             // TODO:
@@ -95,7 +95,7 @@ public:
         if (!obj)
             return def;
 
-        T ret = python_convert::from_python<T>(obj);
+        T ret = python::from_python<T>(obj);
         if (PyErr_Occurred())
         {
             // TODO:
@@ -111,14 +111,14 @@ private:
     void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
 
     FlowGraph* _graph;
-    std::map<FlowPin*, PyObject*> _state;
+    std::map<FlowPin*, python::Object> _state;
     Dict _env_dict;
 
     FlowNode* _current_node;
     std::vector<FlowNode*> _nodes_to_execute;
 
-    std::map<std::string, PyObject*> _inputs;
-    std::map<std::string, PyObject*> _outputs;
+    std::map<std::string, python::Object> _inputs;
+    std::map<std::string, python::Object> _outputs;
 
     QTemporaryDir* _temp_dir;
 
