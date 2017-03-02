@@ -11,7 +11,8 @@ namespace py = python;
 
 namespace pluto
 {
-    std::string s_version = "0.1";
+    std::string _version = "0.1";
+    bool _auto_reload_enabled = false;
 }
 
 PYTHON_MODULE(_pluto)
@@ -25,9 +26,9 @@ PYTHON_MODULE(_pluto)
     py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
     py::def(module, "Object", Object::static_class());
-    py::def(module, "__version__", pluto::s_version);
+    py::def(module, "__version__", pluto::_version);
 
-    py::def(module, "StdStream", python_stdio::stream_class());
+    py::def(module, "StdStream", python::Stream::stream_class());
 }
 void pluto::install_python_module()
 {
@@ -81,6 +82,11 @@ Object* pluto::create_object(const Tuple& args)
 }
 void pluto::auto_reload(const python::Object& module)
 {
-    PlutoCore::instance().kernel()->add_auto_reload(module);
+    if (_auto_reload_enabled)
+        PlutoCore::instance().kernel()->add_auto_reload(module);
+}
+void pluto::enable_auto_reload(bool enable)
+{
+    _auto_reload_enabled = enable;
 }
 

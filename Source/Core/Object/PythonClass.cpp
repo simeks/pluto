@@ -15,6 +15,7 @@ typedef struct {
 static PyObject* py_object_new(PyTypeObject* type, PyObject* args, PyObject*)
 {
     PyObject* pyobj = type->tp_alloc(type, 0);
+    assert(pyobj);
     if (PyCapsule_CheckExact(args))
     {
         ((PyPlutoObject*)pyobj)->obj = (Object*)PyCapsule_GetPointer(args, "cpp_object");
@@ -283,7 +284,7 @@ void PythonClass::set_super(PythonClass* super)
 }
 Dict PythonClass::dict()
 {
-    return Dict(_dict);
+    return Dict(python::incref(_dict));
 }
 PyObject* PythonClass::create_python_object(Object* owner)
 {
@@ -324,7 +325,8 @@ int PythonClass::ready()
     assert(dict);
 
     PyDict_SetItemString(dict, "__cpp_class__", PyCapsule_New(this, "cpp_class", nullptr));
-    PyDict_Merge(dict, _dict, 1);
+    if (PyDict_Merge(dict, _dict, 1 != 0) != 0)
+        PyErr_Print();
 
     Py_INCREF(dict);
     Py_DECREF(_dict);

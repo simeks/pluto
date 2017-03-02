@@ -4,23 +4,34 @@
 #include <Core/Python/Function.h>
 #include "StdStream.h"
 
-void python_stdio::write(Stream* self, const char* text)
+namespace python
 {
-    if (self && self->cb)
-        self->cb(self->data, text);
-}
-void python_stdio::flush(Stream*)
-{
-    // Do nothing
-}
-python::Object python_stdio::stream_class()
-{
-    static python::Object cls;
-    if (cls.ptr() == Py_None)
+    Stream::Stream() : _cb(nullptr), _data(nullptr)
     {
-        cls = python::make_class<Stream>("Stream");
-        python::def(cls, "write", &write);
-        python::def(cls, "flush", &flush);
     }
-    return cls;
+    void Stream::write(const char* text)
+    {
+        if (_cb)
+            _cb(_data, text);
+    }
+    void Stream::flush()
+    {
+        // Do nothing
+    }
+    void Stream::set_callback(Callback cb, void* data)
+    {
+        _cb = cb;
+        _data = data;
+    }
+    Object Stream::stream_class()
+    {
+        static Object cls;
+        if (cls.ptr() == Py_None)
+        {
+            cls = make_class<Stream>("Stream");
+            def(cls, "write", &Stream::write);
+            def(cls, "flush", &Stream::flush);
+        }
+        return cls;
+    }
 }

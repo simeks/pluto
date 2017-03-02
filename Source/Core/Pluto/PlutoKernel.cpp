@@ -23,14 +23,19 @@ PlutoKernel::PlutoKernel()
 {
     pluto::install_python_module();
     image::install_python_module();
+
+    pluto::enable_auto_reload(true);
 }
 PlutoKernel::~PlutoKernel()
 {
+    /// Disable auto reload before we destroy the reloader, 
+    /// otherwise we get problems if python decides to import stuff during finalization
+    pluto::enable_auto_reload(false);
     delete _reloader;
 
-    //python::Object sys = python::import("sys");
-    //python::setattr(sys, "stdout", Py_None);
-    //python::setattr(sys, "stderr", Py_None);
+    python::Object sys = python::import("sys");
+    python::setattr(sys, "stdout", Py_None);
+    python::setattr(sys, "stderr", Py_None);
     
     _main_module = Py_None;
 }
@@ -39,13 +44,16 @@ void PlutoKernel::prepare()
     Py_Initialize();
     PythonClass::ready_all();
 
-    _stdout = { nullptr, nullptr };
-    _stderr = { nullptr, nullptr };
-    _htmlout = { nullptr, nullptr };
-
     python::Object sys = python::import("sys");
-    //python::setattr(sys, "stdout", python::make_instance<python_stdio::Stream>(&_stdout));
-    //python::setattr(sys, "stderr", python::make_instance<python_stdio::Stream>(&_stderr));
+
+    /// TODO:
+    /// This needs to be called before to_python on our python::Streams to be sure
+    /// that the python class is created. This is a little bit inconvenient so we
+    /// should probably reconsider how types are initialized.
+    python::Object pluto_module = python::import("_pluto"); 
+
+    python::setattr(sys, "stdout", python::to_python(&_stdout));
+    python::setattr(sys, "stderr", python::to_python(&_stderr));
 
     python::Object path = python::getattr(sys, "path");
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().python_dir())); // TODO: List object
@@ -53,10 +61,9 @@ void PlutoKernel::prepare()
 
     numpy::initialize();
 
-    _main_module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");
+    _main_module = python::incref(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
 
-    python::Object pluto_module = python::import("_pluto");
-    python::setattr(pluto_module, "htmlout", python::make_instance<python_stdio::Stream>(&_stderr));
+    python::setattr(pluto_module, "htmlout", python::to_python(&_stderr));
 
     _reloader = new AutoReloader();
 }
@@ -112,7 +119,7 @@ void PlutoKernel::print(const std::string& text)
 }
 void PlutoKernel::print_html(const std::string& text)
 {
-    python_stdio::write(&_htmlout, text.c_str());
+    _htmlout.write(text.c_str());
 }
 void PlutoKernel::error(const std::string& text)
 {
@@ -135,18 +142,15 @@ void PlutoKernel::add_auto_reload(const python::Object& module)
 
 void PlutoKernel::set_stdout_callback(OutputCallback* fn, void* data)
 {
-    _stdout.cb = fn;
-    _stdout.data = data;
+    _stdout.set_callback(fn, data);
 }
 void PlutoKernel::set_htmlout_callback(OutputCallback* fn, void* data)
 {
-    _htmlout.cb = fn;
-    _htmlout.data = data;
+    _htmlout.set_callback(fn, data);
 }
 void PlutoKernel::set_stderr_callback(OutputCallback* fn, void* data)
 {
-    _stderr.cb = fn;
-    _stderr.data = data;
+    _stderr.set_callback(fn, data);
 }
 python::Object PlutoKernel::main_module()
 {

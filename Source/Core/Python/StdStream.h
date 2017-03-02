@@ -3,21 +3,26 @@
 
 #include <Core/Python/Class.h>
 
-namespace python_stdio
+namespace python
 {
-    typedef void(*TextCallback)(void* data, const char* msg);
-
-    struct Stream
+    class Stream
     {
-        TextCallback cb;
-        void* data;
+    public:
+        typedef void(*Callback)(void*, const char*);
+
+        Stream();
+
+        void write(const char* text);
+        void flush();
+
+        void set_callback(Callback cb, void* data);
+
+        static Object stream_class();
+
+    private:
+        Callback _cb;
+        void* _data;
     };
-
-    void write(Stream* self, const char* text);
-    void flush(Stream* self);
-
-    python::Object stream_class();
 }
-
 
 #endif // __PYTHON_STD_STREAM_H__

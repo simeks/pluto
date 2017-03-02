@@ -21,7 +21,14 @@ namespace pluto
 
     CORE_API Object* create_object(const Tuple& args);
 
+    /// Enables auto reloading of the given module. Whenever the python file containing
+    ///     the given module is changed the module is reimported.
     CORE_API void auto_reload(const python::Object& module);
+
+    /// Enables or disables the auto reloading, this is to avoid problems with python 
+    ///     importing modules during finalization
+    /// Disabled by default
+    CORE_API void enable_auto_reload(bool enable);
 
     CORE_API void install_python_module();
 }

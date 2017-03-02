@@ -62,9 +62,9 @@ private:
 
     python::Object _main_module;
     
-    python_stdio::Stream _stdout;
-    python_stdio::Stream _stderr;
-    python_stdio::Stream _htmlout;
+    python::Stream _stdout;
+    python::Stream _stderr;
+    python::Stream _htmlout;
 
     AutoReloader* _reloader;
 };

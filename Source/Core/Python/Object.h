@@ -13,6 +13,7 @@ namespace python
     struct _Borrowed {};
     typedef _Borrowed* Borrowed; /// Type trick to specifies that a PyObject* is borrowed reference
 
+    /// Wrapper around PyObject* which handles the reference counting.
     class CORE_API Object
     {
     public:
