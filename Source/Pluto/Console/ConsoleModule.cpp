@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Python/Module.h>
+#include <Core/Python/PythonCommon.h>
 
 #include "ConsoleModule.h"
 #include "ConsoleWidget.h"

@@ -11,6 +11,8 @@ namespace python
     public:
         Tuple();
         explicit Tuple(size_t size);
+        /// @remarks If given a bare PyObject* this will try to convert the object to a 
+        ///          tuple if object already is a tuple the ref count is increased.
         explicit Tuple(const python::Object& t);
 
         size_t size() const;

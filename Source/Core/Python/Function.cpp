@@ -3,6 +3,8 @@
 #include "Function.h"
 #include "Object.h"
 
+#include "PythonCommon.h"
+
 /// Python function type based on PythonCFunction
 
 namespace python

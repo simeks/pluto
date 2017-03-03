@@ -5,10 +5,9 @@
 #include <Core/Object/Object.h>
 
 class Optimizer;
-class RegistrationEngine : public Object
+class Tuple;
+class RegistrationEngine
 {
-    DECLARE_OBJECT(RegistrationEngine, Object);
-
 public:
     struct Params
     {
@@ -21,16 +20,16 @@ public:
         ImageVec3d starting_guess;
     };
 
-    DECLARE_OBJECT_CONSTRUCTOR(RegistrationEngine);
+    RegistrationEngine();
+    RegistrationEngine(const Tuple& args);
     ~RegistrationEngine();
-
-    void object_init() OVERRIDE;
-    void object_python_init(const Tuple&, const Dict&) OVERRIDE;
 
     void set_constraints(const Image& values, const Image& mask);
     void set_starting_guess(const Image& starting_guess);
 
     Image execute(const Tuple& fixed, const Tuple& moving);
+
+    static python::Object python_class();
 
 private:
     Optimizer* create_optimizer(const char* name, 

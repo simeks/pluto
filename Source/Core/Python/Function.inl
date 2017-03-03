@@ -41,9 +41,8 @@ namespace python
         {
             if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)) 
             {
-                PYTHON_ERROR_R(TypeError, 
-                    std::tuple<typename std::decay<TArgs>::type...>(), 
-                    "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+                PyErr_Format(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+                return std::tuple<typename std::decay<TArgs>::type...>();
             }
 
             size_t i = 0;
@@ -55,15 +54,43 @@ namespace python
 
             return t;
         }
-        template<typename ... TArgs>
-        std::tuple<Tuple> VarargsArgumentPolicy::unpack_args(PyObject* args, PyObject*)
+        
+        template<typename TTuple>
+        std::tuple<Tuple> VarargsArgumentPolicy::unpack_args(PyObject*, PyObject*)
         {
-            return {Tuple(args)};
+            return{ Tuple(args) };
         }
-        template<typename ... TArgs>
-        std::tuple<Tuple, Dict> VarargsKeywordsArgumentPolicy::unpack_args(PyObject* args, PyObject* kw)
+
+        template<typename TSelf, typename TTuple>
+        std::tuple<TSelf*, Tuple> VarargsArgumentPolicy::unpack_args(PyObject*, PyObject*)
         {
-            return {Tuple(args), Dict(kw)};
+            // Assume we have a function(Type* self, Tuple tuple)
+            TSelf* self = from_python<TSelf*>(PyTuple_GetItem(args, 0));
+            PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
+            return{ self, Tuple(args_slice) };
+        }
+
+        //template<typename TSelf, typename ... TArgs>
+        //std::tuple<TSelf, typename std::decay<TArgs>::type...> unpack_self_varargs_keywords(PyObject* args, PyObject* kw)
+        //{
+        //    TSelf* self = from_python<TSelf*>(PyTuple_GetItem(args, 0));
+        //    PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
+        //    return{ self, Tuple(args_slice), Dict(kw) };
+        //}
+
+        template<typename ... TArgs>
+        std::tuple<typename std::decay<TArgs>::type...> VarargsKeywordsArgumentPolicy::unpack_args(PyObject* args, PyObject* kw)
+        {
+            //if (sizeof...(TArgs) >= 3)
+            //{
+            //    // Assume we have a function(Type* self, Tuple tuple)
+            //    return unpack_self_varargs_keywords<TArgs...>(args, kw);
+            //}
+            //else
+            //{
+                // Otherwise, proceed as usual
+                return{ Tuple(args), Dict(kw) };
+            //}
         }
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
@@ -95,7 +122,10 @@ namespace python
             {
                 assert(sizeof...(TArgs) == PyTuple_Size(args) - 1); // Self should be first in args
                 if (PyTuple_Size(args) < 1)
-                    PYTHON_ERROR_R(TypeError, nullptr, "Expected at least 1 argument");
+                {
+                    PyErr_SetString(PyExc_TypeError, "Expected at least 1 argument");
+                    return nullptr;
+                }
                 TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
                 PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
 
@@ -144,11 +174,18 @@ namespace python
         return make_function(function::make_caller<function::DefaultArgumentPolicy>(self, fn), name, doc);
     }
 
-    template<typename TReturn>
-    Object make_varargs_function(TReturn(*fn)(const Tuple&), const char* name, const char* doc)
+    template<typename Fn>
+    Object make_varargs_function(Fn fn, const char* name, const char* doc)
     {
         return make_function(function::make_caller<function::VarargsArgumentPolicy>(fn), name, doc);
     }
+/*
+    template<typename TSelf, typename TReturn>
+    Object make_varargs_function(TReturn(*fn)(TSelf, const Tuple&), const char* name, const char* doc)
+    {
+        return make_function(function::make_caller<function::VarargsArgumentPolicy>(fn), name, doc);
+    }*/
+
 
     template<typename TClass, typename TReturn>
     Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(const Tuple&), const char* name, const char* doc)

@@ -92,7 +92,7 @@ namespace python
         }
     }
     template<typename TClass>
-    Object make_class(const char* name)
+    Object make_class(const char* name, const char* doc)
     {
         if (TypeInfo<TClass>::info.py_type != nullptr)
         {
@@ -100,7 +100,7 @@ namespace python
             return Object(Borrowed((PyObject*)TypeInfo<TClass>::info.py_type));
         }
 
-        Object cls = make_class(name, new CppClass<TClass>());
+        Object cls = make_class(name, new CppClass<TClass>(), doc);
 
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
@@ -137,9 +137,21 @@ namespace python
     }
 
     template<typename TClass, typename ... TArgs>
-    void def_init(const Object& cls)
+    INLINE void def_init(const Object& cls)
     {
         setattr(cls, "__init__", make_function(class_init<TClass, TArgs...>, "__init__"));
+    }
+
+    template<typename TClass>
+    INLINE void def_init_varargs(const Object& cls)
+    {
+        setattr(cls, "__init__", make_varargs_function(class_init<TClass, const Tuple&>, "__init__"));
+    }
+
+    template<typename TClass>
+    INLINE void def_init_varargs_keywords(const Object& cls)
+    {
+        setattr(cls, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>, "__init__"));
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
@@ -147,7 +159,7 @@ namespace python
     {
         assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
         // Works the same as method a bound function (Function.h) but with _self set to nullptr
-        python::setattr(cls, name, python::make_function((TClass*)nullptr, meth, name, doc));
+        python::setattr(cls, name, make_function((TClass*)nullptr, meth, name, doc));
     }
 
     template<typename TClass, typename TReturn>
@@ -155,7 +167,7 @@ namespace python
         TReturn(TClass::*meth)(const Tuple&), const char* doc)
     {
         assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
-        python::setattr(cls, name, python::make_varargs_function((TClass*)nullptr, meth, name, doc));
+        python::setattr(cls, name, make_varargs_function((TClass*)nullptr, meth, name, doc));
     }
 
     template<typename TClass, typename TReturn>
@@ -163,6 +175,6 @@ namespace python
         TReturn(TClass::*meth)(const Tuple&, const Dict&), const char* doc)
     {
         assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
-        python::setattr(cls, name, python::make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
+        python::setattr(cls, name, make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
     }
 }

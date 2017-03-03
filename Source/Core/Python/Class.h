@@ -1,6 +1,7 @@
 #ifndef __PYTHON_CLASS_H__
 #define __PYTHON_CLASS_H__
 
+#include "Function.h"
 #include "Object.h"
 
 #include <typeindex>
@@ -58,7 +59,7 @@ namespace python
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
-    CORE_API Object make_class(const char* name, CppClassBase* cpp_class);
+    CORE_API Object make_class(const char* name, CppClassBase* cpp_class, const char* doc = nullptr);
 
     /// Creates a new instance of the specified type
     /// @param holder Value holder, this will be deleted whenever GC collects the created instance.
@@ -71,7 +72,7 @@ namespace python
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.
     template<typename TClass>
-    Object make_class(const char* name);
+    Object make_class(const char* name, const char* doc = nullptr);
 
     template<typename TClass>
     Object make_instance(TClass* value);
@@ -83,6 +84,16 @@ namespace python
     /// @brief Defines a __init__ method for the given class
     template<typename TClass, typename ... TArgs>
     void def_init(const Object& cls);
+
+    /// @brief Defines a __init__ method for the given class
+    /// Requires a constructor: TClass(const Tuple&)
+    template<typename TClass>
+    void def_init_varargs(const Object& cls);
+
+    /// @brief Defines a __init__ method for the given class
+    /// Requires a constructor: TClass(const Tuple&, const Dict&)
+    template<typename TClass>
+    void def_init_varargs_keywords(const Object& cls);
 
     /// @brief Defines a class method
     template<typename TClass, typename TReturn, typename ... TArgs>

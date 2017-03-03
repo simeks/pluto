@@ -10,6 +10,7 @@ namespace python
     {
     public:
         Dict();
+        /// @remark This will steal the reference if given a bare PyObject* 
         explicit Dict(const Object& d);
 
         bool has_key(const char* key) const;

@@ -153,7 +153,7 @@ namespace python
     }
 
 
-    Object make_class(const char* name, CppClassBase* cpp_class)
+    Object make_class(const char* name, CppClassBase* cpp_class, const char* doc)
     {
         PyObject* bases = PyTuple_New(1);
         PyTuple_SetItem(bases, 0, incref((PyObject*)&instance_type()));
@@ -166,6 +166,13 @@ namespace python
         PyObject* cls = PyObject_Call((PyObject*)&PyType_Type, args, nullptr);
         Py_DECREF(args);
         
+        if (doc)
+        {
+            PyObject* __doc__ = PyUnicode_FromString(doc);
+            PyObject_SetAttrString(cls, "__doc__", __doc__);
+            Py_DECREF(__doc__);
+        }
+
         if (!cls)
             PyErr_Print();
 

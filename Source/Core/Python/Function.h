@@ -1,7 +1,10 @@
 #ifndef __PYTHON_FUNCTION_H__
 #define __PYTHON_FUNCTION_H__
 
-#include <Core/Python/PythonCommon.h>
+#include <Core/Python/Convert.h>
+#include <Core/Python/Dict.h>
+#include <Core/Python/PythonWrapper.h>
+#include <Core/Python/Tuple.h>
 
 namespace python
 {
@@ -26,15 +29,18 @@ namespace python
         /// @brief Policy for passing the varargs-tuple from python directly to the function
         struct VarargsArgumentPolicy
         {
-            template<typename ... TArgs>
+            template<typename TTuple>
             static std::tuple<Tuple> unpack_args(PyObject*, PyObject*);
+
+            template<typename TSelf, typename TTuple>
+            static std::tuple<TSelf*, Tuple> unpack_args(PyObject*, PyObject*);
         };
 
         /// @brief Policy for passing the varargs-tuple and keywords-dict from python directly to the function
         struct VarargsKeywordsArgumentPolicy
         {
             template<typename ... TArgs>
-            static std::tuple<Tuple, Dict> unpack_args(PyObject*, PyObject*);
+            static std::tuple<typename std::decay<TArgs>::type...> unpack_args(PyObject*, PyObject*);
         };
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
@@ -81,9 +87,13 @@ namespace python
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_function(TClass* self, TReturn (TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
 
-    template<typename TReturn>
-    Object make_varargs_function(TReturn (*fn)(const Tuple&), const char* name, const char* doc = nullptr);
+    template<typename Fn>
+    Object make_varargs_function(Fn fn, const char* name, const char* doc = nullptr);
 
+    /*/// Special implementation of make_varargs_function for function taking self as first argument
+    template<typename TSelf, typename TReturn>
+    Object make_varargs_function(TReturn(*fn)(TSelf, const Tuple&), const char* name, const char* doc = nullptr);
+*/
     template<typename TClass, typename TReturn>
     Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(const Tuple&), const char* name, const char* doc = nullptr);
 

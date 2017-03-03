@@ -177,59 +177,24 @@ static ImageVec3d downsample_constraint_values(const ImageVec3d& values, const I
     return result;
 }
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(RegistrationEngine, set_constraints, Image, Image);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(RegistrationEngine, set_starting_guess, Image);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2_RETURN(RegistrationEngine, execute, Tuple, Tuple);
 
-OBJECT_INIT_TYPE_FN(RegistrationEngine)
+RegistrationEngine::RegistrationEngine() :
+    _optimizer(nullptr),
+    _image_type(image::PixelType_Unknown),
+    _pyramid_level_min(0),
+    _pyramid_level_max(6),
+    _image_pair_count(0),
+    _normalize_images(true)
 {
-    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, set_constraints, 
-        "set_constraints(values, mask=None)\n"
-        "--\n"
-        "Args:\n"
-        "    value (Image) : Image of Vec3d containing displacement vectors\n"
-        "    mask (Image) : Binary image specifying which voxels to constrain\n"
-        "");
-    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, set_starting_guess,
-        "set_starting_guess(values)\n"
-        "--\n"
-        "Args:\n"
-        "    value (Image) : Image of Vec3d with the initial deformation field\n"
-        "");
-    OBJECT_PYTHON_ADD_METHOD(RegistrationEngine, execute, "");
 }
-
-#define NO_API 
-IMPLEMENT_OBJECT_DOC(RegistrationEngine, "RegistrationEngine", NO_API,
-    "RegistrationEngine(optimizer, image_type, settings=None)\n\n\
-    Args:\n\
-        optimizer (str) : Name of the optimizer method to use (e.g. blocked_graph_cut') \n\
-        image_type (int) : Image type of the image, see image.PixelType_* \n\
-        settings (dict) : Dictionary of all settings for the engine \n\
-    ");
-IMPLEMENT_OBJECT_CONSTRUCTOR(RegistrationEngine, Object);
-
-RegistrationEngine::~RegistrationEngine()
+RegistrationEngine::RegistrationEngine(const Tuple& args) :
+    _optimizer(nullptr),
+    _image_type(image::PixelType_Unknown),
+    _pyramid_level_min(0),
+    _pyramid_level_max(6),
+    _image_pair_count(0),
+    _normalize_images(true)
 {
-    delete _optimizer;
-}
-void RegistrationEngine::object_init()
-{
-    _optimizer = nullptr;
-    _image_type = image::PixelType_Unknown;
-    _pyramid_level_min = 0;
-    _pyramid_level_max = 6;
-    _image_pair_count = 0;
-    _normalize_images = true;
-}
-void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
-{
-    _optimizer = nullptr;
-    _pyramid_level_min = 0;
-    _pyramid_level_max = 6;
-    _image_pair_count = 0;
-    _normalize_images = true;
-
     const char* optimizer_name = 0;
     _image_type = image::PixelType_Unknown;
     Dict settings;
@@ -257,6 +222,10 @@ void RegistrationEngine::object_python_init(const Tuple& args, const Dict& )
     if (settings.has_key("normalize_images"))
         _normalize_images = settings.get<bool>("normalize_images");
 
+}
+RegistrationEngine::~RegistrationEngine()
+{
+    delete _optimizer;
 }
 void RegistrationEngine::set_constraints(const Image& values, const Image& mask)
 {
@@ -476,4 +445,36 @@ Optimizer* RegistrationEngine::create_optimizer(const char* name,
         }
     }
     PYTHON_ERROR_R(ValueError, nullptr, "No optimizer with name '%s' found", name);
+}
+python::Object RegistrationEngine::python_class()
+{
+    static python::Object cls;
+    if (cls.ptr() == Py_None)
+    {
+        cls = python::make_class<RegistrationEngine>("RegistrationEngine",
+            "RegistrationEngine(optimizer, image_type, settings=None)\n\n\
+                Args:\n\
+                optimizer (str) : Name of the optimizer method to use (e.g. blocked_graph_cut') \n\
+                image_type (int) : Image type of the image, see image.PixelType_* \n\
+                settings (dict) : Dictionary of all settings for the engine \n\
+        ");
+
+        python::def_init_varargs<RegistrationEngine>(cls);
+
+        python::def(cls, "set_constraints", &RegistrationEngine::set_constraints,
+                         "set_constraints(values, mask=None)\n"
+                         "--\n"
+                         "Args:\n"
+                         "    value (Image) : Image of Vec3d containing displacement vectors\n"
+                         "    mask (Image) : Binary image specifying which voxels to constrain\n"
+                         "");
+        python::def(cls, "set_starting_guess", &RegistrationEngine::set_starting_guess,
+                         "set_starting_guess(values)\n"
+                         "--\n"
+                         "Args:\n"
+                         "    value (Image) : Image of Vec3d with the initial deformation field\n"
+                         "");
+        python::def(cls, "execute", &RegistrationEngine::execute, "");
+    }
+
 }
