@@ -79,11 +79,11 @@ FlowGraph* flow::load(const char* file)
     JsonObject obj;
     JsonReader reader;
     if (!reader.read_file(file, obj))
-        PYTHON_ERROR_R(IOError, nullptr, reader.error_message().c_str());
+        PYTHON_ERROR(IOError, reader.error_message().c_str());
 
     FlowGraph* graph = flow_graph::load(obj);
     if (!graph)
-        PYTHON_ERROR_R(IOError, nullptr, "Failed to parse graph file");
+        PYTHON_ERROR(IOError, "Failed to parse graph file");
 
     return graph;
 }
@@ -100,7 +100,7 @@ void flow::save(const char* file, FlowGraph* graph)
 Dict flow::run(const Tuple& args, const Dict& kw)
 {
     if (args.size() < 1)
-        PYTHON_ERROR_R(ValueError, Dict(), "Expected at least 1 argument");
+        PYTHON_ERROR(ValueError, "Expected at least 1 argument");
 
     FlowGraph* graph = nullptr;
     if (FlowGraph::static_class()->check_type(args.get(0).ptr()))
@@ -113,12 +113,12 @@ Dict flow::run(const Tuple& args, const Dict& kw)
         JsonObject obj;
         JsonReader reader;
         if (!reader.read_file(file, obj))
-            PYTHON_ERROR_R(IOError, Dict(), reader.error_message().c_str());
+            PYTHON_ERROR(IOError, reader.error_message().c_str());
 
         graph = flow_graph::load(obj);
     }
     else
-        PYTHON_ERROR_R(ValueError, Dict(), "Invalid argument, expected graph or path to graph file");
+        PYTHON_ERROR(ValueError, "Invalid argument, expected graph or path to graph file");
 
     FlowContext* context = object_new<FlowContext>(graph);
 

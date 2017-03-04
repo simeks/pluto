@@ -1,5 +1,6 @@
 #include "Common.h"
 
+#include "Error.h"
 #include "Function.h"
 #include "Object.h"
 
@@ -44,13 +45,17 @@ static PyObject* function_call(
             return nullptr;
         return ret;
     }
+    catch (const python::ErrorSet&)
+    {
+        return nullptr;
+    }
     catch (const std::exception& e)
     {
-        PYTHON_ERROR_R(RuntimeError, nullptr, "std::exception: %s", e.what());
+        PYTHON_ERROR(RuntimeError, "std::exception: %s", e.what());
     }
     catch (...)
     {
-        PYTHON_ERROR_R(RuntimeError, nullptr, "Unknown C++ exception");
+        PYTHON_ERROR(RuntimeError, "Unknown C++ exception");
     }
 }
 

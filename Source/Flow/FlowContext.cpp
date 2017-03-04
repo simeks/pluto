@@ -300,7 +300,7 @@ const char* FlowContext::temp_dir() const
 std::string FlowContext::temp_node_dir() const
 {
     if (!_current_node)
-        PYTHON_ERROR_R(ValueError, nullptr, "No current node");
+        PYTHON_ERROR(ValueError, "No current node");
 
     QString node_id = guid::to_string(_current_node->node_id()).c_str();
 

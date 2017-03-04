@@ -75,7 +75,7 @@ Image transform::transform(const Image& image, const Image& deformation)
         Image result;
 
         //if (deformation.size() != image.size())
-        //    PYTHON_ERROR_R(ValueError, Image(), "Deformation field and image needs to be the same size");
+        //    PYTHON_ERROR(ValueError, "Deformation field and image needs to be the same size");
 
         // @hack only 3d registration is supported currently so to support 2d images
         // we reshape them to 3d images with z axis set to length 1
@@ -133,7 +133,7 @@ Image transform::transform(const Image& image, const Image& deformation)
         }
         else
         {
-            PYTHON_ERROR_R(ValueError, Image(), "Unsupported image format (%s)", image::pixel_type_to_string(image_to_transform.pixel_type()));
+            PYTHON_ERROR(ValueError, "Unsupported image format (%s)", image::pixel_type_to_string(image_to_transform.pixel_type()));
         }
 
         // Return image to its original format
@@ -142,5 +142,5 @@ Image transform::transform(const Image& image, const Image& deformation)
 
         return result;
     }
-    PYTHON_ERROR_R(ValueError, Image(), "Missing arguments");
+    PYTHON_ERROR(ValueError, "Missing arguments");
 }

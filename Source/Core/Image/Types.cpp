@@ -208,8 +208,8 @@ namespace
             if (PyLong_Check(obj))
                 return (image::PixelType)PyLong_AsLong(obj);
             else if (obj)
-                PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "Failed to convert object of type '%s' to PixelType", obj->ob_type->tp_name);
-            PYTHON_ERROR_R(ValueError, image::PixelType_Unknown, "NULL object");
+                PYTHON_ERROR(ValueError, "Failed to convert object of type '%s' to PixelType", obj->ob_type->tp_name);
+            PYTHON_ERROR(ValueError, "NULL object");
         }
     };
 

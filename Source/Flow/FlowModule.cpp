@@ -95,7 +95,7 @@ FlowNode* FlowModule::node_template(const char* node_class)
         }
     }
 
-    PYTHON_ERROR_R(KeyError, nullptr, "no node of given class found");
+    PYTHON_ERROR(KeyError, "no node of given class found");
 }
 const std::vector<FlowNode*>& FlowModule::node_templates() const
 {

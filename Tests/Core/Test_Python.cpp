@@ -320,3 +320,27 @@ TEST_CASE(python_dict)
     }
     PYTHON_TEST_CLEANUP();
 }
+
+void raise_error()
+{
+    PYTHON_ERROR(ValueError, "Error");
+}
+
+PYTHON_MODULE(py_error_test)
+{
+    python::def(module, "raise_error", &raise_error);
+}
+
+TEST_CASE(python_error)
+{
+    PYTHON_MODULE_INSTALL(py_error_test);
+    PYTHON_TEST_PREPARE();
+    {
+        PyRun_SimpleString(
+            "import py_error_test as p\n"
+            "p.raise_error()\n"
+        );
+        ASSERT_NO_PYTHON_ERROR();
+    }
+    PYTHON_TEST_CLEANUP();
+}
