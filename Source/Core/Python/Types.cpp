@@ -286,20 +286,6 @@ namespace
 
     }
 }
-#define INT_FROM_PYTHON(T) \
-    template<> \
-    CORE_API T from_python<T>(PyObject* obj) \
-    { \
-        return (T)PyLong_AsLongLong(obj); \
-    }
-
-#define INT_TO_PYTHON(T) \
-    template<> \
-    CORE_API PyObject* to_python<T>(const T& value) \
-    { \
-        return PyLong_FromLongLong((long long)value); \
-    }
-
 
 
 namespace python
@@ -322,6 +308,23 @@ namespace python
                 register_builtin_types();
             }
             return entries;
+        }
+        void clear()
+        {
+            // We can't really clear the registry here as we have references to entries all over the place
+            // Therefore we simply reset all entries to the initial state.
+
+            for (auto& e : registry())
+            {
+                Entry& entry = const_cast<Entry&>(e);
+                
+                // cpp_type will not change so we just leave it as it is
+                
+                entry.to_python = nullptr;
+                entry.from_python = nullptr;
+                entry.py_type = nullptr;
+            }
+            register_builtin_types();
         }
 
         const Entry& lookup(const std::type_info& type)

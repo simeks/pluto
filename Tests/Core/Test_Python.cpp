@@ -64,20 +64,20 @@ PYTHON_MODULE(py_test_module)
 TEST_CASE(python_module)
 {
     PYTHON_MODULE_INSTALL(py_test_module);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         python::Object m = python::import("py_test_module");
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(python::from_python<int>(python::getattr(m, "constant_int").ptr()), 5);
         ASSERT_EQUAL_STR(python::from_python<const char*>(python::getattr(m, "constant_str").ptr()), "testtest");
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_function)
 {
     PYTHON_MODULE_INSTALL(py_test_module);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         const char* script =
             "import py_test_module as m\n"
@@ -101,7 +101,7 @@ TEST_CASE(python_function)
         ASSERT_EQUAL(_function_2arg_return_flag, true);
     }
 
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 namespace
@@ -125,35 +125,88 @@ struct TestClass
 
 };
 
+struct TestClassInit
+{
+    TestClassInit(int a) 
+    { 
+        _class_some_value_1 = a; 
+    }
+};
+struct TestClassInitVarargs
+{
+    TestClassInitVarargs(const Tuple& args)
+    {
+        _class_some_value_1 = args.get<int>(0);
+        _class_some_value_2 = args.get<int>(1);
+    }
+};
+struct TestClassInitVarargsKeywords
+{
+    TestClassInitVarargsKeywords(const Tuple& args, const Dict& kw)
+    {
+        _class_some_value_1 = args.get<int>(0);
+        _class_some_value_2 = kw.get<int>("b");
+    }
+};
+
+
 PYTHON_MODULE(py_class_test)
 {
-    python::Object cls = python::make_class<TestClass>("test");
+    python::Object cls = python::make_class<TestClass>("TestClass");
     python::def_init<TestClass, int>(cls);
     python::def(cls, "some_method", &TestClass::some_method);
 
+    python::Object cls_init = python::make_class<TestClassInit>("TestClassInit");
+    python::def_init<TestClassInit, int>(cls_init);
+
+    python::Object cls_init_args = python::make_class<TestClassInitVarargs>("TestClassInitVarargs");
+    python::def_init_varargs<TestClassInitVarargs>(cls_init_args);
+
+    python::Object cls_init_args_kw = python::make_class<TestClassInitVarargsKeywords>("TestClassInitVarargsKeywords");
+    python::def_init_varargs_keywords<TestClassInitVarargsKeywords>(cls_init_args_kw);
+
     python::def(module, "TestClass", cls);
+    python::def(module, "TestClassInit", cls_init);
+    python::def(module, "TestClassInitVarargs", cls_init_args);
+    python::def(module, "TestClassInitVarargsKeywords", cls_init_args_kw);
 }
 
 TEST_CASE(python_class_init)
 {
     PYTHON_MODULE_INSTALL(py_class_test);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         PyRun_SimpleString(
             "import py_class_test as p\n"
-            "A = p.TestClass\n"
-            "a = A(321)\n"
+            "a = p.TestClassInit(321)\n"
         );
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_class_some_value_1, 321);
+
+        PyRun_SimpleString(
+            "import py_class_test as p\n"
+            "a = p.TestClassInitVarargs(222, 333)\n"
+        );
+        ASSERT_NO_PYTHON_ERROR();
+        ASSERT_EQUAL(_class_some_value_1, 222);
+        ASSERT_EQUAL(_class_some_value_2, 333);
+
+
+        PyRun_SimpleString(
+            "import py_class_test as p\n"
+            "a = p.TestClassInitVarargsKeywords(444, b=555)\n"
+        );
+        ASSERT_NO_PYTHON_ERROR();
+        ASSERT_EQUAL(_class_some_value_1, 444);
+        ASSERT_EQUAL(_class_some_value_2, 555);
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_class_method)
 {
     PYTHON_MODULE_INSTALL(py_class_test);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         PyRun_SimpleString(
             "import py_class_test as p\n"
@@ -166,14 +219,17 @@ TEST_CASE(python_class_method)
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_class_some_value_2, 200);
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_class_make_instance)
 {
     PYTHON_MODULE_INSTALL(py_class_test);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
+        // TestClass is defined in module
+        python::import("py_class_test");
+
         TestClass data(567);
         python::Object instance = python::make_instance<TestClass>(&data);
         ASSERT_NO_PYTHON_ERROR();
@@ -184,14 +240,17 @@ TEST_CASE(python_class_make_instance)
         ASSERT_EQUAL(converted->_a, data._a);
 
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_class_cast)
 {
     PYTHON_MODULE_INSTALL(py_class_test);
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
+        // TestClass is defined in module
+        python::import("py_class_test");
+
         TestClass data(567);
         python::Object instance = python::make_instance<TestClass>(&data);
         ASSERT_NO_PYTHON_ERROR();
@@ -202,13 +261,13 @@ TEST_CASE(python_class_cast)
         ASSERT_EQUAL(converted._a, data._a);
 
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 
 TEST_CASE(python_tuple)
 {
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         Tuple t(4);
         ASSERT_EQUAL(t.size(), 4);
@@ -231,12 +290,12 @@ TEST_CASE(python_tuple)
 
         ASSERT_NO_PYTHON_ERROR();
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_dict)
 {
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         Dict d;
 
@@ -259,5 +318,5 @@ TEST_CASE(python_dict)
 
         ASSERT_NO_PYTHON_ERROR();
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }

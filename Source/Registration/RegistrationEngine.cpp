@@ -476,5 +476,5 @@ python::Object RegistrationEngine::python_class()
                          "");
         python::def(cls, "execute", &RegistrationEngine::execute, "");
     }
-
+    return cls;
 }

@@ -2,6 +2,7 @@
 
 #include "Class.h"
 #include "Function.h"
+#include "PythonCommon.h"
 
 #include <structmember.h>
 

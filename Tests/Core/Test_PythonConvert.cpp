@@ -11,7 +11,7 @@ using namespace testing;
 
 TEST_CASE(builtins_from_python)
 {
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         python::Object long_obj = PyLong_FromLong(53);
         ASSERT_NO_PYTHON_ERROR();
@@ -41,12 +41,12 @@ TEST_CASE(builtins_from_python)
         ASSERT_EQUAL_STR(python::from_python<const char*>(str_obj), "test");
         ASSERT_NO_PYTHON_ERROR();
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(builtins_to_python)
 {
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
     {
         python::Object long_obj = python::to_python(53);
         ASSERT_NO_PYTHON_ERROR();
@@ -68,37 +68,33 @@ TEST_CASE(builtins_to_python)
         ASSERT_EXPR(stdstr_obj.is_instance(&PyUnicode_Type));
         ASSERT_EQUAL_STR(PyUnicode_AsUTF8(stdstr_obj.ptr()), "stdtest");
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }
 
-namespace
+struct SomeType
 {
-    struct SomeType
-    {
-        int value;
-    };
+    int value;
+};
 
-    struct SomeTypeConverter
+struct SomeTypeConverter
+{
+    static PyObject* to_python(const SomeType& value)
     {
-        static PyObject* to_python(const SomeType& value)
-        {
-            return PyLong_FromLong(value.value);
-        }
-        static SomeType from_python(PyObject* obj)
-        {
-            SomeType ret;
-            ret.value = PyLong_AsLong(obj);
-            return ret;
-        }
-    };
-
-    python::TypeConverter<SomeType, SomeTypeConverter> pixel_type_converter;
-}
+        return PyLong_FromLong(value.value);
+    }
+    static SomeType from_python(PyObject* obj)
+    {
+        SomeType ret;
+        ret.value = PyLong_AsLong(obj);
+        return ret;
+    }
+};
 
 
 TEST_CASE(python_custom_converter)
 {
-    Py_Initialize();
+    PYTHON_TEST_PREPARE();
+    python::TypeConverter<SomeType, SomeTypeConverter> pixel_type_converter;
     {
         SomeType value;
         value.value = 4342;
@@ -111,5 +107,5 @@ TEST_CASE(python_custom_converter)
 
         ASSERT_EQUAL(value.value, value2.value);
     }
-    Py_Finalize();
+    PYTHON_TEST_CLEANUP();
 }

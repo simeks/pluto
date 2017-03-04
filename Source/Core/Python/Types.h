@@ -38,6 +38,9 @@ namespace python
                              PyTypeObject* py_type,
                              ToPythonFunction to_fn,
                              FromPythonFunction from_fn);
+
+        /// @remark Used by the testing framework, NOT safe during normal run
+        CORE_API void clear();
     }
 
     template<typename T>

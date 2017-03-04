@@ -10,4 +10,12 @@
         ASSERT_EXPR(false && "Python Error"); \
     }}while(0);
 
+
+#define PYTHON_TEST_PREPARE() \
+    python::type_registry::clear(); \
+    Py_Initialize()
+
+#define PYTHON_TEST_CLEANUP() \
+    Py_Finalize()
+
 #endif // __TEST_PYTHON_H__
