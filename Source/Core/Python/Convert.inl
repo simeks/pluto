@@ -6,9 +6,8 @@ namespace python
         FromPythonFunction conv = TypeInfo<T>::info.from_python;
         if (!conv)
         {
-            PyErr_Format(PyExc_TypeError, "from_python: No converter found for type %s", 
+            PYTHON_ERROR(PyExc_TypeError, "from_python: No converter found for type %s", 
                 TypeInfo<T>::info.cpp_type.name());
-            throw; // TODO:
         }
         T* val = (T*)alloca(sizeof(T)); // Avoid calling the constructor, conv() will call copy-constructor
         conv(obj, val);

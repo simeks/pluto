@@ -51,11 +51,11 @@ static PyObject* function_call(
     }
     catch (const std::exception& e)
     {
-        PYTHON_ERROR(RuntimeError, "std::exception: %s", e.what());
+        PYTHON_ERROR(PyExc_RuntimeError, "std::exception: %s", e.what());
     }
     catch (...)
     {
-        PYTHON_ERROR(RuntimeError, "Unknown C++ exception");
+        PYTHON_ERROR(PyExc_RuntimeError, "Unknown C++ exception");
     }
 }
 

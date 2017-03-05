@@ -42,7 +42,7 @@ void console::print_image(const python::Object& obj)
     }
     else
     {
-        PYTHON_ERROR(TypeError, "Expected a bytes object");
+        PYTHON_ERROR(PyExc_TypeError, "Expected a bytes object");
     }
 }
 void console::set_style_sheet(const char* stylesheet)

@@ -12,7 +12,7 @@ PYTHON_ERROR() : Sets a Python error and throws a C++ exception. The exception s
                  our C++ code to be usable only in connection with Python.
 */
 
-#define PYTHON_ERROR(Exc, Text, ...) do{PyErr_Format(PyExc_##Exc, Text, __VA_ARGS__); throw python::ErrorSet();}while(0)
+#define PYTHON_ERROR(Exc, Text, ...) do{PyErr_Format(Exc, Text, __VA_ARGS__); throw python::ErrorSet();}while(0)
 
 namespace python
 {

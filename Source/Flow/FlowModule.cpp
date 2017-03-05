@@ -61,11 +61,11 @@ void FlowModule::init()
 void FlowModule::install_node_template(FlowNode* node)
 {
     if (node->title() == nullptr)
-        PYTHON_ERROR(AttributeError, "'title' not set");
+        PYTHON_ERROR(PyExc_AttributeError, "'title' not set");
     if (node->category() == nullptr)
-        PYTHON_ERROR(AttributeError, "'category' not set");
+        PYTHON_ERROR(PyExc_AttributeError, "'category' not set");
     if (node->node_class() == nullptr)
-        PYTHON_ERROR(AttributeError, "'node_class' not set");
+        PYTHON_ERROR(PyExc_AttributeError, "'node_class' not set");
 
     bool reload = false;
 
@@ -95,7 +95,7 @@ FlowNode* FlowModule::node_template(const char* node_class)
         }
     }
 
-    PYTHON_ERROR(KeyError, "no node of given class found");
+    PYTHON_ERROR(PyExc_KeyError, "no node of given class found");
 }
 const std::vector<FlowNode*>& FlowModule::node_templates() const
 {

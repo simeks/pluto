@@ -150,7 +150,7 @@ namespace python
         {
             return ((Instance*)instance)->holder;
         }
-        PYTHON_ERROR(TypeError, "Expected instance type");
+        PYTHON_ERROR(PyExc_TypeError, "Expected instance type");
     }
 
 

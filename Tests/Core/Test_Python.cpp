@@ -323,7 +323,7 @@ TEST_CASE(python_dict)
 
 void raise_error()
 {
-    PYTHON_ERROR(ValueError, "Error");
+    PYTHON_ERROR(PyExc_ValueError, "Error");
 }
 
 PYTHON_MODULE(py_error_test)

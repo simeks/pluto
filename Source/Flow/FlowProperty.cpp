@@ -151,7 +151,7 @@ void BoolProperty::object_python_init(const Tuple& args, const Dict& kw)
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Expected default argument to be bool");
+            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be bool");
         }
     }
 }
@@ -185,7 +185,7 @@ void IntProperty::object_python_init(const Tuple& args, const Dict& kw)
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Expected default argument to be integer");
+            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be integer");
         }
     }
     else
@@ -221,7 +221,7 @@ void FloatProperty::object_python_init(const Tuple& args, const Dict& kw)
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Expected default argument to be float");
+            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be float");
         }
     }
 }
@@ -247,7 +247,7 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
     FlowProperty::object_python_init(args, kw);
 
     if (args.size() < 2)
-        PYTHON_ERROR(ValueError, "Expected at least 2 arguments");
+        PYTHON_ERROR(PyExc_ValueError, "Expected at least 2 arguments");
 
     _default_index = -1;
 
@@ -256,7 +256,7 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
     {
         python::Object str = opts.get(i);
         if (!PyUnicode_Check(str.ptr()))
-            PYTHON_ERROR(TypeError, "Expected all options to be strings");
+            PYTHON_ERROR(PyExc_TypeError, "Expected all options to be strings");
 
         _options.push_back(PyUnicode_AsUTF8(str.ptr()));
     }
@@ -273,12 +273,12 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
             }
             else
             {
-                PYTHON_ERROR(TypeError, "Index out of bounds: 0 <= %d < %d", _default_index, opts.size());
+                PYTHON_ERROR(PyExc_TypeError, "Index out of bounds: 0 <= %d < %d", _default_index, opts.size());
             }
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Expected default index to be int");
+            PYTHON_ERROR(PyExc_TypeError, "Expected default index to be int");
         }
     }
 
@@ -325,7 +325,7 @@ void StringProperty::object_python_init(const Tuple& args, const Dict& kw)
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Expected default argument to be string");
+            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be string");
         }
     }
 }

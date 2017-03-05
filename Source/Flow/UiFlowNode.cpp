@@ -127,7 +127,7 @@ void UiFlowNode::invoke_ui_method(const Tuple& args)
         PYTHON_STDERR("UiFlowNode: No UI object\n");
 
     if (args.size() < 1)
-        PYTHON_ERROR(ValueError, "Expected at least one argument");
+        PYTHON_ERROR(PyExc_ValueError, "Expected at least one argument");
 
     const char* meth_name = args.get<const char*>(0);
    

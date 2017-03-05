@@ -67,7 +67,7 @@ namespace
                     
                 return img;
             }
-            PYTHON_ERROR(ValueError, "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
+            PYTHON_ERROR(PyExc_ValueError, "Failed to convert object of type '%s' to Image", obj->ob_type->tp_name);
         }
     };
 

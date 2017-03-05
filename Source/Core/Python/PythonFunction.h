@@ -8,7 +8,7 @@
 
 #define PYTHON_FUNCTION_CHECK_ARGS(Fn, N) \
     if (PyTuple_Check(args) && PyTuple_Size(args) != N) { \
-        PYTHON_ERROR(TypeError, "TypeError: %s() takes %d positional argument but %d were given", #Fn, N, PyTuple_Size(args)); \
+        PYTHON_ERROR(PyExc_TypeError, "TypeError: %s() takes %d positional argument but %d were given", #Fn, N, PyTuple_Size(args)); \
     }
 
 

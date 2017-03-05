@@ -10,6 +10,7 @@
 #include "QtVisNode.h"
 #include "QtVisWindow.h"
 
+#include <QDebug>
 #include <QFontMetrics>
 #include <QGraphicsScene>
 #include <QPainter>
@@ -127,7 +128,8 @@ void QtVisNode::show_image(const Image& image)
     _qimage = convert_to_qimage(_data, image.spacing());
     if (_qimage.isNull())
     {
-        PYTHON_ERROR(TypeError, "Invalid image format");
+        qDebug() << "Invalid image format\n"; // TODO:
+        return;
     }
     // TODO: Dynamic rescaling
     _thumbnail = _qimage.scaled(500, 500, Qt::KeepAspectRatio, Qt::SmoothTransformation);

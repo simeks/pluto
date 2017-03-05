@@ -48,15 +48,15 @@ void FlowContext::object_init(FlowGraph* graph)
 void FlowContext::object_python_init(const Tuple& t, const Dict&)
 {
     if (t.size() != 1)
-        PYTHON_ERROR(ValueError, "expected 1 argument");
+        PYTHON_ERROR(PyExc_ValueError, "expected 1 argument");
 
     python::Object o = t.get(0);
     if (!python_object::object(o.ptr()))
-        PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
+        PYTHON_ERROR(PyExc_ValueError, "expected a FlowGraph as argument");
 
     Object* obj = python_object::object(o.ptr());
     if (!obj->is_a(FlowGraph::static_class()))
-        PYTHON_ERROR(ValueError, "expected a FlowGraph as argument");
+        PYTHON_ERROR(PyExc_ValueError, "expected a FlowGraph as argument");
 
     _graph = object_cast<FlowGraph>(obj);
 
@@ -300,7 +300,7 @@ const char* FlowContext::temp_dir() const
 std::string FlowContext::temp_node_dir() const
 {
     if (!_current_node)
-        PYTHON_ERROR(ValueError, "No current node");
+        PYTHON_ERROR(PyExc_ValueError, "No current node");
 
     QString node_id = guid::to_string(_current_node->node_id()).c_str();
 

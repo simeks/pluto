@@ -40,7 +40,7 @@ namespace
             long v = PyLong_AsLong(obj);
             if (v < 0)
             {
-                PYTHON_ERROR(OverflowError, "overflow detected");
+                PYTHON_ERROR(PyExc_OverflowError, "overflow detected");
                 return;
             }
             new (val) T((T)v);
@@ -77,7 +77,7 @@ namespace
             long long v = PyLong_AsLongLong(obj);
             if (v < 0)
             {
-                PYTHON_ERROR(OverflowError, "overflow detected");
+                PYTHON_ERROR(PyExc_OverflowError, "overflow detected");
                 return;
             }
             new (val) uint64_t(v);

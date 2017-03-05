@@ -75,7 +75,7 @@ void FlowWindow::clear()
 Dict FlowWindow::run(const Tuple& args, const Dict& kw)
 {
     if (args.size() != 0)
-        PYTHON_ERROR(ValueError, "run takes only keyword arguments");
+        PYTHON_ERROR(PyExc_ValueError, "run takes only keyword arguments");
 
     if (_window->run_pending())
         _window->reset_run();
@@ -86,6 +86,6 @@ Dict FlowWindow::resume()
 {
     if (_window->run_pending())
         return _window->run_graph(Tuple(), Dict());
-    PYTHON_ERROR(ValueError, "no run pending");
+    PYTHON_ERROR(PyExc_ValueError, "no run pending");
 }
 

@@ -26,7 +26,8 @@ void QtVisWindow::set_image(const Image& image)
     QImage qimage = convert_to_qimage(_data, image.spacing());
     if (qimage.isNull())
     {
-        PYTHON_ERROR(TypeError, "Invalid image format");
+        qDebug() << "Invalid image format\n"; // TODO:
+        return;
     }
 
     QPixmap pixmap = QPixmap::fromImage(qimage);
@@ -41,7 +42,8 @@ void QtVisWindow::set_image(const NumpyArray& img, const Vec3d& spacing)
     QImage qimage = convert_to_qimage(_data, spacing);
     if (qimage.isNull())
     {
-        PYTHON_ERROR(TypeError, "Invalid image format");
+        qDebug() << "Invalid image format\n"; // TODO:
+        return;
     }
 
     QPixmap pixmap = QPixmap::fromImage(qimage);

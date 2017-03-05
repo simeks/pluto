@@ -54,7 +54,7 @@ void pluto::run_file(const std::string& file)
 python::Object pluto::register_class(const python::Object& cls)
 {
     if (PyType_Check(cls.ptr()) == 0)
-        PYTHON_ERROR(TypeError, "expected class");
+        PYTHON_ERROR(PyExc_TypeError, "expected class");
 
     PythonClass::python_class((PyTypeObject*)python::incref(cls.ptr()));
 
@@ -63,16 +63,16 @@ python::Object pluto::register_class(const python::Object& cls)
 Object* pluto::create_object(const Tuple& args)
 {
     if (args.size() < 1)
-        PYTHON_ERROR(AttributeError, "expected at least one argument");
+        PYTHON_ERROR(PyExc_AttributeError, "expected at least one argument");
 
     const char* class_name = python::from_python<const char*>(args.get(0).ptr());
     if (!class_name)
-        PYTHON_ERROR(AttributeError, "expected first argument to be string");
+        PYTHON_ERROR(PyExc_AttributeError, "expected first argument to be string");
 
 
     PythonClass* cls = PythonClass::python_class(class_name);
     if (!cls)
-        PYTHON_ERROR(ValueError, "no class found");
+        PYTHON_ERROR(PyExc_ValueError, "no class found");
 
     Tuple obj_args(args.size() - 1);
     for (int i = 1; i < args.size(); ++i)

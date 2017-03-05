@@ -38,7 +38,7 @@ void FlowPin::object_init(const std::string& name,
     FlowNode* owner)
 {
     if (!std::regex_match(name, flow_pin::pin_name_pattern))
-        PYTHON_ERROR(ValueError, "Invalid pin name: '%s'", name.c_str());
+        PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
 
     _name = name;
     _pin_type = pin_type;
@@ -47,12 +47,12 @@ void FlowPin::object_init(const std::string& name,
 void FlowPin::object_python_init(const Tuple& args, const Dict& )
 {
     if (args.size() < 2)
-        PYTHON_ERROR(ValueError, "FlowPin expected at least 2 arguments");
+        PYTHON_ERROR(PyExc_ValueError, "FlowPin expected at least 2 arguments");
 
     std::string name = python::from_python<std::string>(args.get(0));
     if (!std::regex_match(name, flow_pin::pin_name_pattern))
     {
-        PYTHON_ERROR(ValueError, "Invalid pin name: '%s'", name.c_str());
+        PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
     }
     _name = name;
     _pin_type = (FlowPin::Type)python::from_python<int>(args.get(1));
@@ -152,7 +152,7 @@ void ArrayFlowPin::object_init(const std::string& base_name,
     int index)
 {
     if (pin_type != FlowPin::In)
-        PYTHON_ERROR(ValueError, "ArrayFlowPin can only be created as an In-pin.");
+        PYTHON_ERROR(PyExc_ValueError, "ArrayFlowPin can only be created as an In-pin.");
 
 
     FlowPin::object_init(base_name, pin_type, owner);
@@ -172,7 +172,7 @@ void ArrayFlowPin::object_python_init(const Tuple& args, const Dict& kw)
     FlowPin::object_python_init(args, kw);
 
     if (_pin_type != FlowPin::In)
-        PYTHON_ERROR(ValueError, "ArrayFlowPin can only be created as an In-pin.");
+        PYTHON_ERROR(PyExc_ValueError, "ArrayFlowPin can only be created as an In-pin.");
 
     _base_name = _name;
     _index = 0; // Assume this is the first pin

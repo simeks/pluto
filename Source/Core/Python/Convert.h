@@ -4,6 +4,7 @@
 
 #include <Core/Image/Vec3.h>
 #include <Core/Python/Class.h>
+#include <Core/Python/Error.h>
 #include <Core/Python/Object.h>
 #include <Core/Python/Types.h>
 

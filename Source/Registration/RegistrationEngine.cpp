@@ -38,7 +38,7 @@ namespace
         }
         else
         {
-            PYTHON_ERROR(TypeError, "Only float and double supported! (Type: %s)", image::pixel_type_to_string(img.pixel_type()));
+            PYTHON_ERROR(PyExc_TypeError, "Only float and double supported! (Type: %s)", image::pixel_type_to_string(img.pixel_type()));
         }
     }
 }
@@ -206,7 +206,7 @@ RegistrationEngine::RegistrationEngine(const Tuple& args) :
     }
     else
     {
-        PYTHON_ERROR(ValueError, "Expected at least two arguments");
+        PYTHON_ERROR(PyExc_ValueError, "Expected at least two arguments");
     }
     if (args.size() >= 3)
     {
@@ -232,7 +232,7 @@ void RegistrationEngine::set_constraints(const Image& values, const Image& mask)
     if (values)
     {
         if (values.pixel_type() != image::PixelType_Vec3d)
-            PYTHON_ERROR(ValueError, "Constraint value image needs to be of Vec3d type!");
+            PYTHON_ERROR(PyExc_ValueError, "Constraint value image needs to be of Vec3d type!");
 
         _constraint_pyramid[0] = values;
     }
@@ -243,7 +243,7 @@ void RegistrationEngine::set_constraints(const Image& values, const Image& mask)
     if (mask)
     {
         if (mask.pixel_type() != image::PixelType_UInt8)
-            PYTHON_ERROR(ValueError, "Constraint mask needs to be of UInt8 type!");
+            PYTHON_ERROR(PyExc_ValueError, "Constraint mask needs to be of UInt8 type!");
 
         _constraint_mask_pyramid[0] = mask;
     }
@@ -258,7 +258,7 @@ void RegistrationEngine::set_starting_guess(const Image& starting_guess)
     if (starting_guess)
     {
         if (starting_guess.pixel_type() != image::PixelType_Vec3d)
-            PYTHON_ERROR(ValueError, "Starting guess needs to be of Vec3d type!");
+            PYTHON_ERROR(PyExc_ValueError, "Starting guess needs to be of Vec3d type!");
 
         _deformation_pyramid[0] = starting_guess;
     }
@@ -277,11 +277,11 @@ Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
     _constraint_pyramid.clear();
 
     if (fixed.size() != moving.size())
-        PYTHON_ERROR(ValueError, "Expected an equal number of fixed- and moving images");
+        PYTHON_ERROR(PyExc_ValueError, "Expected an equal number of fixed- and moving images");
         
     _image_pair_count = (int)fixed.size();
     if (_image_pair_count == 0)
-        PYTHON_ERROR(ValueError, "invalid number of image pairs");
+        PYTHON_ERROR(PyExc_ValueError, "invalid number of image pairs");
 
     _fixed_pyramid.resize(_pyramid_level_max);
     _moving_pyramid.resize(_pyramid_level_max);
@@ -298,11 +298,11 @@ Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
         Image fixed_img = fixed.get<Image>(i);
         Image moving_img = moving.get<Image>(i);
         if (!fixed_img || !moving_img)
-            PYTHON_ERROR(ValueError, "Missing image");
+            PYTHON_ERROR(PyExc_ValueError, "Missing image");
 
         if (fixed_img.pixel_type() != moving_img.pixel_type() ||
             fixed_img.size() != moving_img.size())
-            PYTHON_ERROR(ValueError, "Image pairs needs to have the same size and pixel type");
+            PYTHON_ERROR(PyExc_ValueError, "Image pairs needs to have the same size and pixel type");
 
         /// @Hack until we have a dedicated 2d registration engine. We just reshape 2d images to 3d with the z axis set to length 1
         if (fixed_img.ndims() == 2)
@@ -351,13 +351,13 @@ Image RegistrationEngine::execute(const Tuple& fixed, const Tuple& moving)
     // Confirm that all images are of same size
 
     if (_deformation_pyramid[0].valid() && _deformation_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR(ValueError, "Starting guess needs to be of same size as the image pair.");
+        PYTHON_ERROR(PyExc_ValueError, "Starting guess needs to be of same size as the image pair.");
 
     if (_constraint_mask_pyramid[0].valid() && _constraint_mask_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR(ValueError, "Constraint mask needs to be of same size as the image pair.");
+        PYTHON_ERROR(PyExc_ValueError, "Constraint mask needs to be of same size as the image pair.");
 
     if (_constraint_pyramid[0].valid() && _constraint_pyramid[0].size() != _fixed_pyramid[0][0].size())
-        PYTHON_ERROR(ValueError, "Constraint value image needs to be of same size as the image pair.");
+        PYTHON_ERROR(PyExc_ValueError, "Constraint value image needs to be of same size as the image pair.");
 
 
     build_pyramid();
@@ -441,10 +441,10 @@ Optimizer* RegistrationEngine::create_optimizer(const char* name,
         case image::PixelType_Vec4f:
             return new BlockedGraphCutOptimizer<ImageColorf>(settings);
         default:
-            PYTHON_ERROR(NotImplementedError, "Image type %s not implemented", image::pixel_type_to_string(image_type));
+            PYTHON_ERROR(PyExc_NotImplementedError, "Image type %s not implemented", image::pixel_type_to_string(image_type));
         }
     }
-    PYTHON_ERROR(ValueError, "No optimizer with name '%s' found", name);
+    PYTHON_ERROR(PyExc_ValueError, "No optimizer with name '%s' found", name);
 }
 python::Object RegistrationEngine::python_class()
 {

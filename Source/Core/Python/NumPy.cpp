@@ -11,7 +11,7 @@ void numpy::initialize()
     if (_import_array() < 0)
     {
         PyErr_Print(); 
-        PYTHON_ERROR(ImportError, "numpy.core.multiarray failed to import");
+        PYTHON_ERROR(PyExc_ImportError, "numpy.core.multiarray failed to import");
     }
 }
 int numpy::pixel_type_to_numpy(int pixel_type)
@@ -68,7 +68,7 @@ namespace
                 return NumpyArray((PyArrayObject*)obj);
             }
 
-            PYTHON_ERROR(ValueError, "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
+            PYTHON_ERROR(PyExc_ValueError, "Failed to convert object of type '%s' to NumpyArray", obj->ob_type->tp_name);
         }
     };
 
