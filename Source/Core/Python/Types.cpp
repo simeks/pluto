@@ -1,5 +1,7 @@
 #include "Common.h"
 
+#include "Class.h"
+#include "Module.h"
 #include "PythonCommon.h"
 #include "Types.h"
 
@@ -277,6 +279,8 @@ namespace
 
         type_registry::insert(typeid(PyObject*), pyobject_to_python, pyobject_from_python);
         type_registry::insert(typeid(python::Object), object_to_python, object_from_python);
+        type_registry::insert(typeid(python::Class), object_to_python, object_from_python);
+        type_registry::insert(typeid(python::Module), object_to_python, object_from_python);
 
         type_registry::insert(typeid(const char*), cstring_to_python, cstring_from_python);
         type_registry::insert(typeid(std::string), string_to_python, string_from_python);

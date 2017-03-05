@@ -58,8 +58,47 @@ namespace python
         Holder* allocate() OVERRIDE;
     };
 
+    /// PyObject wrapper for class objects
+    class CORE_API Class : public Object
+    {
+    public:
+        Class();
+        Class(PyObject* obj);
+        /// Constructor for borrowed references, this will increase the ref count of obj
+        Class(Borrowed obj);
+
+        /// @brief Defines a __init__ method for the given class
+        template<typename TClass, typename ... TArgs>
+        void def_init();
+
+        /// @brief Defines a __init__ method for the given class
+        /// Requires a constructor: TClass(const Tuple&)
+        template<typename TClass>
+        void def_init_varargs();
+
+        /// @brief Defines a __init__ method for the given class
+        /// Requires a constructor: TClass(const Tuple&, const Dict&)
+        template<typename TClass>
+        void def_init_varargs_keywords();
+
+        /// @brief Defines a class method
+        template<typename TClass, typename TReturn, typename ... TArgs>
+        void def(const char* name, TReturn(TClass::*meth)(TArgs...), 
+            const char* doc = nullptr);
+
+        /// @brief Defines a varargs class method
+        template<typename TClass, typename TReturn>
+        void def_varargs(const char* name, TReturn(TClass::*meth)(const Tuple&), 
+            const char* doc = nullptr);
+
+        /// @brief Defines a varargs/keywords class method
+        template<typename TClass, typename TReturn>
+        void def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&), 
+            const char* doc = nullptr);
+    };
+
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
-    CORE_API Object make_class(const char* name, CppClassBase* cpp_class, const char* doc = nullptr);
+    CORE_API Class make_class(const char* name, CppClassBase* cpp_class, const char* doc = nullptr);
 
     /// Creates a new instance of the specified type
     /// @param holder Value holder, this will be deleted whenever GC collects the created instance.
@@ -72,7 +111,7 @@ namespace python
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.
     template<typename TClass>
-    Object make_class(const char* name, const char* doc = nullptr);
+    Class make_class(const char* name, const char* doc = nullptr);
 
     template<typename TClass>
     Object make_instance(TClass* value);
@@ -80,35 +119,6 @@ namespace python
     /// Python -> Constructor wrapper
     template<typename TClass, typename ... TArgs>
     void class_init(TClass* self, TArgs... args);
-
-    /// @brief Defines a __init__ method for the given class
-    template<typename TClass, typename ... TArgs>
-    void def_init(const Object& cls);
-
-    /// @brief Defines a __init__ method for the given class
-    /// Requires a constructor: TClass(const Tuple&)
-    template<typename TClass>
-    void def_init_varargs(const Object& cls);
-
-    /// @brief Defines a __init__ method for the given class
-    /// Requires a constructor: TClass(const Tuple&, const Dict&)
-    template<typename TClass>
-    void def_init_varargs_keywords(const Object& cls);
-
-    /// @brief Defines a class method
-    template<typename TClass, typename TReturn, typename ... TArgs>
-    void def(const Object& cls, const char* name, 
-        TReturn(TClass::*meth)(TArgs...), const char* doc = nullptr);
-
-    /// @brief Defines a varargs class method
-    template<typename TClass, typename TReturn, typename ... TArgs>
-    void def_varargs(const Object& cls, const char* name, 
-        TReturn(TClass::*meth)(const Tuple&), const char* doc = nullptr);
-
-    /// @brief Defines a varargs/keywords class method
-    template<typename TClass, typename TReturn, typename ... TArgs>
-    void def_varargs_keywords(const Object& cls, const char* name,
-        TReturn(TClass::*meth)(const Tuple&, const Dict&), const char* doc = nullptr);
 }
 
 #include "Class.inl"

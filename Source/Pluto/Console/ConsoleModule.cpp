@@ -9,9 +9,9 @@ namespace py = python;
 
 PYTHON_MODULE(console)
 {
-    py::def(module, "set_style_sheet", &console::set_style_sheet, "set_style_sheet(sheet)");
-    py::def(module, "print_html", &console::print_html, "print_html(html)");
-    py::def(module, "print_image", &console::print_image, "print_image(bytes)");
+    module.def("set_style_sheet", &console::set_style_sheet, "set_style_sheet(sheet)");
+    module.def("print_html", &console::print_html, "print_html(html)");
+    module.def("print_image", &console::print_image, "print_image(bytes)");
 }
 void console::install_python_module()
 {

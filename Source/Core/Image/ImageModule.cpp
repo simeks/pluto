@@ -20,24 +20,24 @@ namespace py = python;
 
 PYTHON_MODULE(image_api)
 {
-    py::def(module, "type_to_string", &image::type_to_string, "type_to_string(type)");
-    py::def(module, "type_from_string", &image::type_from_string, "type_from_string(type)");
+    module.def("type_to_string", &image::type_to_string, "type_to_string(type)");
+    module.def("type_from_string", &image::type_from_string, "type_from_string(type)");
 
-    py::def(module, "PixelType_Unknown", image::PixelType_Unknown);
-    py::def(module, "PixelType_UInt8", image::PixelType_UInt8);
-    py::def(module, "PixelType_Int8", image::PixelType_Int8);
-    py::def(module, "PixelType_UInt16", image::PixelType_UInt16);
-    py::def(module, "PixelType_Int16", image::PixelType_Int16);
-    py::def(module, "PixelType_UInt32", image::PixelType_UInt32);
-    py::def(module, "PixelType_Int32", image::PixelType_Int32);
-    py::def(module, "PixelType_Float32", image::PixelType_Float32);
-    py::def(module, "PixelType_Float64", image::PixelType_Float64);
-    py::def(module, "PixelType_Vec3u8", image::PixelType_Vec3u8);
-    py::def(module, "PixelType_Vec3f", image::PixelType_Vec3f);
-    py::def(module, "PixelType_Vec3d", image::PixelType_Vec3d);
-    py::def(module, "PixelType_Vec4u8", image::PixelType_Vec4u8);
-    py::def(module, "PixelType_Vec4f", image::PixelType_Vec4f);
-    py::def(module, "PixelType_Vec4d", image::PixelType_Vec4d);
+    module.def("PixelType_Unknown", image::PixelType_Unknown);
+    module.def("PixelType_UInt8", image::PixelType_UInt8);
+    module.def("PixelType_Int8", image::PixelType_Int8);
+    module.def("PixelType_UInt16", image::PixelType_UInt16);
+    module.def("PixelType_Int16", image::PixelType_Int16);
+    module.def("PixelType_UInt32", image::PixelType_UInt32);
+    module.def("PixelType_Int32", image::PixelType_Int32);
+    module.def("PixelType_Float32", image::PixelType_Float32);
+    module.def("PixelType_Float64", image::PixelType_Float64);
+    module.def("PixelType_Vec3u8", image::PixelType_Vec3u8);
+    module.def("PixelType_Vec3f", image::PixelType_Vec3f);
+    module.def("PixelType_Vec3d", image::PixelType_Vec3d);
+    module.def("PixelType_Vec4u8", image::PixelType_Vec4u8);
+    module.def("PixelType_Vec4f", image::PixelType_Vec4f);
+    module.def("PixelType_Vec4d", image::PixelType_Vec4d);
 }
 
 void image::install_python_module()

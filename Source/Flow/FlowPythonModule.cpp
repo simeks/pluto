@@ -23,34 +23,34 @@ namespace py = python;
 
 PYTHON_MODULE(flow_api)
 {
-    py::def(module, "FlowContext", FlowContext::static_class());
-    py::def(module, "FlowGraph", FlowGraph::static_class());
-    py::def(module, "FlowNode", FlowNode::static_class());
-    py::def(module, "UiFlowNode", UiFlowNode::static_class());
-    py::def(module, "FlowPin", FlowPin::static_class());
-    py::def(module, "ArrayFlowPin", ArrayFlowPin::static_class());
-    py::def(module, "FlowProperty", FlowProperty::static_class());
-    py::def(module, "BoolProperty", BoolProperty::static_class());
-    py::def(module, "IntProperty", IntProperty::static_class());
-    py::def(module, "FloatProperty", FloatProperty::static_class());
-    py::def(module, "EnumProperty", EnumProperty::static_class());
-    py::def(module, "FileProperty", FileProperty::static_class());
-    py::def(module, "StringProperty", StringProperty::static_class());
+    module.def("FlowContext", FlowContext::static_class());
+    module.def("FlowGraph", FlowGraph::static_class());
+    module.def("FlowNode", FlowNode::static_class());
+    module.def("UiFlowNode", UiFlowNode::static_class());
+    module.def("FlowPin", FlowPin::static_class());
+    module.def("ArrayFlowPin", ArrayFlowPin::static_class());
+    module.def("FlowProperty", FlowProperty::static_class());
+    module.def("BoolProperty", BoolProperty::static_class());
+    module.def("IntProperty", IntProperty::static_class());
+    module.def("FloatProperty", FloatProperty::static_class());
+    module.def("EnumProperty", EnumProperty::static_class());
+    module.def("FileProperty", FileProperty::static_class());
+    module.def("StringProperty", StringProperty::static_class());
 
-    py::def(module, "open", &flow::open, "open(file)");
-    py::def(module, "window", &flow::window, "window()");
+    module.def("open", &flow::open, "open(file)");
+    module.def("window", &flow::window, "window()");
 
-    py::def(module, "load", &flow::load, "load(file)");
-    py::def(module, "save", &flow::save, "save(file, graph)");
-    py::def_varargs_keywords(module, "run", &flow::run, "run(graph, **kwargs)\n"
+    module.def("load", &flow::load, "load(file)");
+    module.def("save", &flow::save, "save(file, graph)");
+    module.def_varargs_keywords("run", &flow::run, "run(graph, **kwargs)\n"
                                                         "--\n"
                                                         "Runs a graph");
 
-    py::def(module, "install_node_template", &FlowModule::instance(), &FlowModule::install_node_template, "install_node_template(node)");
-    py::def(module, "node_templates", &flow::node_templates, "node_templates()");
-    py::def(module, "create_node", &flow::create_node, "create_node(cls)");
+    module.def("install_node_template", &FlowModule::instance(), &FlowModule::install_node_template, "install_node_template(node)");
+    module.def("node_templates", &flow::node_templates, "node_templates()");
+    module.def("create_node", &flow::create_node, "create_node(cls)");
     
-    py::def(module, "add_graph_path", &FlowModule::instance(), &FlowModule::add_graph_path, "add_graph_path(path)");
+    module.def("add_graph_path", &FlowModule::instance(), &FlowModule::add_graph_path, "add_graph_path(path)");
 
 }
 

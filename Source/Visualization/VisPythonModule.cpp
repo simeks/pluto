@@ -14,7 +14,7 @@ namespace py = python;
 
 PYTHON_MODULE(vis)
 {
-    py::def(module, "show", &vis::show);
+    module.def("show", &vis::show);
 }
 
 namespace

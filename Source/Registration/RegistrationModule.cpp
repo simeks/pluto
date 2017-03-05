@@ -12,8 +12,8 @@
 namespace py = python;
 PYTHON_MODULE(registration)
 {
-    py::def(module, "transform", &transform::transform);
-    py::def(module, "RegistrationEngine", RegistrationEngine::python_class());
+    module.def("transform", &transform::transform);
+    module.def("RegistrationEngine", RegistrationEngine::python_class());
 }
 
 

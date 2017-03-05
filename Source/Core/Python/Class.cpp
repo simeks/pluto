@@ -153,8 +153,19 @@ namespace python
         PYTHON_ERROR(PyExc_TypeError, "Expected instance type");
     }
 
+    Class::Class()
+    {
+    }
+    Class::Class(PyObject* obj) : Object(obj)
+    {
+        assert(PyType_Check(obj));
+    }
+    Class::Class(Borrowed obj) : Object(obj)
+    {
+        assert(PyType_Check(obj));
+    }
 
-    Object make_class(const char* name, CppClassBase* cpp_class, const char* doc)
+    Class make_class(const char* name, CppClassBase* cpp_class, const char* doc)
     {
         PyObject* bases = PyTuple_New(1);
         PyTuple_SetItem(bases, 0, incref((PyObject*)&instance_type()));

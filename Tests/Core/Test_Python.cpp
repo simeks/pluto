@@ -49,15 +49,15 @@ std::string function_return_stdstr()
 
 PYTHON_MODULE(py_test_module)
 {
-    def(module, "constant_int", 5);
-    def(module, "constant_str", "testtest");
+    module.def("constant_int", 5);
+    module.def("constant_str", "testtest");
 
-    def(module, "function_void", &function_void);
-    def(module, "function_1arg", &function_1arg);
-    def(module, "function_2arg", &function_2arg);
-    def(module, "function_2arg_return", &function_2arg_return);
-    def(module, "function_return_str", &function_return_str);
-    def(module, "function_return_stdstr", &function_return_stdstr);
+    module.def("function_void", &function_void);
+    module.def("function_1arg", &function_1arg);
+    module.def("function_2arg", &function_2arg);
+    module.def("function_2arg_return", &function_2arg_return);
+    module.def("function_return_str", &function_return_str);
+    module.def("function_return_stdstr", &function_return_stdstr);
 }
 
 
@@ -122,7 +122,14 @@ struct TestClass
         _class_some_value_2 = a;
         return _a + 10;
     }
+};
 
+struct BaseClass
+{
+    int some_method()
+    {
+        return 1;
+    }
 };
 
 struct TestClassInit
@@ -152,23 +159,24 @@ struct TestClassInitVarargsKeywords
 
 PYTHON_MODULE(py_class_test)
 {
-    python::Object cls = python::make_class<TestClass>("TestClass");
-    python::def_init<TestClass, int>(cls);
-    python::def(cls, "some_method", &TestClass::some_method);
+    python::Class cls = python::make_class<TestClass>("TestClass");
+    cls.def_init<TestClass, int>();
+    cls.def("some_method", &TestClass::some_method);
 
-    python::Object cls_init = python::make_class<TestClassInit>("TestClassInit");
-    python::def_init<TestClassInit, int>(cls_init);
+    python::Class cls_init = python::make_class<TestClassInit>("TestClassInit");
+    cls_init.def_init<TestClassInit, int>();
 
-    python::Object cls_init_args = python::make_class<TestClassInitVarargs>("TestClassInitVarargs");
-    python::def_init_varargs<TestClassInitVarargs>(cls_init_args);
+    python::Class cls_init_args = python::make_class<TestClassInitVarargs>("TestClassInitVarargs");
+    cls_init_args.def_init_varargs<TestClassInitVarargs>();
 
-    python::Object cls_init_args_kw = python::make_class<TestClassInitVarargsKeywords>("TestClassInitVarargsKeywords");
-    python::def_init_varargs_keywords<TestClassInitVarargsKeywords>(cls_init_args_kw);
+    python::Class cls_init_args_kw = python::make_class<TestClassInitVarargsKeywords>("TestClassInitVarargsKeywords");
+    cls_init_args_kw.def_init_varargs_keywords<TestClassInitVarargsKeywords>();
 
-    python::def(module, "TestClass", cls);
-    python::def(module, "TestClassInit", cls_init);
-    python::def(module, "TestClassInitVarargs", cls_init_args);
-    python::def(module, "TestClassInitVarargsKeywords", cls_init_args_kw);
+    module.def("TestClass", cls);
+    module.def("TestClassInit", cls_init);
+    module.def("TestClassInitVarargs", cls_init_args);
+    module.def("TestClassInitVarargsKeywords", cls_init_args_kw);
+
 }
 
 TEST_CASE(python_class_init)
@@ -199,6 +207,21 @@ TEST_CASE(python_class_init)
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_class_some_value_1, 444);
         ASSERT_EQUAL(_class_some_value_2, 555);
+    }
+    PYTHON_TEST_CLEANUP();
+}
+
+TEST_CASE(python_class_inheritance)
+{
+    PYTHON_MODULE_INSTALL(py_class_test);
+    PYTHON_TEST_PREPARE();
+    {
+        PyRun_SimpleString(
+            "import py_class_test as p\n"
+            "a = p.TestClassInit(321)\n"
+        );
+
+        ASSERT_NO_PYTHON_ERROR();
     }
     PYTHON_TEST_CLEANUP();
 }
@@ -328,7 +351,7 @@ void raise_error()
 
 PYTHON_MODULE(py_error_test)
 {
-    python::def(module, "raise_error", &raise_error);
+    module.def("raise_error", &raise_error);
 }
 
 TEST_CASE(python_error)

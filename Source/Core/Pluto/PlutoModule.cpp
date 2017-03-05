@@ -17,18 +17,18 @@ namespace pluto
 
 PYTHON_MODULE(_pluto)
 {
-    py::def(module, "user_dir", &pluto::user_dir, "user_dir()");
-    py::def(module, "python_dir", &pluto::python_dir, "python_dir()");
-    py::def(module, "module_dir", &pluto::module_dir, "module_dir()");
-    py::def(module, "run_file", &pluto::run_file, "run_file(file)");
-    py::def(module, "register_class", &pluto::register_class, "register_class(cls)");
-    py::def(module, "create_object", &pluto::create_object, "create_object(cls, *args)");
-    py::def(module, "auto_reload", &pluto::auto_reload, "auto_reload(module)");
+    module.def("user_dir", &pluto::user_dir, "user_dir()");
+    module.def("python_dir", &pluto::python_dir, "python_dir()");
+    module.def("module_dir", &pluto::module_dir, "module_dir()");
+    module.def("run_file", &pluto::run_file, "run_file(file)");
+    module.def("register_class", &pluto::register_class, "register_class(cls)");
+    module.def("create_object", &pluto::create_object, "create_object(cls, *args)");
+    module.def("auto_reload", &pluto::auto_reload, "auto_reload(module)");
 
-    py::def(module, "Object", Object::static_class());
-    py::def(module, "__version__", pluto::_version);
+    module.def("Object", Object::static_class());
+    module.def("__version__", pluto::_version);
 
-    py::def(module, "StdStream", python::Stream::stream_class());
+    module.def("StdStream", python::Stream::stream_class());
 }
 void pluto::install_python_module()
 {

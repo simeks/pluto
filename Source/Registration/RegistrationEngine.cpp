@@ -448,7 +448,7 @@ Optimizer* RegistrationEngine::create_optimizer(const char* name,
 }
 python::Object RegistrationEngine::python_class()
 {
-    static python::Object cls;
+    static python::Class cls;
     if (cls.ptr() == Py_None)
     {
         cls = python::make_class<RegistrationEngine>("RegistrationEngine",
@@ -458,23 +458,21 @@ python::Object RegistrationEngine::python_class()
                 image_type (int) : Image type of the image, see image.PixelType_* \n\
                 settings (dict) : Dictionary of all settings for the engine \n\
         ");
-
-        python::def_init_varargs<RegistrationEngine>(cls);
-
-        python::def(cls, "set_constraints", &RegistrationEngine::set_constraints,
-                         "set_constraints(values, mask=None)\n"
-                         "--\n"
-                         "Args:\n"
-                         "    value (Image) : Image of Vec3d containing displacement vectors\n"
-                         "    mask (Image) : Binary image specifying which voxels to constrain\n"
-                         "");
-        python::def(cls, "set_starting_guess", &RegistrationEngine::set_starting_guess,
-                         "set_starting_guess(values)\n"
-                         "--\n"
-                         "Args:\n"
-                         "    value (Image) : Image of Vec3d with the initial deformation field\n"
-                         "");
-        python::def(cls, "execute", &RegistrationEngine::execute, "");
+        cls.def_init_varargs<RegistrationEngine>();
+        cls.def("set_constraints", &RegistrationEngine::set_constraints,
+                "set_constraints(values, mask=None)\n"
+                "--\n"
+                "Args:\n"
+                "    value (Image) : Image of Vec3d containing displacement vectors\n"
+                "    mask (Image) : Binary image specifying which voxels to constrain\n"
+                "");
+        cls.def("set_starting_guess", &RegistrationEngine::set_starting_guess,
+                "set_starting_guess(values)\n"
+                "--\n"
+                "Args:\n"
+                "    value (Image) : Image of Vec3d with the initial deformation field\n"
+                "");
+        cls.def("execute", &RegistrationEngine::execute, "");
     }
     return cls;
 }

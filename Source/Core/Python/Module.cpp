@@ -5,6 +5,15 @@
 
 namespace python
 {
+    Module::Module(PyObject* obj) : Object(obj)
+    {
+        assert(PyModule_Check(obj));
+    }
+    Module::Module(Borrowed obj) : Object(obj)
+    {
+        assert(PyModule_Check((PyObject*)obj));
+    }
+
     Object import(const char* name)
     {
         PyObject* m = PyImport_ImportModule(name);

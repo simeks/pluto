@@ -31,6 +31,45 @@ namespace python
         return new PtrHolder<T>();
     }
 
+    template<typename TClass, typename ... TArgs>
+    INLINE void Class::def_init()
+    {
+        setattr(*this, "__init__", make_function(class_init<TClass, TArgs...>, "__init__"));
+    }
+
+    template<typename TClass>
+    INLINE void Class::def_init_varargs()
+    {
+        setattr(*this, "__init__", make_varargs_function(class_init<TClass, const Tuple&>, 
+            "__init__"));
+    }
+
+    template<typename TClass>
+    INLINE void Class::def_init_varargs_keywords()
+    {
+        setattr(*this, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>, 
+            "__init__"));
+    }
+
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    INLINE void Class::def(const char* name, TReturn(TClass::*meth)(TArgs...), const char* doc)
+    {
+        // Works the same as method a bound function (Function.h) but with _self set to nullptr
+        setattr(*this, name, make_function((TClass*)nullptr, meth, name, doc));
+    }
+
+    template<typename TClass, typename TReturn>
+    INLINE void Class::def_varargs(const char* name, TReturn(TClass::*meth)(const Tuple&), const char* doc)
+    {
+        setattr(*this, name, make_varargs_function((TClass*)nullptr, meth, name, doc));
+    }
+
+    template<typename TClass, typename TReturn>
+    INLINE void Class::def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&), 
+        const char* doc)
+    {
+        setattr(*this, name, make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
+    }
 
     template<typename T>
     PyObject* instance_ptr_to_python(void const* val)
@@ -92,15 +131,15 @@ namespace python
         }
     }
     template<typename TClass>
-    Object make_class(const char* name, const char* doc)
+    Class make_class(const char* name, const char* doc)
     {
         if (TypeInfo<TClass>::info.py_type != nullptr)
         {
             // This type already have a python type
-            return Object(Borrowed((PyObject*)TypeInfo<TClass>::info.py_type));
+            return Class(Borrowed((PyObject*)TypeInfo<TClass>::info.py_type));
         }
 
-        Object cls = make_class(name, new CppClass<TClass>(), doc);
+        Class cls = make_class(name, new CppClass<TClass>(), doc);
 
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
@@ -136,45 +175,4 @@ namespace python
         new (self) TClass(args...);
     }
 
-    template<typename TClass, typename ... TArgs>
-    INLINE void def_init(const Object& cls)
-    {
-        setattr(cls, "__init__", make_function(class_init<TClass, TArgs...>, "__init__"));
-    }
-
-    template<typename TClass>
-    INLINE void def_init_varargs(const Object& cls)
-    {
-        setattr(cls, "__init__", make_varargs_function(class_init<TClass, const Tuple&>, "__init__"));
-    }
-
-    template<typename TClass>
-    INLINE void def_init_varargs_keywords(const Object& cls)
-    {
-        setattr(cls, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>, "__init__"));
-    }
-
-    template<typename TClass, typename TReturn, typename ... TArgs>
-    void def(const Object& cls, const char* name, TReturn(TClass::*meth)(TArgs...), const char* doc)
-    {
-        assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
-        // Works the same as method a bound function (Function.h) but with _self set to nullptr
-        python::setattr(cls, name, make_function((TClass*)nullptr, meth, name, doc));
-    }
-
-    template<typename TClass, typename TReturn>
-    INLINE void def_varargs(const Object& cls, const char* name, 
-        TReturn(TClass::*meth)(const Tuple&), const char* doc)
-    {
-        assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
-        python::setattr(cls, name, make_varargs_function((TClass*)nullptr, meth, name, doc));
-    }
-
-    template<typename TClass, typename TReturn>
-    INLINE void def_varargs_keywords(const Object& cls, const char* name,
-        TReturn(TClass::*meth)(const Tuple&, const Dict&), const char* doc)
-    {
-        assert(cls.is_instance(&PyType_Type)); // Makes no sense calling this on a non-type
-        python::setattr(cls, name, make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
-    }
 }
