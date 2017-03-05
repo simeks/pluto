@@ -124,14 +124,6 @@ struct TestClass
     }
 };
 
-struct BaseClass
-{
-    int some_method()
-    {
-        return 1;
-    }
-};
-
 struct TestClassInit
 {
     TestClassInit(int a) 
@@ -359,10 +351,78 @@ TEST_CASE(python_error)
     PYTHON_MODULE_INSTALL(py_error_test);
     PYTHON_TEST_PREPARE();
     {
-        PyRun_SimpleString(
+        ASSERT_EQUAL(PyRun_SimpleString(
             "import py_error_test as p\n"
             "p.raise_error()\n"
-        );
+        ), -1); // We want it to fail
+        ASSERT_NO_PYTHON_ERROR();
+    }
+    PYTHON_TEST_CLEANUP();
+}
+
+struct BaseClass
+{
+    int _var;
+
+    BaseClass(int var) : _var(var) {}
+
+    virtual const char* name()
+    {
+        return "BaseClass";
+    }
+};
+struct DerivedClass : public BaseClass
+{
+    DerivedClass(int var) : BaseClass(var) {}
+
+    virtual const char* name() OVERRIDE
+    {
+        return "DerivedClass";
+    }
+};
+
+bool check_class(BaseClass* obj, int a)
+{
+    return obj->_var == a;
+}
+
+PYTHON_MODULE(py_inheritance_test)
+{
+    auto cls = python::make_class<BaseClass>("BaseClass");
+    cls.def_init<BaseClass, int>();
+    cls.def("name", &BaseClass::name);
+
+    auto dcls = python::make_class<DerivedClass>("DerivedClass");
+    dcls.def_init<DerivedClass, int>();
+    dcls.def("name", &DerivedClass::name);
+
+    module.def("BaseClass", cls);
+    module.def("DerivedClass", dcls);
+    module.def("check_class", &check_class);
+}
+
+TEST_CASE(python_inheritance)
+{
+    PYTHON_MODULE_INSTALL(py_inheritance_test);
+    PYTHON_TEST_PREPARE();
+    {
+        ASSERT_EQUAL(PyRun_SimpleString(
+            "import py_inheritance_test as p\n"
+            "class PyDerivedClass(p.BaseClass):\n"
+            "    def __init__(self, i):\n"
+            "        super(PyDerivedClass, self).__init__(i)\n"
+            "    def name(self):\n"
+            "        return 'PyDerivedClass'\n"
+            "base = p.BaseClass(1)\n"
+            "pysub = PyDerivedClass(2)\n"
+            "sub = p.DerivedClass(3)\n"
+            "assert base.name() == 'BaseClass'\n"
+            "assert pysub.name() == 'PyDerivedClass'\n"
+            "assert sub.name() == 'DerivedClass'\n"
+            "assert p.check_class(base, 1)\n"
+            "assert p.check_class(pysub, 2)\n"
+            "assert p.check_class(sub, 3)\n"
+        ), 0);
         ASSERT_NO_PYTHON_ERROR();
     }
     PYTHON_TEST_CLEANUP();
