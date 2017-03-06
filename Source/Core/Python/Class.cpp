@@ -165,10 +165,13 @@ namespace python
         assert(PyType_Check(obj));
     }
 
-    Class make_class(const char* name, CppClassBase* cpp_class, const char* doc)
+    Class make_class(const char* name, CppClassBase* cpp_class, PyTypeObject* base_type, const char* doc)
     {
         PyObject* bases = PyTuple_New(1);
-        PyTuple_SetItem(bases, 0, incref((PyObject*)&instance_type()));
+        if (base_type)
+            PyTuple_SetItem(bases, 0, incref((PyObject*)base_type));
+        else
+            PyTuple_SetItem(bases, 0, incref((PyObject*)&instance_type()));
         
         PyObject* args = PyTuple_New(3);
         PyTuple_SetItem(args, 0, PyUnicode_FromString(name));

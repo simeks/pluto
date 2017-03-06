@@ -130,16 +130,26 @@ namespace python
                 Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
         }
     }
-    template<typename TClass>
+    template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)
     {
+        static_assert(std::is_base_of<TBaseClass, TClass>::value, "TClass needs to derive from TBaseClass");
+
         if (TypeInfo<TClass>::info.py_type != nullptr)
         {
             // This type already have a python type
             return Class(Borrowed((PyObject*)TypeInfo<TClass>::info.py_type));
         }
 
-        Class cls = make_class(name, new CppClass<TClass>(), doc);
+        PyTypeObject* base_type = nullptr;
+        if (!std::is_same<TClass, TBaseClass>::value)
+        {
+            // User have specified a base class
+            base_type = TypeInfo<TBaseClass>::info.py_type;
+            assert(base_type); // We assume that the base type has already been defined
+        }
+
+        Class cls = make_class(name, new CppClass<TClass>(), base_type, doc);
 
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),

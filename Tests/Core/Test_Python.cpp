@@ -370,6 +370,11 @@ struct BaseClass
     {
         return "BaseClass";
     }
+
+    const char* base_name()
+    {
+        return "BaseClass";
+    }
 };
 struct DerivedClass : public BaseClass
 {
@@ -391,8 +396,9 @@ PYTHON_MODULE(py_inheritance_test)
     auto cls = python::make_class<BaseClass>("BaseClass");
     cls.def_init<BaseClass, int>();
     cls.def("name", &BaseClass::name);
+    cls.def("base_name", &BaseClass::base_name);
 
-    auto dcls = python::make_class<DerivedClass>("DerivedClass");
+    auto dcls = python::make_class<DerivedClass, BaseClass>("DerivedClass");
     dcls.def_init<DerivedClass, int>();
     dcls.def("name", &DerivedClass::name);
 
@@ -419,6 +425,9 @@ TEST_CASE(python_inheritance)
             "assert base.name() == 'BaseClass'\n"
             "assert pysub.name() == 'PyDerivedClass'\n"
             "assert sub.name() == 'DerivedClass'\n"
+            "assert base.base_name() == 'BaseClass'\n"
+            "assert pysub.base_name() == 'BaseClass'\n"
+            "assert sub.base_name() == 'BaseClass'\n"
             "assert p.check_class(base, 1)\n"
             "assert p.check_class(pysub, 2)\n"
             "assert p.check_class(sub, 3)\n"

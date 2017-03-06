@@ -98,7 +98,9 @@ namespace python
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
-    CORE_API Class make_class(const char* name, CppClassBase* cpp_class, const char* doc = nullptr);
+    /// @param base_type Specifies the base type of the object, currently only one base type is allowed. 
+    ///                  Will inherit the base instance type if nullptr.
+    CORE_API Class make_class(const char* name, CppClassBase* cpp_class, PyTypeObject* base_type = nullptr, const char* doc = nullptr);
 
     /// Creates a new instance of the specified type
     /// @param holder Value holder, this will be deleted whenever GC collects the created instance.
@@ -110,7 +112,7 @@ namespace python
 
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.
-    template<typename TClass>
+    template<typename TClass, typename TBaseClass = TClass>
     Class make_class(const char* name, const char* doc = nullptr);
 
     template<typename TClass>
