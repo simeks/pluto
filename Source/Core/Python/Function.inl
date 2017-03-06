@@ -48,7 +48,7 @@ namespace python
             size_t i = 0;
             // Initializer lists are guaranteed to evaluate in order, therefore we can use them to first unpack all args
             std::tuple<typename std::decay<TArgs>::type...> t{
-                python::from_python<typename std::decay<TArgs>::type>(incref(pop_item_from_tuple(args, i)))...
+                python::from_python<typename std::decay<TArgs>::type>(pop_item_from_tuple(args, i))...
             };
             i; args; // Avoid C4189 when having no args
 
