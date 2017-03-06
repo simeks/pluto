@@ -26,6 +26,9 @@ Pointers: Using from_python to convert to pointer types should _never_ return ne
     (Python classes created by using make_class in Class.h and specified as holding a shared pointer allows
     the user to convert the object to a shared pointer. The shared pointer works as a typical shared pointer.)
 
+    Not supported:
+        std::unique_ptr
+
 References: Using from_python to convert to references leads to undefined behaviour and should be avoided for now.
 
 Values: Converting to values will copy the source object onto a new object using the copy constructor.
@@ -46,6 +49,10 @@ Pointers: Behaviour of converting pointers to PyObject* depends on the type.
 
         This of course forces the user to be careful with the lifetime of the object. Deleting an object in C++ to soon 
         will lead to the PyObject holding an invalid pointer, and expecting the PyObject to delete it will lead to a memory leak.
+
+        Converting std::unique_ptr to python lets Python take ownership of an object, destryoing it when it gets collected by GC. 
+        Suitable if you have some factory function in C++ function returning a new object and you want the caller to take ownership 
+        of the object.
 
         (TODO: To implement: Shared ptr)
         (The prefered way to pass pointers between Python and C++ is to use shared pointers. Shared pointers works as expected,

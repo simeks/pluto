@@ -4,6 +4,7 @@
 #include "Function.h"
 #include "Object.h"
 
+#include <memory>
 #include <typeindex>
 
 namespace python
@@ -42,6 +43,20 @@ namespace python
     private:
         T* _p;
         bool _own; // Do we own the pointer?
+    };
+
+    template<typename T>
+    class UniquePtrHolder : public Holder
+    {
+    public:
+        UniquePtrHolder();
+        UniquePtrHolder(std::unique_ptr<T> ptr);
+        ~UniquePtrHolder();
+
+        void* ptr();
+
+    private:
+        std::unique_ptr<T> _p;
     };
 
     class CORE_API CppClassBase

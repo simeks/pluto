@@ -26,6 +26,28 @@ namespace python
     }
 
     template<typename T>
+    UniquePtrHolder<T>::UniquePtrHolder()
+    {
+        /// Allocate memory but do not call any constructor
+        _p = std::unique_ptr<T>((T*)::operator new(sizeof(T)));
+    }
+    template<typename T>
+    UniquePtrHolder<T>::UniquePtrHolder(std::unique_ptr<T> ptr) :
+        _p(std::move(ptr))
+    {
+    }
+    template<typename T>
+    UniquePtrHolder<T>::~UniquePtrHolder()
+    {
+    }
+
+    template<typename T>
+    void* UniquePtrHolder<T>::ptr()
+    {
+        return _p.get();
+    }
+
+    template<typename T>
     Holder* CppClass<T>::allocate()
     {
         return new PtrHolder<T>();
@@ -115,7 +137,6 @@ namespace python
         new (h->ptr()) T(*((T*)val));
         return incref(make_instance(type, h).ptr());
     }
-
     template<typename T>
     void instance_value_from_python(PyObject* obj, void* val)
     {
@@ -130,6 +151,21 @@ namespace python
                 Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
         }
     }
+    template<typename T>
+    PyObject* instance_unique_ptr_to_python(void const* val)
+    {
+        PyTypeObject* type = TypeInfo<T>::info.py_type;
+        if (!type)
+        {
+            PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+                typeid(T).name());
+            return nullptr;
+        }
+
+        UniquePtrHolder<T>* h = new UniquePtrHolder<T>(std::move(*((std::unique_ptr<T>*)val))); // Instance will delete this
+        return incref(make_instance(type, h).ptr());
+    }
+
     template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)
     {
@@ -156,11 +192,16 @@ namespace python
             instance_ptr_to_python<TClass>,
             instance_ptr_from_python<TClass>);
 
-        // No by-value converters implemented
         type_registry::insert(typeid(TClass),
             (PyTypeObject*)cls.ptr(),
             instance_value_to_python<TClass>,
             instance_value_from_python<TClass>);
+
+        type_registry::insert(typeid(std::unique_ptr<TClass>),
+            (PyTypeObject*)cls.ptr(),
+            instance_unique_ptr_to_python<TClass>,
+            nullptr // Not supported
+        );
 
         return cls;
     }

@@ -110,6 +110,19 @@ namespace
     int _class_some_value_2 = 0;
 }
 
+struct SimpleClass
+{
+    SimpleClass() { construct = true; }
+    ~SimpleClass() { destruct = true; }
+
+    static bool construct;
+    static bool destruct;
+
+};
+
+bool SimpleClass::construct = false;
+bool SimpleClass::destruct = false;
+
 struct TestClass
 {
     int _a;
@@ -151,6 +164,9 @@ struct TestClassInitVarargsKeywords
 
 PYTHON_MODULE(py_class_test)
 {
+    python::Class simple_class = python::make_class<SimpleClass>("SimpleClass");
+    simple_class.def_init<SimpleClass>();
+
     python::Class cls = python::make_class<TestClass>("TestClass");
     cls.def_init<TestClass, int>();
     cls.def("some_method", &TestClass::some_method);
@@ -164,11 +180,28 @@ PYTHON_MODULE(py_class_test)
     python::Class cls_init_args_kw = python::make_class<TestClassInitVarargsKeywords>("TestClassInitVarargsKeywords");
     cls_init_args_kw.def_init_varargs_keywords<TestClassInitVarargsKeywords>();
 
+    module.def("SimpleClass", simple_class);
     module.def("TestClass", cls);
     module.def("TestClassInit", cls_init);
     module.def("TestClassInitVarargs", cls_init_args);
     module.def("TestClassInitVarargsKeywords", cls_init_args_kw);
 
+}
+
+TEST_CASE(python_class)
+{
+    PYTHON_MODULE_INSTALL(py_class_test);
+    PYTHON_TEST_PREPARE();
+    {
+        ASSERT_EQUAL(PyRun_SimpleString(
+            "import py_class_test as p\n"
+            "a = p.SimpleClass()\n"
+            "a = None\n" // Trigger GC
+        ), 0);
+        ASSERT_EXPR(SimpleClass::construct);
+        ASSERT_EXPR(SimpleClass::destruct);
+    }
+    PYTHON_TEST_CLEANUP();
 }
 
 TEST_CASE(python_class_init)
@@ -433,6 +466,53 @@ TEST_CASE(python_inheritance)
             "assert p.check_class(sub, 3)\n"
         ), 0);
         ASSERT_NO_PYTHON_ERROR();
+    }
+    PYTHON_TEST_CLEANUP();
+}
+
+struct FactoryObject
+{
+    FactoryObject() { construct = true; }
+    ~FactoryObject() { destruct = true; }
+
+    bool check(FactoryObject* obj) { return this == obj; }
+
+    static bool construct;
+    static bool destruct;
+};
+
+bool FactoryObject::construct = false;
+bool FactoryObject::destruct = false;
+
+std::unique_ptr<FactoryObject> factory()
+{
+    return std::make_unique<FactoryObject>();
+}
+
+PYTHON_MODULE(py_smartptr_test)
+{
+    auto cls = python::make_class<FactoryObject>("FactoryObject");
+    cls.def("check", &FactoryObject::check);
+
+    module.def("FactoryObject", cls);
+    module.def("factory", &factory);
+}
+
+TEST_CASE(python_class_unique_ptr)
+{
+    PYTHON_MODULE_INSTALL(py_smartptr_test);
+    PYTHON_TEST_PREPARE();
+    {
+        ASSERT_EQUAL(PyRun_SimpleString(
+            "import py_smartptr_test as p\n"
+            "a = p.factory()\n"
+            "assert a.check(a)\n"
+            "a = None\n" // Trigger GC
+        ), 0);
+        ASSERT_NO_PYTHON_ERROR();
+
+        ASSERT_EXPR(FactoryObject::construct);
+        ASSERT_EXPR(FactoryObject::destruct);
     }
     PYTHON_TEST_CLEANUP();
 }
