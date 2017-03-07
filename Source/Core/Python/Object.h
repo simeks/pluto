@@ -55,9 +55,6 @@ namespace python
 
     CORE_API Object call(const Object& obj, const Tuple& args, const Dict& kw);
 
-    /// @brief Adds the specified class to the given object
-    CORE_API void def(const Object& m, const char* name, PythonClass* cls);
-
     /// @brief Adds the specified object to the given object
     template<typename T>
     void def(const Object& m, const char* name, const T& obj);

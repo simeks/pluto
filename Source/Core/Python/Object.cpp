@@ -54,9 +54,4 @@ namespace python
     //    PyObject_Call(obj.ptr(), args.ptr(), args.ptr();)
     //}
 
-    void def(const Object& m, const char* name, PythonClass* cls)
-    {
-        python::setattr(m, name, (PyObject*)cls->python_type());
-    }
-
 }

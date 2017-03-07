@@ -25,12 +25,12 @@ namespace python
     }
     Object Stream::stream_class()
     {
-        static Object cls;
+        static Class cls;
         if (cls.ptr() == Py_None)
         {
             cls = make_class<Stream>("Stream");
-            def(cls, "write", &Stream::write);
-            def(cls, "flush", &Stream::flush);
+            cls.def("write", &Stream::write);
+            cls.def("flush", &Stream::flush);
         }
         return cls;
     }

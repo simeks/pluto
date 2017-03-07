@@ -12,10 +12,10 @@ namespace flow
     /// Window handling
     
     /// @brief Loads a graph from the specified file into a new editor window.
-    FlowWindow* open(const char* file);
+    std::unique_ptr<FlowWindow> open(const char* file);
 
     /// @brief Opens a new window.
-    FlowWindow* window();
+    std::unique_ptr<FlowWindow> window();
 
     /// Graph management
 

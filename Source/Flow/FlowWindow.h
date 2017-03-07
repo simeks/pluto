@@ -2,21 +2,16 @@
 #define __FLOW_WINDOW_H__
 
 #include "API.h"
-#include <Core/Object/Object.h>
+#include <Core/Python/Class.h>
 #include "Qt/QtFlowWindow.h"
 
 class FlowGraph;
 class QtFlowWindow;
-class FLOW_API FlowWindow : public Object
+class FLOW_API FlowWindow
 {
-    DECLARE_OBJECT(FlowWindow, Object);
-
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(FlowWindow);
+    FlowWindow(QtFlowWindow* window = nullptr);
     ~FlowWindow();
-
-    void object_init();
-    void object_init(QtFlowWindow* window);
 
     void show();
     void close();
@@ -30,6 +25,8 @@ public:
 
     Dict run(const Tuple& args, const Dict& kw);
     Dict resume();
+
+    static python::Class python_class();
 
 private:
     QtFlowWindow* _window;

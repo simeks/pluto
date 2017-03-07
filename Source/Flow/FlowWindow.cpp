@@ -6,41 +6,29 @@
 #include "Qt/QtFlowWindow.h"
 
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowWindow, show);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowWindow, close);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowWindow, load, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, save, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowWindow, graph);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowWindow, set_graph, FlowGraph*);
-PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE_DICT_RETURN(FlowWindow, run);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowWindow, resume);
-
-OBJECT_INIT_TYPE_FN(FlowWindow)
+python::Class FlowWindow::python_class()
 {
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, show, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, close, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, load, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, save, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, graph, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, set_graph, "");
-    OBJECT_PYTHON_ADD_KEYWORD_METHOD(FlowWindow, run, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowWindow, resume, "");
+    static python::Class cls;
+    if (cls.is_none())
+    {
+        cls = python::make_class<FlowWindow>("Window");
+        cls.def("show", &FlowWindow::show);
+        cls.def("close", &FlowWindow::close);
+        cls.def("load", &FlowWindow::load);
+        cls.def("save", &FlowWindow::save);
+        cls.def("graph", &FlowWindow::graph);
+        cls.def("set_graph", &FlowWindow::set_graph);
+        cls.def("run", &FlowWindow::run);
+        cls.def("resume", &FlowWindow::resume);
+    }
+    return cls;
 }
 
-IMPLEMENT_OBJECT(FlowWindow, "FlowWindow", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowWindow, Object);
-
-
+FlowWindow::FlowWindow(QtFlowWindow* window) : _window(window)
+{
+}
 FlowWindow::~FlowWindow()
 {
-}
-void FlowWindow::object_init()
-{
-    _window = nullptr;
-}
-void FlowWindow::object_init(QtFlowWindow* window)
-{
-    _window = window;
 }
 void FlowWindow::show()
 {

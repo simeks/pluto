@@ -1,6 +1,7 @@
 #include "Common.h"
 
 #include "Module.h"
+#include "Object/PythonClass.h"
 #include "PythonCommon.h"
 
 namespace python
@@ -12,6 +13,10 @@ namespace python
     Module::Module(Borrowed obj) : Object(obj)
     {
         assert(PyModule_Check((PyObject*)obj));
+    }
+    void Module::def(const char* name, PythonClass* cls)
+    {
+        python::setattr(*this, name, Borrowed((PyObject*)cls->python_type()));
     }
 
     Object import(const char* name)

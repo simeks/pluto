@@ -23,6 +23,10 @@ namespace py = python;
 
 PYTHON_MODULE(flow_api)
 {
+    // We don't need to expose the class but we have to make sure that it is initialized.
+    // python_class() will hold the reference for the duration of the program.
+    FlowWindow::python_class();
+
     module.def("FlowContext", FlowContext::static_class());
     module.def("FlowGraph", FlowGraph::static_class());
     module.def("FlowNode", FlowNode::static_class());
@@ -53,26 +57,24 @@ PYTHON_MODULE(flow_api)
     module.def("add_graph_path", &FlowModule::instance(), &FlowModule::add_graph_path, "add_graph_path(path)");
 
 }
-
-FlowWindow* flow::open(const char* file)
+std::unique_ptr<FlowWindow> flow::open(const char* file)
 {
     QtFlowWindow* win = nullptr;
     QMetaObject::invokeMethod(FlowModule::instance().ui(), "create_window", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QtFlowWindow*, win));
     QMetaObject::invokeMethod(win, "show");
 
-    FlowWindow* winobj = object_new<FlowWindow>(win);
+    std::unique_ptr<FlowWindow> winobj = std::make_unique<FlowWindow>(win);
     if (file)
         winobj->load(file);
     return winobj;
 }
-FlowWindow* flow::window()
+std::unique_ptr<FlowWindow> flow::window()
 {
     QtFlowWindow* win = nullptr;
     QMetaObject::invokeMethod(FlowModule::instance().ui(), "create_window", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QtFlowWindow*, win));
     QMetaObject::invokeMethod(win, "show");
 
-    FlowWindow* winobj = object_new<FlowWindow>(win);
-    return winobj;
+    return std::make_unique<FlowWindow>(win);
 }
 FlowGraph* flow::load(const char* file)
 {

@@ -55,6 +55,7 @@ void PlutoKernel::prepare()
     python::setattr(sys, "stdout", python::to_python(&_stdout));
     python::setattr(sys, "stderr", python::to_python(&_stderr));
 
+    
     python::Object path = python::getattr(sys, "path");
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().python_dir())); // TODO: List object
     PyList_Append(path.ptr(), PyUnicode_FromString(PlutoCore::instance().module_dir()));
@@ -63,7 +64,7 @@ void PlutoKernel::prepare()
 
     _main_module = python::incref(PyDict_GetItemString(PyImport_GetModuleDict(), "__main__"));
 
-    python::setattr(pluto_module, "htmlout", python::to_python(&_stderr));
+    python::setattr(pluto_module, "htmlout", python::to_python(&_htmlout));
 
     _reloader = new AutoReloader();
 }

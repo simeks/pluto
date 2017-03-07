@@ -62,6 +62,10 @@ namespace python
         template<typename TReturn>
         void def_varargs_keywords(const char* name, TReturn(*fn)(const Tuple&, const Dict&), const char* doc = nullptr);
 
+        /// @brief Adds the specified class to the given object
+        /// @deprecated
+        void def(const char* name, PythonClass* cls);
+
     };
 
     /// Imports and returns the specified module
