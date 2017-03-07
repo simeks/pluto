@@ -5,6 +5,12 @@ namespace python
     {
         python::def(*this, name, python::to_python(obj));
     }
+    template<>
+    INLINE void Module::def<Class>(const char* name, const Class& cls)
+    {
+        python::def(*this, name, cls);
+        set_module(cls, *this);
+    }
     template<typename TReturn, typename ... TArgs>
     INLINE void Module::def(const char* name, TReturn(*fn)(TArgs...), const char* doc)
     {

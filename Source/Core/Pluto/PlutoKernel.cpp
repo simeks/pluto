@@ -46,7 +46,6 @@ void PlutoKernel::prepare()
 
     python::Object sys = python::import("sys");
 
-    /// TODO:
     /// This needs to be called before to_python on our python::Streams to be sure
     /// that the python class is created. This is a little bit inconvenient so we
     /// should probably reconsider how types are initialized.

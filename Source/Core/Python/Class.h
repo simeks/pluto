@@ -9,6 +9,8 @@
 
 namespace python
 {
+    class Module;
+
     typedef void(*ClassInit)(const python::Object& cls);
 
     /// Holder: Responsible for holding a value of some sort for a python object instance. 
@@ -124,6 +126,9 @@ namespace python
 
     /// Returns the value holder for the given instance.
     CORE_API Holder* holder(PyObject* instance);
+
+    /// Sets the module for the specified class
+    CORE_API void set_module(const Class& cls, const Module& module);
 
     /// Helper function for creating a class
     /// @param init_class Function for initializing the class, e.g. setting methods, etc.

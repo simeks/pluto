@@ -21,11 +21,10 @@
 
 namespace py = python;
 
-PYTHON_MODULE(flow_api)
+PYTHON_MODULE(_flow)
 {
-    // We don't need to expose the class but we have to make sure that it is initialized.
-    // python_class() will hold the reference for the duration of the program.
-    FlowWindow::python_class();
+    auto window_cls = FlowWindow::python_class();
+    module.def("Window", window_cls);
 
     module.def("FlowContext", FlowContext::static_class());
     module.def("FlowGraph", FlowGraph::static_class());
@@ -169,5 +168,5 @@ Tuple flow::node_templates()
 }
 void flow::install_python_module()
 {
-    PYTHON_MODULE_INSTALL(flow_api);
+    PYTHON_MODULE_INSTALL(_flow);
 }

@@ -2,6 +2,7 @@
 
 #include "Class.h"
 #include "Function.h"
+#include "Module.h"
 #include "PythonCommon.h"
 
 #include <structmember.h>
@@ -195,7 +196,11 @@ namespace python
         PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
         PyObject_SetAttrString(cls, "__cpp_class__", cap);
         Py_DECREF(cap);
-    
+
+        PyObject* mod = PyUnicode_FromString("pluto_builtins");
+        PyObject_SetAttrString(cls, "__module__", mod);
+        Py_DECREF(mod);
+
         return cls;
     }
 
@@ -205,4 +210,10 @@ namespace python
         obj->holder = holder;
         return (PyObject*)obj;
     }
+
+    void set_module(const Class& cls, const Module& module)
+    {
+        setattr(cls, "__module__", getattr(module, "__name__"));
+    }
+
 }
