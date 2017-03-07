@@ -3,6 +3,24 @@ from flow.node_helper import context_node, node
 from pluto import pluto_class
 import time
 
+
+node_template(
+    title='Bool',
+    category='Constants',
+    properties={
+        'time': IntProperty(0)
+    },
+    pins={
+        'Out': Pin(Pin.Out)
+    },
+    doc='Boolean constant',
+    node_class='flow.debug.Sleep',
+    func=Sleep
+)
+time.sleep(int(self.time))
+ctx.write_pin('Out', ctx.read_pin('In'))
+
+
 @pluto_class
 class SleepNode(FlowNode):
     pins = [
