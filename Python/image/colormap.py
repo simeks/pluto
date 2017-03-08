@@ -1,3 +1,4 @@
+import enum
 import numpy as np
 import re
 from .types import *
@@ -13,78 +14,61 @@ def colorize(img, min, max, cmap):
     return (colorfn((img-min) / float(max-min)) * 255).astype(np.uint8)
 
 
-@pluto_class
-class PerceptuallyUniformNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Min', FlowPin.In),
-        FlowPin('Max', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
-    properties = [
-        EnumProperty('colormap', ['viridis', 'inferno', 'plasma', 'magma'], 0),
-    ]
+node_template(
+    title='PerceptuallyUniform',
+    category='Image/Colormaps',
+    pins={
+        'In': Pin(Pin.In),
+        'Min': Pin(Pin.In),
+        'Max': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'colormap': EnumProperty('colormap', ['viridis', 'inferno', 'plasma', 'magma'], 0),
+    },
+    node_class = 'image.colormap.PerceptuallyUniformNode',
+    func=perceptually_uniform
+)
 
-    def __init__(self):
-        super(PerceptuallyUniformNode, self).__init__()
-        self.node_class = 'image.colormap.PerceptuallyUniformNode'
-        self.title = 'PerceptuallyUniform'
-        self.category = 'Image/Colormaps'
+def perceptually_uniform(in, colormap, min=None, max=None):
+    img = in
+    if min == None:
+        min = img.min()
+    if max == None:
+        max = img.max()
 
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-
-        if self.is_pin_linked('Min'):
-            min = ctx.read_pin('Min')
-        else:
-            min = img.min()
-        if self.is_pin_linked('Max'):
-            max = ctx.read_pin('Max')
-        else:
-            max = img.max()
-
-        out = Image(colorize(img, min, max, self.colormap), PixelType_Vec4u8)
-        if hasattr(img, 'spacing'):
-            out.spacing = img.spacing
-        if hasattr(img, 'origin'):
-            out.origin = img.origin
-        ctx.write_pin('Out', out)
-
-@pluto_class
-class JetNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Min', FlowPin.In),
-        FlowPin('Max', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
-
-    def __init__(self):
-        super(JetNode, self).__init__()
-        self.node_class = 'image.colormap.JetNode'
-        self.title = 'Jet'
-        self.category = 'Image/Colormaps'
-
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-
-        if self.is_pin_linked('Min'):
-            min = ctx.read_pin('Min')
-        else:
-            min = img.min()
-        if self.is_pin_linked('Max'):
-            max = ctx.read_pin('Max')
-        else:
-            max = img.max()
-
-        out = Image(colorize(img, min, max, 'jet'), PixelType_Vec4u8)
-        if hasattr(img, 'spacing'):
-            out.spacing = img.spacing
-        if hasattr(img, 'origin'):
-            out.origin = img.origin
-        ctx.write_pin('Out', out)
+    out = Image(colorize(img, min, max, colormap), PixelType_Vec4u8)
+    if hasattr(img, 'spacing'):
+        out.spacing = img.spacing
+    if hasattr(img, 'origin'):
+        out.origin = img.origin
+    return out
 
 
-install_node_template(PerceptuallyUniformNode())
-install_node_template(JetNode())
+node_template(
+    title='Jet',
+    category='Image/Colormaps',
+    pins={
+        'In': Pin(Pin.In),
+        'Min': Pin(Pin.In),
+        'Max': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    node_class = 'image.colormap.JetNode',
+    func=jet
+)
+
+def jet(in, min=None, max=None):
+    img = in
+    if min == None:
+        min = img.min()
+    if max == None:
+        max = img.max()
+
+    out = Image(colorize(img, min, max, 'jet'), PixelType_Vec4u8)
+    if hasattr(img, 'spacing'):
+        out.spacing = img.spacing
+    if hasattr(img, 'origin'):
+        out.origin = img.origin
+    return out
 

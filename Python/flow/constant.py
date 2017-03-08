@@ -5,7 +5,7 @@ node_template(
     title='Bool',
     category='Constants',
     properties={
-        'value': BoolProperty(False)
+        'value': False
     },
     pins={
         'Out': Pin(Pin.Out)
@@ -14,15 +14,15 @@ node_template(
     func=BoolNode
 )
 
-def BoolNode(ctx):
-    ctx.write_pin('Out', ctx.property('value'))
+def BoolNode(**properties):
+    return properties['value']
 
 
 node_template(
     title='Integer',
     category='Constants',
     properties={
-        'value': IntProperty(0)
+        'value': 0
     },
     pins={
         'Out': Pin(Pin.Out)
@@ -31,15 +31,15 @@ node_template(
     func=IntNode
 )
 
-def IntNode(ctx):
-    ctx.write_pin('Out', ctx.property('value'))
+def IntNode(**properties):
+    return properties['value']
 
 
 node_template(
     title='Float',
     category='Constants',
     properties={
-        'value': FloatProperty(0.0)
+        'value': 0.0
     },
     pins={
         'Out': Pin(Pin.Out)
@@ -48,15 +48,15 @@ node_template(
     func=FloatNode
 )
 
-def FloatNode(ctx):
-    ctx.write_pin('Out', ctx.property('value'))
+def FloatNode(**properties):
+    return properties['value']
 
 
 node_template(
     title='String',
     category='Constants',
     properties={
-        'value': StringProperty('')
+        'value': ''
     },
     pins={
         'Out': Pin(Pin.Out)
@@ -65,5 +65,5 @@ node_template(
     func=StringNode
 )
 
-def StringNode(ctx):
-    ctx.write_pin('Out', ctx.property('value'))
+def StringNode(**properties):
+    return properties['value']

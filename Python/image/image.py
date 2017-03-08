@@ -65,133 +65,102 @@ class Image(np.ndarray):
             else:
                 self.pixel_type = type_from_string(str(self.dtype))
 
-@pluto_class
-class ImageSpacingNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
 
-    def __init__(self):
-        super(ImageSpacingNode, self).__init__()
-        self.node_class = 'image.image.ImageSpacingNode'
-        self.title = 'Spacing'
-        self.category = 'Image/Meta'
-        self.ui_class = 'one_to_one_node'
+node_template(
+    title='Spacing',
+    category='Image/Meta',
+    ui={
+        ui_class = 'one_to_one_node'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    node_class = 'image.image.ImageSpacingNode',
+    func=perceptually_uniform
+)
 
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-        ctx.write_pin('Out', img.spacing)
-
-
-@pluto_class
-class ImageSetSpacingNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Spacing', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
-
-    def __init__(self):
-        super(ImageSetSpacingNode, self).__init__()
-        self.node_class = 'image.image.ImageSetSpacingNode'
-        self.title = 'SetSpacing'
-        self.category = 'Image/Meta'
-
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-
-        spacing = ctx.read_pin('Spacing')
-        if type(spacing) != tuple and type(spacing) != list:
-            raise ValueError('Invalid spacing, expected tuple or list')
-        img.spacing = spacing 
-        ctx.write_pin('Out', img)
-
-@pluto_class
-class SliceImageNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
-    properties = [
-        StringProperty('index', '0,0'),
-    ]
-
-    def __init__(self):
-        super(SliceImageNode, self).__init__()
-        self.node_class = 'image.image.SliceImageNode'
-        self.title = 'Slice'
-        self.category = 'Image/Slice'
-        self.ui_class = 'one_to_one_node'
-        self.ui_node_title_var = 'index'
-
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-        if img is None or not isinstance(img, np.ndarray):
-            raise ValueError('Expected an Image object')
-
-        # Validate index
-        index = ''
-        tokens = self.index.split(',')
-        for i in range(0, len(tokens)):
-            if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
-                index = index + ','
-                continue
-            if re.match('[\-0-9:]+$', tokens[i].strip()):
-                index = index + tokens[i].strip()
-                if i != len(tokens)-1:
-                    index = index + ','
-            else:
-                raise SyntaxError('Invalid syntax: %s' % self.index) 
-
-        ctx.write_pin('Out', eval('img[%s]' % index))
+def spacing(img):
+    return img.spacing
 
 
+node_template(
+    title='Slice',
+    category='Image/Slice',
+    ui={
+        ui_class: 'one_to_one_node',
+        ui_node_title_var: 'index'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'index': '0,0'
+    },
+    node_class = 'image.image.SliceImageNode',
+    func=image_slice
+)
 
-@pluto_class
-class SetSliceImageNode(FlowNode):
-    pins = [
-        FlowPin('In', FlowPin.In),
-        FlowPin('Value', FlowPin.In),
-        FlowPin('Out', FlowPin.Out)
-    ]
-    properties = [
-        StringProperty('slice', '0,0'),
-    ]
+def image_slice(img, index):
+    if img is None or not isinstance(img, np.ndarray):
+        raise ValueError('Expected an Image object')
 
-    def __init__(self):
-        super(SetSliceImageNode, self).__init__()
-        self.node_class = 'image.image.SetSliceImageNode'
-        self.title = 'SetSlice'
-        self.category = 'Image/Slice'
+    # Validate index
+    vindex = ''
+    tokens = index.split(',')
+    for i in range(0, len(tokens)):
+        if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
+            vindex = vindex + ','
+            continue
+        if re.match('[\-0-9:]+$', tokens[i].strip()):
+            vindex = vindex + tokens[i].strip()
+            if i != len(tokens)-1:
+                vindex = vindex + ','
+        else:
+            raise SyntaxError('Invalid syntax: %s' % index) 
 
-    def run(self, ctx):
-        img = ctx.read_pin('In')
-        if img is None or not isinstance(img, np.ndarray):
-            raise ValueError('Expected an Image object')
+    return eval('img[%s]' % vindex)
 
-        value = ctx.read_pin('Value')
 
-        # Validate index
-        index = ''
-        tokens = self.slice.split(',')
-        for i in range(0, len(tokens)):
-            if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
-                index = index + ','
-                continue
-            if re.match('[\-0-9:]+$', tokens[i].strip()):
-                index = index + tokens[i].strip()
-                if i != len(tokens)-1:
-                    index = index + ','
-            else:
-                raise SyntaxError('Invalid syntax: %s' % self.slice) 
+node_template(
+    title='SetSlice',
+    category='Image/Slice',
+    ui={
+        ui_class: 'one_to_one_node',
+        ui_node_title_var: 'index'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Value': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'index': '0,0'
+    },
+    node_class = 'image.image.SetSliceImageNode',
+    func=image_set_slice
+)
 
-        tmp = img
-        exec('tmp[%s] = value' % index)
-        ctx.write_pin('Out', tmp)
+def image_set_slice(img, value, index):
+    img = ctx.read_pin('In')
+    if img is None or not isinstance(img, np.ndarray):
+        raise ValueError('Expected an Image object')
 
-install_node_template(ImageSpacingNode())
-install_node_template(ImageSetSpacingNode())
-install_node_template(SliceImageNode())
-install_node_template(SetSliceImageNode())
+    # Validate index
+    vindex = ''
+    tokens = index.split(',')
+    for i in range(0, len(tokens)):
+        if i != len(tokens)-1 and tokens[i] == '': # Allow a trailing ','
+            vindex = vindex + ','
+            continue
+        if re.match('[\-0-9:]+$', tokens[i].strip()):
+            vindex = vindex + tokens[i].strip()
+            if i != len(tokens)-1:
+                vindex = vindex + ','
+        else:
+            raise SyntaxError('Invalid syntax: %s' % index)
 
+    tmp = img
+    exec('tmp[%s] = value' % index)
+    return tmp

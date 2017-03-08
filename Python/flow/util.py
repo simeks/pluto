@@ -3,47 +3,37 @@ from pluto import pluto_class
 
 import numpy as np
 
-@pluto_class
-class EvalNode(FlowNode):
-    pins = [
-        FlowPin('Out', FlowPin.Out)
-    ]
-    properties = [
-        StringProperty('code', ''),
-    ]
+node_template(
+    title='Eval',
+    category='Utilities',
+    ui={
+        ui_class = 'single_pin_node'
+    },
+    pins={
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'code': ''
+    },
+    node_class = 'flow.util.Eval',
+    func=eval
+)
 
-    def __init__(self):
-        super(EvalNode, self).__init__()
-        self.node_class = 'flow.util.Eval'
-        self.title = 'Eval'
-        self.category = 'Flow'
-        self.ui_class = 'single_pin_node'
+node_template(
+    title='FileBrowse',
+    category='Utilities',
+    ui={
+        ui_class = 'single_pin_node'
+    },
+    pins={
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'file': FileProperty('')
+    },
+    node_class = 'flow.util.FileBrowse',
+    func=eval
+)
+def file_browse(file):
+    return file
 
-    def run(self, ctx):
-        ctx.write_pin('Out', eval(self.code))
-
-
-
-@pluto_class
-class FileBrowse(FlowNode):
-    pins = [
-        FlowPin('Out', FlowPin.Out)
-    ]
-    properties = [
-        FileProperty('file', ''),
-    ]
-
-    def __init__(self):
-        super(FileBrowse, self).__init__()
-        self.node_class = 'flow.util.FileBrowse'
-        self.title = 'FileBrowse'
-        self.category = 'Flow/Util'
-        self.ui_class = 'single_pin_node'
-
-    def run(self, ctx):
-        ctx.write_pin('Out', self.file)
-
-
-
-install_node_template(FileBrowse())
-install_node_template(EvalNode())
