@@ -1,4 +1,4 @@
-from flow import Pin, StringProperty, IntProperty, node_template
+from flow import Pin, node_template
 from pluto import pluto_class
 import time
 
@@ -18,9 +18,9 @@ node_template(
     func=Sleep
 )
 
-def Sleep(ctx):
-    time.sleep(int(ctx.property('time')))
-    ctx.write_pin('Out', ctx.read_pin('In'))
+def Sleep(In, time):
+    time.sleep(int(time))
+    return In
 
 
 node_template(
@@ -37,7 +37,7 @@ node_template(
     func=Fail
 )
 
-def Fail(ctx):
-    raise ValueError(ctx.property('error'))
+def Fail(In, error):
+    raise ValueError(error)
 
 

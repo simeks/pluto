@@ -1,4 +1,4 @@
-from flow import node_template, Pin, BoolProperty, IntProperty, FloatProperty, StringProperty
+from flow import node_template, Pin
 
 
 node_template(

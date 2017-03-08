@@ -117,7 +117,7 @@ def configure(conf):
 
 def build(bld):
     v = bld.env
-    if bld.cmd in ['msvs2013', 'msvs2015']:
+    if bld.cmd in ['msvs2013', 'msvs2015', 'msvs2017']:
         print('Generating MSVS files')
         bld.solution_name = APPNAME + '.sln'
         bld.configurations = [bld.configuration_waf_to_vs(c) for c in CONFIGURATIONS]

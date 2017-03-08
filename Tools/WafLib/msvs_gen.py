@@ -177,3 +177,35 @@ class msvs_2015(msvs.msvs_generator):
 
 			if p.parent == None:
 				p.parent = root
+
+class msvs_2017(msvs.msvs_generator):
+	cmd = 'msvs2017'
+	numver = '14.10'
+	vsver = '2017'
+	platform_toolset_ver = 'v141'
+	def init(self):
+		msvs.msvs_generator.init(self)
+		self.vsnode_target = vsnode_target
+		self.vsnode_build_all = vsnode_build_all
+		self.vsnode_install_all = vsnode_install_all
+
+	def collect_dirs(self):
+		"""
+		Create the folder structure in the Visual studio project view
+		"""
+
+		root = None
+		for p in self.all_projects[:]: # iterate over a copy of all projects
+			if not getattr(p, 'tg', None):
+				# but only projects that have a task generator
+				continue
+
+			# make a folder for each task generator
+			x = p.tg.path
+
+			if root == None:
+				root = self.vsnode_vsdir(self, msvs.make_uuid('Source'), 'Source')
+				self.all_projects.append(root)
+
+			if p.parent == None:
+				p.parent = root
