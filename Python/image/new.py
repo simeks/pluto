@@ -4,7 +4,6 @@ from .types import *
 from .image import Image
 
 from flow import node_template, Pin
-from pluto import pluto_class
 
 
 node_template(

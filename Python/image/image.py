@@ -2,8 +2,7 @@ import numpy as np
 import re
 from image.types import *
 
-from flow import install_node_template, FlowNode, FlowProperty, FlowPin, StringProperty
-from pluto import pluto_class
+from flow import node_template, Pin
 
 
 class Image(np.ndarray):

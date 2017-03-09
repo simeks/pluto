@@ -2,99 +2,6 @@ import flow
 import numpy as np
 import inspect
 import re
-from pluto import pluto_class
-
-class Iter(object):
-    def __init__(self, lst):
-        self.lst = lst
-        self.idx = 0
-
-    def next(self):
-        ret = self.lst[self.idx]
-        self.idx += 1
-        return ret
-
-    def peek(self):
-        return self.lst[self.idx]
-
-    def end(self):
-        return (self.idx >= len(self.lst))
-
-
-class NodeDocstringParse(object):
-    """
-    Parses docstring for a node function.
-
-    Node docstrings are expected to follow this structure:
-    Args:
-        InputPinA : Some comment
-        InputPinB(type) : Inputs may also specify an expected type
-
-    Returns:
-        OutputPinA(str) : Output pin
-
-    """
-
-    field_regex = re.compile(r'\s*(\w+)')
-
-    def __init__(self, docstring):
-        self.docstring = docstring.splitlines()
-        self.docstring = [l.rstrip() for l in self.docstring]
-        self.iter = Iter(self.docstring)
-        self.inputs = []
-        self.outputs = []
-        self.sections = {'args': self.parse_inputs, 'returns': self.parse_outputs}
-        self.parse()
-
-    def line_indent(self, line):
-        return len(line) - len(line.lstrip())
-
-    def parse(self):
-        while not self.iter.end():
-            line = self.iter.next().strip().strip(':')
-            if line.lower() in self.sections:
-                self.sections[line.lower()]()
-
-    def parse_field(self):
-        line = self.iter.next()
-        indent = self.line_indent(line)
-
-        name = None
-        m = self.field_regex.match(line)
-        if m:
-            name = m.group(1)
-
-        # Parse multi-line description
-        next_line = self.iter.peek()
-        while self.line_indent(next_line) > indent:
-            self.iter.next()
-            next_line = self.iter.peek()
-            
-        return name
-
-    def parse_fields(self):
-        ret = []
-        while not self.section_end():
-            name = self.parse_field()
-            ret.append(name)
-        return ret
-
-    def parse_inputs(self):
-        self.inputs.extend(self.parse_fields())
-
-    def parse_outputs(self):
-        self.outputs.extend(self.parse_fields())
-
-    def section_end(self):
-        if self.iter.end():
-            return True
-
-        l = self.iter.peek().strip()
-        if l == '':
-            return True
-        elif l.strip(':').lower() in self.sections:
-            return True
-        return False 
 
 
 @pluto_class
@@ -179,3 +86,36 @@ def context_node(title, category = ''):
         return fn
     return dec
 
+def node_template(**kwargs):
+    """
+    Arguments:
+        title       : Title of the node. (required)
+        category    : Category, set to '' if not set.
+        node_class  : String identifier of node, automatically required via func 
+                      (func.__module__+'.'+func.__name__) if not set.
+        pins        : List of flow.Pins specifying the pins of the node.
+        properties  : List of properties.
+        ui          : Tuple of UI options.
+        doc         : Documentation
+        func        : Function bound to node. (required)
+    """
+
+
+    if 'title' not in kwargs:
+        raise ValueError('\'title\' missing')
+
+    if 'func' not in kwargs:
+        raise ValueError('\'func\' missing')
+
+    title = kwargs['title']
+    func = kwargs['func']
+
+    node_class = kwargs.get('node_class', func.__module__+'.'+func.__name__)
+    category = kwargs.get('category', '')
+
+    pins = kwargs.get('pins', [])
+    properties = kwargs.get('properties', [])
+    
+    doc = kwargs.get('doc', '')
+    ui = kwargs.get('ui', ())
+    

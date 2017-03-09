@@ -4,8 +4,7 @@ import re
 from .types import *
 from .image import Image
 
-from flow import install_node_template, FlowNode, FlowProperty, FlowPin, IntProperty, EnumProperty
-from pluto import pluto_class
+from flow import node_template, Pin
 
 from matplotlib import cm
 

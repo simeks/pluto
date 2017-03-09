@@ -4,14 +4,17 @@ import image
 from .types import *
 
 
-@node('Magnitude', 'Image/Vectorfield')
+node_template(
+    title='Magnitude',
+    category='Image/Vectorfield',
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    func=magnitude
+)
+
 def magnitude(img):
-    """
-    Args:
-        In
-    Returns:
-        Out
-    """
     if type(img) != image.Image:
         raise TypeError('Expected Image')
 

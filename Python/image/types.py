@@ -1,4 +1,4 @@
-from image_api import *
+from _image import *
 
 
 def num_components(img):

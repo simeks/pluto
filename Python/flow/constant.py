@@ -14,8 +14,8 @@ node_template(
     func=BoolNode
 )
 
-def BoolNode(**properties):
-    return properties['value']
+def BoolNode(value):
+    return value
 
 
 node_template(
@@ -31,8 +31,8 @@ node_template(
     func=IntNode
 )
 
-def IntNode(**properties):
-    return properties['value']
+def IntNode(value):
+    return value
 
 
 node_template(
@@ -48,8 +48,8 @@ node_template(
     func=FloatNode
 )
 
-def FloatNode(**properties):
-    return properties['value']
+def FloatNode(value):
+    return value
 
 
 node_template(
@@ -65,5 +65,5 @@ node_template(
     func=StringNode
 )
 
-def StringNode(**properties):
-    return properties['value']
+def StringNode(value):
+    return value

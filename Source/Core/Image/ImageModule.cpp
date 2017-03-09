@@ -18,7 +18,7 @@ image::PixelType image::type_from_string(const char* str)
 
 namespace py = python;
 
-PYTHON_MODULE(image_api)
+PYTHON_MODULE(_image)
 {
     module.def("type_to_string", &image::type_to_string, "type_to_string(type)");
     module.def("type_from_string", &image::type_from_string, "type_from_string(type)");
@@ -42,5 +42,5 @@ PYTHON_MODULE(image_api)
 
 void image::install_python_module()
 {
-    PYTHON_MODULE_INSTALL(image_api);
+    PYTHON_MODULE_INSTALL(_image);
 }

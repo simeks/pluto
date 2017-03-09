@@ -4,7 +4,6 @@ from flow import node_template, Pin
 
 from .image import Image
 from .types import *
-from pluto import pluto_class
 from scipy.ndimage import zoom 
 
 node_template(

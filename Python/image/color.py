@@ -1,19 +1,22 @@
 import numpy as np
-from flow import node
+from flow import node_template, Pin
 import image
 
 
-@node('SplitChannels', 'Image')
-def split_channels(img):
-    """
-    Args:
-        Image
-    Returns:
-        R
-        G
-        B
-        A
-    """
+node_template(
+    title='SplitChannels',
+    category='Image',
+    pins={
+        'Imgage': Pin(Pin.In),
+        'R': Pin(Pin.Out),
+        'G': Pin(Pin.Out),
+        'B': Pin(Pin.Out),
+        'A': Pin(Pin.Out)
+    },
+    func=split_channels
+)
+
+def split_channels(image):
     if type(img) != image.Image:
         raise TypeError('Expected Image')
 

@@ -5,5 +5,3 @@ import matplotlib
 matplotlib.use('module://pluto.matplotlib.backend_pluto')
 
 __version__ = _pluto.__version__
-
-pluto_class = register_class

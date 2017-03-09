@@ -1,5 +1,4 @@
 from flow import Pin, node_template
-from pluto import pluto_class
 
 # node_template(
 #     title='Variable',

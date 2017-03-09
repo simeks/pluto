@@ -1,5 +1,4 @@
 from flow import FlowNode, FlowPin, StringProperty, FileProperty, EnumProperty, install_node_template
-from pluto import pluto_class
 
 import numpy as np
 
