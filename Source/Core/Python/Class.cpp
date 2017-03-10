@@ -18,10 +18,10 @@ namespace python
     } Instance;
 
     /// Returns the CppClass object for the specified type
-    CppClassBase* cpp_class(PyObject* type)
+    Holder* allocate_holder(PyObject* type)
     {
         assert(PyType_Check(type));
-        PyObject* cap = PyObject_GetAttrString(type, "__cpp_class__");
+        PyObject* cap = PyObject_GetAttrString(type, "__cpp_allocator__");
         if (!cap)
         {            
             PyErr_Print();
@@ -31,7 +31,8 @@ namespace python
         if (!PyCapsule_CheckExact(cap))
             return nullptr;
 
-        return (CppClassBase*)PyCapsule_GetPointer(cap, "__cpp_class__");
+		HolderAllocator alloc = (HolderAllocator)PyCapsule_GetPointer(cap, "__cpp_allocator__");
+		return alloc();
     }
 }
 
@@ -39,9 +40,7 @@ static PyObject* pluto_object_new(PyTypeObject* type, PyObject* , PyObject*)
 {
     Instance* obj = (Instance*)type->tp_alloc(type, 0);
 
-    CppClassBase* cls = cpp_class((PyObject*)type);
-    assert(cls);
-    obj->holder = cls->allocate();
+    obj->holder = allocate_holder((PyObject*)type);
 
     return (PyObject*)obj;
 }
@@ -134,12 +133,6 @@ static const PyTypeObject& instance_type()
     return _instance_type;
 }
 
-static void destruct___cpp_class__(PyObject* obj)
-{
-    CppClassBase* ptr = (CppClassBase*)PyCapsule_GetPointer(obj, "__cpp_class__");
-    delete ptr;
-}
-
 namespace python
 {
     Holder::Holder() {}
@@ -166,7 +159,7 @@ namespace python
         assert(PyType_Check(obj));
     }
 
-    Class make_class(const char* name, CppClassBase* cpp_class, PyTypeObject* base_type, const char* doc)
+    Class make_class(const char* name, HolderAllocator alloc, PyTypeObject* base_type, const char* doc)
     {
         PyObject* bases = PyTuple_New(1);
         if (base_type)
@@ -192,9 +185,9 @@ namespace python
         if (!cls)
             PyErr_Print();
 
-        assert(cpp_class);
-        PyObject* cap = PyCapsule_New(cpp_class, "__cpp_class__", destruct___cpp_class__);
-        PyObject_SetAttrString(cls, "__cpp_class__", cap);
+        assert(alloc);
+        PyObject* cap = PyCapsule_New(alloc, "__cpp_allocator__");
+        PyObject_SetAttrString(cls, "__cpp_allocator__", cap);
         Py_DECREF(cap);
 
         PyObject* mod = PyUnicode_FromString("pluto_builtins");

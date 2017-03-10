@@ -47,12 +47,6 @@ namespace python
         return _p.get();
     }
 
-    template<typename T>
-    Holder* CppClass<T>::allocate()
-    {
-        return new PtrHolder<T>();
-    }
-
     template<typename TClass, typename ... TArgs>
     INLINE void Class::def_init()
     {
@@ -166,6 +160,12 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
+	template<typename T>
+	Holder* allocate_holder()
+	{
+		return new PtrHolder<T>();
+	}
+
     template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)
     {
@@ -185,7 +185,7 @@ namespace python
             assert(base_type); // We assume that the base type has already been defined
         }
 
-        Class cls = make_class(name, new CppClass<TClass>(), base_type, doc);
+        Class cls = make_class(name, &allocate_holder<TClass>, base_type, doc);
 
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
