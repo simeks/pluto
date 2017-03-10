@@ -48,41 +48,10 @@ class FunctionNode(flow.Node):
                 ctx.write_pin(self.returns[0], returns)
 
 
-@pluto_class
-class ContextFunctionNode(flow.Node):
-    def __init__(self, fn, title=None, category=None):
-        super(ContextFunctionNode, self).__init__()
-
-        if fn.__doc__ is not None:
-            ndoc = NodeDocstringParse(fn.__doc__)
-            for i in ndoc.inputs:
-                self.add_pin(i, flow.Pin.In)
-            for o in ndoc.outputs:
-                self.add_pin(o, flow.Pin.Out)
-
-        self.func = fn
-        self.node_class = fn.__module__ + '.' + fn.__name__
-
-        if title != None:
-            self.title = title
-        if category != None:
-            self.category = category
-
-    def run(self, ctx):
-        if self.func == None:
-            return
-        self.func(ctx)
-
 
 def node(title, category = ''):
     def dec(fn):
         flow.install_node_template(FunctionNode(fn=fn, title=title, category=category))
-        return fn
-    return dec
-
-def context_node(title, category = ''):
-    def dec(fn):
-        flow.install_node_template(ContextFunctionNode(fn=fn, title=title, category=category))
         return fn
     return dec
 

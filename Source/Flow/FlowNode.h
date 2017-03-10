@@ -18,10 +18,25 @@ typedef void(*FlowNodeFunction)(FlowContext*);
 
 struct FlowPinDef
 {
-    const char* name;
-    int type;
-    const char* doc;
+	const char* name;
+	int type;
+	const char* doc;
 };
+
+struct FlowNode
+{
+	std::string title;
+	std::string category;
+	std::string node_class;
+
+	std::vector<FlowPinDef> pins;
+	std::vector<FlowProperty*> propertiese;
+	
+	std::string doc;
+
+	PyObject* fn;
+};
+
 struct FlowNodeDef
 {
     const char* class_name;
@@ -38,16 +53,6 @@ class FLOW_API FlowNode : public Object
     DECLARE_OBJECT(FlowNode, Object);
 
 public:
-    struct Property
-    {
-        enum Flags
-        {
-            Prop_Public
-        };
-        std::string name;
-        int flags;
-    };
-
     DECLARE_OBJECT_CONSTRUCTOR(FlowNode);
     ~FlowNode();
 
