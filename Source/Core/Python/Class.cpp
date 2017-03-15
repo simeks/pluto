@@ -186,7 +186,7 @@ namespace python
             PyErr_Print();
 
         assert(alloc);
-        PyObject* cap = PyCapsule_New(alloc, "__cpp_allocator__");
+        PyObject* cap = PyCapsule_New(alloc, "__cpp_allocator__", nullptr);
         PyObject_SetAttrString(cls, "__cpp_allocator__", cap);
         Py_DECREF(cap);
 

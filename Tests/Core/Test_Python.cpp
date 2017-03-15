@@ -516,3 +516,15 @@ TEST_CASE(python_class_unique_ptr)
     }
     PYTHON_TEST_CLEANUP();
 }
+
+TEST_CASE(python_make_tuple)
+{
+	PYTHON_TEST_PREPARE();
+	{
+		Tuple t = python::make_tuple(1, 2.5, "string");
+		ASSERT_EQUAL(t.get<int>(0), 1);
+		ASSERT_EQUAL_F(t.get<float>(1), 2.5, FLT_EPSILON);
+		ASSERT_EQUAL_STR(t.get<const char*>(2), "string");
+	}
+	PYTHON_TEST_CLEANUP();
+}

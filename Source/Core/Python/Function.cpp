@@ -19,7 +19,7 @@ namespace python
     } Function;
 }
 
-static PyObject*  function_new(PyTypeObject* type, PyObject*, PyObject*)
+static PyObject* function_new(PyTypeObject* type, PyObject*, PyObject*)
 {
     python::Function* obj = (python::Function*)type->tp_alloc(type, 0);
     obj->name = nullptr;

@@ -3,6 +3,8 @@
 
 #include <Core/Python/Object.h>
 
+#include <array>
+
 namespace python
 {
     /// Wrapper for python tuples
@@ -33,10 +35,14 @@ namespace python
         {
             set(idx, Object(to_python(value)));
         }
-
-
     };
+
+	/// Converts all the given arguments to a tuple
+	template<typename ... TArgs>
+	Tuple make_tuple(TArgs... args);
 }
+
+#include "Tuple.inl"
 
 
 #endif // __PYTHON_TUPLE_H__
