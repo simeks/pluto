@@ -37,9 +37,9 @@ namespace python
         }
     };
 
-	/// Converts all the given arguments to a tuple
-	template<typename ... TArgs>
-	Tuple make_tuple(TArgs... args);
+    /// Converts all the given arguments to a tuple
+    template<typename ... TArgs>
+    Tuple make_tuple(TArgs... args);
 }
 
 #include "Tuple.inl"

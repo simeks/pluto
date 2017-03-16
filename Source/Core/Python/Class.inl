@@ -56,14 +56,14 @@ namespace python
     template<typename TClass>
     INLINE void Class::def_init_varargs()
     {
-        setattr(*this, "__init__", make_varargs_function(class_init<TClass, const Tuple&>, 
+        setattr(*this, "__init__", make_varargs_function(class_init<TClass, const Tuple&>,
             "__init__"));
     }
 
     template<typename TClass>
     INLINE void Class::def_init_varargs_keywords()
     {
-        setattr(*this, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>, 
+        setattr(*this, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>,
             "__init__"));
     }
 
@@ -81,7 +81,7 @@ namespace python
     }
 
     template<typename TClass, typename TReturn>
-    INLINE void Class::def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&), 
+    INLINE void Class::def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&),
         const char* doc)
     {
         setattr(*this, name, make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
@@ -160,11 +160,11 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
-	template<typename T>
-	Holder* allocate_holder()
-	{
-		return new PtrHolder<T>();
-	}
+    template<typename T>
+    Holder* allocate_holder()
+    {
+        return new PtrHolder<T>();
+    }
 
     template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)

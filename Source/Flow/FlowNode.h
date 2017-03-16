@@ -18,23 +18,23 @@ typedef void(*FlowNodeFunction)(FlowContext*);
 
 struct FlowPinDef
 {
-	const char* name;
-	int type;
-	const char* doc;
+    const char* name;
+    int type;
+    const char* doc;
 };
 
 struct FlowNode
 {
-	std::string title;
-	std::string category;
-	std::string node_class;
+    std::string title;
+    std::string category;
+    std::string node_class;
 
-	std::vector<FlowPinDef> pins;
-	std::vector<FlowProperty*> propertiese;
-	
-	std::string doc;
+    std::vector<FlowPinDef> pins;
+    std::vector<FlowProperty*> propertiese;
 
-	PyObject* fn;
+    std::string doc;
+
+    PyObject* fn;
 };
 
 struct FlowNodeDef
@@ -95,7 +95,7 @@ public:
 
     void set_property(const char* name, const char* value);
     void set_property(const char* name, const python::Object& value);
-    
+
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);
 
