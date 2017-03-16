@@ -33,6 +33,10 @@ namespace python
         bool is_instance(const Object& type) const;
         bool is_instance(PyTypeObject* type) const;
 
+        Object operator()() const;
+        Object operator()(const Tuple& args) const;
+        Object operator()(const Tuple& args, const Dict& kw) const;
+
     private:
         PyObject* _obj;
     };
@@ -58,6 +62,7 @@ namespace python
     /// @brief Adds the specified object to the given object
     template<typename T>
     void def(const Object& m, const char* name, const T& obj);
+
 
 } // namespace python
 

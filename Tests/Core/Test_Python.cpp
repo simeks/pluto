@@ -517,14 +517,36 @@ TEST_CASE(python_class_unique_ptr)
     PYTHON_TEST_CLEANUP();
 }
 
+TEST_CASE(python_callable)
+{
+    PYTHON_TEST_PREPARE();
+    {
+        python::Object m = python::import("math");
+        python::Object sqrt = python::getattr(m, "sqrt");
+
+        // sqrt(9) = 3
+        ASSERT_EQUAL(python::from_python<int>(
+            sqrt(python::make_tuple(9))), 3);
+
+        python::Object log = python::getattr(m, "log");
+
+        // log(100, 10) = 2
+        ASSERT_EQUAL(python::from_python<int>(
+            log(python::make_tuple(100, 10))), 2);
+
+
+    }
+    PYTHON_TEST_CLEANUP();
+}
+
 TEST_CASE(python_make_tuple)
 {
-	PYTHON_TEST_PREPARE();
-	{
-		Tuple t = python::make_tuple(1, 2.5, "string");
-		ASSERT_EQUAL(t.get<int>(0), 1);
-		ASSERT_EQUAL_F(t.get<float>(1), 2.5, FLT_EPSILON);
-		ASSERT_EQUAL_STR(t.get<const char*>(2), "string");
-	}
-	PYTHON_TEST_CLEANUP();
+    PYTHON_TEST_PREPARE();
+    {
+        Tuple t = python::make_tuple(1, 2.5, "string");
+        ASSERT_EQUAL(t.get<int>(0), 1);
+        ASSERT_EQUAL_F(t.get<float>(1), 2.5, FLT_EPSILON);
+        ASSERT_EQUAL_STR(t.get<const char*>(2), "string");
+    }
+    PYTHON_TEST_CLEANUP();
 }

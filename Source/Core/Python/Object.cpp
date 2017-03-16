@@ -7,9 +7,31 @@
 
 namespace python
 {
+    Object Object::operator()() const
+    {
+        PyObject* args = PyTuple_New(0);
+        PyObject* ret = PyObject_Call(ptr(), args, nullptr);
+        assert(ret);
+        return Object(ret);
+
+    }
+    Object Object::operator()(const Tuple& args) const
+    {
+        PyObject* ret = PyObject_Call(ptr(), args.ptr(), nullptr);
+        assert(ret);
+        return Object(ret);
+    }
+    Object Object::operator()(const Tuple& args, const Dict& kw) const
+    {
+        PyObject* ret = PyObject_Call(ptr(), args.ptr(), kw.ptr());
+        assert(ret);
+        return Object(ret);
+
+    }
+
     Object None() { return Object(); }
-    Object True() { return Object(Py_True); }
-    Object False() { return Object(Py_False); }
+    Object True() { return Object(incref(Py_True)); }
+    Object False() { return Object(incref(Py_False)); }
 
     bool hasattr(const Object& obj, const char* key)
     {
@@ -47,11 +69,5 @@ namespace python
     {
         return PyObject_Call(obj.ptr(), args.ptr(), kw.is_none() ? nullptr : kw.ptr());
     }
-
-
-    //Object call(const Object& obj, const Tuple& args, const Dict& kw)
-    //{
-    //    PyObject_Call(obj.ptr(), args.ptr(), args.ptr();)
-    //}
 
 }
