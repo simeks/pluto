@@ -34,7 +34,7 @@ IMPLEMENT_OBJECT_CONSTRUCTOR(TestClass, Object);
 
 PYTHON_MODULE(object_test)
 {
-    python::def(module, "TestClass", TestClass::static_class());
+    module.def("TestClass", TestClass::static_class());
 }
 
 TEST_CASE(python_class_old)

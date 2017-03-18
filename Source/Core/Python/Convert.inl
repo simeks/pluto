@@ -26,9 +26,8 @@ namespace python
         ToPythonFunction conv = TypeInfo<T>::info.to_python;
         if (!conv)
         {
-            PyErr_Format(PyExc_TypeError, "to_python: No converter found for type %s",
+            PYTHON_ERROR(PyExc_TypeError, "to_python: No converter found for type %s",
                 TypeInfo<T>::info.cpp_type.name());
-            Py_RETURN_NONE;
         }
         return conv(&value);
     }
