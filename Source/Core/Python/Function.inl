@@ -157,37 +157,37 @@ namespace python
     template<typename Fn>
     Object make_function(Fn* fn, const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::DefaultArgumentPolicy>(fn), name, doc);
+        return make_function2(function::make_caller<function::DefaultArgumentPolicy>(fn), name, doc);
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::DefaultArgumentPolicy>(self, fn), name, doc);
+        return make_function2(function::make_caller<function::DefaultArgumentPolicy>(self, fn), name, doc);
     }
 
     template<typename Fn>
-    Object make_varargs_function(Fn fn, const char* name, const char* doc)
+    Object make_varargs_function(Fn* fn, const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::VarargsArgumentPolicy>(fn), name, doc);
+        return make_function2(function::make_caller<function::VarargsArgumentPolicy>(fn), name, doc);
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::VarargsArgumentPolicy>(self, fn), name, doc);
+        return make_function2(function::make_caller<function::VarargsArgumentPolicy>(self, fn), name, doc);
     }
 
     template<typename Fn>
-    Object make_varargs_keywords_function(Fn fn, const char* name, const char* doc)
+    Object make_varargs_keywords_function(Fn* fn, const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::VarargsKeywordsArgumentPolicy>(fn), name, doc);
+        return make_function2(function::make_caller<function::VarargsKeywordsArgumentPolicy>(fn), name, doc);
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_varargs_keywords_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc)
     {
-        return make_function(function::make_caller<function::VarargsKeywordsArgumentPolicy>(self, fn), name, doc);
+        return make_function2(function::make_caller<function::VarargsKeywordsArgumentPolicy>(self, fn), name, doc);
     }
 
     template<typename TReturn, typename ... TArgs>

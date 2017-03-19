@@ -50,20 +50,20 @@ namespace python
     template<typename TClass, typename ... TArgs>
     INLINE void Class::def_init()
     {
-        setattr(*this, "__init__", make_function(class_init<TClass, TArgs...>, "__init__"));
+        setattr(*this, "__init__", make_function(&class_init<TClass, TArgs...>, "__init__"));
     }
 
     template<typename TClass>
     INLINE void Class::def_init_varargs()
     {
-        setattr(*this, "__init__", make_varargs_function(class_init<TClass, const Tuple&>,
+        setattr(*this, "__init__", make_varargs_function(&class_init<TClass, const Tuple&>,
             "__init__"));
     }
 
     template<typename TClass>
     INLINE void Class::def_init_varargs_keywords()
     {
-        setattr(*this, "__init__", make_varargs_keywords_function(class_init<TClass, const Tuple&, const Dict&>,
+        setattr(*this, "__init__", make_varargs_keywords_function(&class_init<TClass, const Tuple&, const Dict&>,
             "__init__"));
     }
 
@@ -221,9 +221,12 @@ namespace python
 
 
     template<typename TClass, typename ... TArgs>
-    void class_init(TClass* self, TArgs... args)
+    void class_init(PyObject* obj, TArgs... args)
     {
+        assert(holder(obj));
+        TClass* self = (TClass*)holder(obj)->ptr();
         new (self) TClass(args...);
+        initialize_object(obj, self);
     }
 
 }

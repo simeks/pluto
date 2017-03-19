@@ -9,6 +9,7 @@
 
 namespace python
 {
+    class BaseObject;
     class Module;
 
     typedef void(*ClassInit)(const python::Object& cls);
@@ -142,7 +143,10 @@ namespace python
 
     /// Python -> Constructor wrapper
     template<typename TClass, typename ... TArgs>
-    void class_init(TClass* self, TArgs... args);
+    void class_init(PyObject* self, TArgs... args);
+
+    CORE_API void initialize_object(PyObject* obj, BaseObject* self);
+    CORE_API void initialize_object(PyObject* obj, ...);
 }
 
 #include "Class.inl"

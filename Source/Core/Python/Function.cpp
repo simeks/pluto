@@ -129,7 +129,7 @@ static PyTypeObject PythonFunction_Type =
 
 namespace python
 {
-    Object make_function(function::CallerBase* caller, const char* name, const char* doc)
+    Object make_function2(function::CallerBase* caller, const char* name, const char* doc)
     {
         if (Py_TYPE(&PythonFunction_Type) == 0)
             PyType_Ready(&PythonFunction_Type);

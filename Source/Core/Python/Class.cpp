@@ -1,5 +1,6 @@
 #include "Common.h"
 
+#include "BaseObject.h"
 #include "Class.h"
 #include "Function.h"
 #include "Module.h"
@@ -209,4 +210,11 @@ namespace python
         setattr(cls, "__module__", getattr(module, "__name__"));
     }
 
+    void initialize_object(PyObject*, ...)
+    {
+    }
+    void initialize_object(PyObject* obj, BaseObject* self)
+    {
+        self->initialize_python(obj);
+    }
 }

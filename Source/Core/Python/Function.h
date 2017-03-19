@@ -80,7 +80,7 @@ namespace python
 namespace python
 {
     /// @remark This function takes ownership of the caller object, deleting it whenever done with it.
-    CORE_API Object make_function(
+    CORE_API Object make_function2(
         function::CallerBase* caller, const char* name, 
         const char* doc = nullptr);
 
@@ -91,13 +91,13 @@ namespace python
     Object make_function(TClass* self, TReturn (TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
 
     template<typename Fn>
-    Object make_varargs_function(Fn fn, const char* name, const char* doc = nullptr);
+    Object make_varargs_function(Fn* fn, const char* name, const char* doc = nullptr);
 
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
 
     template<typename Fn>
-    Object make_varargs_keywords_function(Fn fn, const char* name, const char* doc = nullptr);
+    Object make_varargs_keywords_function(Fn* fn, const char* name, const char* doc = nullptr);
 
     template<typename TClass, typename TReturn, typename ... TArgs>
     Object make_varargs_keywords_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);

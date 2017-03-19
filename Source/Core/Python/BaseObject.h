@@ -44,7 +44,9 @@ namespace python
 
         template<typename T, typename ... TArgs>
         friend T* make_object(TArgs... args);
-    
+        
+        friend CORE_API void initialize_object(PyObject*, BaseObject*);
+
     private:
         PyObject* _obj;
         PyTypeObject* _type;
