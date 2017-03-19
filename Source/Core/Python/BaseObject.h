@@ -29,12 +29,18 @@ namespace python
         BaseObject();
         virtual ~BaseObject();
 
+        bool has_attr(const char* name);
+        Object attr(const char* name);
+
+        /// Is specified method overridden in Python?
+        bool is_overridden(const char* name);
+        /// Is specified method overridden in Python?
+        bool is_overridden(const Object& method);
+
         /// Increases the reference count of the object
         void addref();
         /// Decreases the reference count of the object
         void release();
-
-        python::Object attr(const char* name);
 
         /// Returns the wrapped PyObject*
         PyObject* ptr();

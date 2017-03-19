@@ -22,12 +22,12 @@ public:
 
     virtual int radius()
     {
-        return 0;
-        /*python::Object method = attr("radius");
-        if (is_overriden(method))
+        python::Object method = attr("radius");
+        if (is_overridden(method))
         {
-            method();
-        }*/
+            return python::from_python<int>(method());
+        }
+        return -1;
     }
 };
 
@@ -68,7 +68,7 @@ TEST_CASE(python_base_object)
         PyRun_String(
             "import py_test_base_object as p\n"
             "class PyBall(p.Ball):\n"
-            "    def radius():\n"
+            "    def radius(self):\n"
             "        return 10\n"
             "\n"
             , Py_file_input, d.ptr(), nullptr);

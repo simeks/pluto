@@ -11,6 +11,8 @@ namespace python
     {
         PyObject* args = PyTuple_New(0);
         PyObject* ret = PyObject_Call(ptr(), args, nullptr);
+        if (!ret)
+            PyErr_Print();
         assert(ret);
 
         Py_DECREF(args);
