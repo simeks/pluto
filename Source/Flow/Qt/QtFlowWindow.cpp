@@ -70,7 +70,7 @@ Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
 
     if (!_context)
     {
-        _context = object_new<FlowContext>(graph);
+        _context = python::make_object<FlowContext>(graph);
 
         if (kw.valid())
         {
@@ -125,7 +125,7 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
     PYTHON_STDOUT("Running graph...\n");
 
     if (!_context)
-        _context = object_new<FlowContext>(graph);
+        _context = python::make_object<FlowContext>(graph);
     
     QtFlowGraphRunnerCallback cb(this);
     if (_context->run(&cb))

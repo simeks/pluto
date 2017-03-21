@@ -12,16 +12,18 @@
 
 #include <regex>
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowGraph, reload);
 
-OBJECT_INIT_TYPE_FN(FlowGraph)
+PYTHON_OBJECT_IMPL(FlowGraph, "Graph")
 {
-    OBJECT_PYTHON_ADD_METHOD(FlowGraph, reload, "");
+    cls.def_init<FlowGraph>();
+    cls.def("reload_all", &FlowGraph::reload_all);
+    cls.def("reload_nodes", &FlowGraph::reload_nodes);
 }
 
-IMPLEMENT_OBJECT(FlowGraph, "FlowGraph", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowGraph, Object);
+FlowGraph::FlowGraph()
+{
 
+}
 FlowGraph::~FlowGraph()
 {
     clear();
@@ -155,7 +157,7 @@ const std::map<Guid, GraphNote*>& FlowGraph::notes() const
 {
     return _notes;
 }
-void FlowGraph::reload()
+void FlowGraph::reload_all()
 {
     for (auto& it : _nodes)
     {
@@ -165,7 +167,7 @@ void FlowGraph::reload()
         old->release();
     }
 }
-void FlowGraph::reload(const char* node_class)
+void FlowGraph::reload_nodes(const char* node_class)
 {
     FlowNode* tpl = FlowModule::instance().node_template(node_class);
 
@@ -207,13 +209,13 @@ void FlowGraph::reload(const char* node_class)
         // Special case: Update any embedded graphs as well
         if (it.second->is_a(RunGraphNode::static_class()))
         {
-            RunGraphNode* n = object_cast<RunGraphNode>(it.second);
+            RunGraphNode* n = python::object_cast<RunGraphNode>(it.second);
             if (n->graph() != this)
-                n->graph()->reload(node_class);
+                n->graph()->reload_nodes(node_class);
         }
     }
 }
-FlowGraph::FlowGraph(const FlowGraph& other) : Object(other)
+FlowGraph::FlowGraph(const FlowGraph& other) : python::BaseObject(other)
 {
     for (auto& n : other._nodes)
     {
@@ -238,7 +240,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         return nullptr;
     }
 
-    FlowGraph* out_graph = object_new<FlowGraph>();
+    FlowGraph* out_graph = python::make_object<FlowGraph>();
 
     const JsonObject& nodes = root["nodes"];
     if (!nodes.is_array())

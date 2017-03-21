@@ -68,25 +68,57 @@ namespace python
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    INLINE void Class::def(const char* name, TReturn(TClass::*meth)(TArgs...), const char* doc)
+    INLINE void Class::def(const char* name, 
+        TReturn(TClass::*meth)(TArgs...), const char* doc)
     {
         // Works the same as method a bound function (Function.h) but with _self set to nullptr
         setattr(*this, name, make_function((TClass*)nullptr, meth, name, doc));
     }
 
+    template<typename TClass, typename TReturn, typename ... TArgs>
+    INLINE void Class::def(const char* name, 
+        TReturn(TClass::*meth)(TArgs...) const, const char* doc)
+    {
+        // Works the same as method a bound function (Function.h) but with _self set to nullptr
+        setattr(*this, name, make_function((TClass*)nullptr, 
+            (TReturn(TClass::*)(TArgs...))meth,  // Remove const postfix
+            name, doc));
+    }
+
     template<typename TClass, typename TReturn>
-    INLINE void Class::def_varargs(const char* name, TReturn(TClass::*meth)(const Tuple&), const char* doc)
+    INLINE void Class::def_varargs(const char* name, 
+        TReturn(TClass::*meth)(const Tuple&), const char* doc)
     {
         setattr(*this, name, make_varargs_function((TClass*)nullptr, meth, name, doc));
     }
 
     template<typename TClass, typename TReturn>
-    INLINE void Class::def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&),
+    INLINE void Class::def_varargs(const char* name, 
+        TReturn(TClass::*meth)(const Tuple&) const, const char* doc)
+    {
+        setattr(*this, name, make_varargs_function((TClass*)nullptr, 
+            (TReturn(TClass::*)(const Tuple&))meth, // Remove const postfix 
+            name, doc));
+    }
+
+    template<typename TClass, typename TReturn>
+    INLINE void Class::def_varargs_keywords(const char* name, 
+        TReturn(TClass::*meth)(const Tuple&, const Dict&),
         const char* doc)
     {
         setattr(*this, name, make_varargs_keywords_function((TClass*)nullptr, meth, name, doc));
     }
 
+    template<typename TClass, typename TReturn>
+    INLINE void Class::def_varargs_keywords(const char* name, 
+        TReturn(TClass::*meth)(const Tuple&, const Dict&) const,
+        const char* doc)
+    {
+        setattr(*this, name, make_varargs_keywords_function((TClass*)nullptr, 
+            (TReturn(TClass::*)(const Tuple&, const Dict&))meth,  // Remove const postfix 
+            name, doc));
+    }
+    
     template<typename T>
     PyObject* instance_ptr_to_python(void const* val)
     {

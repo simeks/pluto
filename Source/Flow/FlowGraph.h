@@ -1,19 +1,19 @@
 #ifndef __FLOW_GRAPH_H__
 #define __FLOW_GRAPH_H__
 
-#include <Core/Object/Object.h>
+#include <Core/Python/BaseObject.h>
 
 #include "API.h"
 
 class FlowNode;
 class FlowPin;
 class GraphNote;
-class FLOW_API FlowGraph : public Object
+class FLOW_API FlowGraph : public python::BaseObject
 {
-    DECLARE_OBJECT(FlowGraph, Object);
+    PYTHON_OBJECT(FlowGraph, python::BaseObject);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(FlowGraph);
+    FlowGraph();
     ~FlowGraph();
 
     void add_node(FlowNode* node);
@@ -41,17 +41,19 @@ public:
     const std::map<Guid, GraphNote*>& notes() const;
     
     /// Reloads all nodes in the graph
-    void reload();
+    void reload_all();
     /// Reloads all nodes of the specified class
-    void reload(const char* node_class);
+    void reload_nodes(const char* node_class);
     
     FlowGraph(const FlowGraph& other);
+
 private:
     std::map<Guid, FlowNode*> _nodes;
     std::map<Guid, GraphNote*> _notes;
 };
 
 class JsonObject;
+
 namespace flow_graph
 {
     FlowGraph* load(const JsonObject& root);

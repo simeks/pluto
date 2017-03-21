@@ -5,14 +5,12 @@
 
 class GraphInputNode : public FlowNode
 {
-    DECLARE_OBJECT(GraphInputNode, FlowNode);
+    PYTHON_OBJECT(GraphInputNode, FlowNode);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(GraphInputNode);
+    GraphInputNode();
     ~GraphInputNode();
 
-    void object_init();
-    
     void run(FlowContext* ctx) OVERRIDE;
 
     /// Input name

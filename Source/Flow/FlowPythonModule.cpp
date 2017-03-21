@@ -26,13 +26,12 @@ PYTHON_MODULE(_flow)
     auto window_cls = FlowWindow::python_class();
     module.def("Window", window_cls);
 
-    module.def("FlowContext", FlowContext::static_class());
-    module.def("FlowGraph", FlowGraph::static_class());
-    module.def("FlowNode", FlowNode::static_class());
-    module.def("UiFlowNode", UiFlowNode::static_class());
-    module.def("FlowPin", FlowPin::static_class());
-    module.def("ArrayFlowPin", ArrayFlowPin::static_class());
-    module.def("FlowProperty", FlowProperty::static_class());
+    module.def("Context", FlowContext::static_class());
+    module.def("Graph", FlowGraph::static_class());
+    module.def("Node", FlowNode::static_class());
+    module.def("Pin", FlowPin::static_class());
+    module.def("ArrayPin", ArrayFlowPin::static_class());
+    module.def("Property", FlowProperty::static_class());
     module.def("BoolProperty", BoolProperty::static_class());
     module.def("IntProperty", IntProperty::static_class());
     module.def("FloatProperty", FloatProperty::static_class());
@@ -104,7 +103,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
         PYTHON_ERROR(PyExc_ValueError, "Expected at least 1 argument");
 
     FlowGraph* graph = nullptr;
-    if (FlowGraph::static_class()->check_type(args.get(0).ptr()))
+    if (args.get(0).is_instance(FlowGraph::static_class()))
         graph = python::from_python<FlowGraph*>(args.get(0));
     else if (PyUnicode_Check(args.get(0).ptr()))
     {
@@ -121,7 +120,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     else
         PYTHON_ERROR(PyExc_ValueError, "Invalid argument, expected graph or path to graph file");
 
-    FlowContext* context = object_new<FlowContext>(graph);
+    FlowContext* context = python::make_object<FlowContext>(graph);
 
     if (kw.valid())
     {

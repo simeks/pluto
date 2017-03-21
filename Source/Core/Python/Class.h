@@ -106,14 +106,29 @@ namespace python
         void def(const char* name, TReturn(TClass::*meth)(TArgs...), 
             const char* doc = nullptr);
 
+        /// @brief Defines a class method
+        template<typename TClass, typename TReturn, typename ... TArgs>
+        void def(const char* name, TReturn(TClass::*meth)(TArgs...) const,
+            const char* doc = nullptr);
+
         /// @brief Defines a varargs class method
         template<typename TClass, typename TReturn>
         void def_varargs(const char* name, TReturn(TClass::*meth)(const Tuple&), 
             const char* doc = nullptr);
 
+        /// @brief Defines a varargs class method
+        template<typename TClass, typename TReturn>
+        void def_varargs(const char* name, TReturn(TClass::*meth)(const Tuple&) const,
+            const char* doc = nullptr);
+
         /// @brief Defines a varargs/keywords class method
         template<typename TClass, typename TReturn>
         void def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&), 
+            const char* doc = nullptr);
+
+        /// @brief Defines a varargs/keywords class method
+        template<typename TClass, typename TReturn>
+        void def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&) const,
             const char* doc = nullptr);
     };
 

@@ -5,18 +5,23 @@
 
 namespace python
 {
+    PYTHON_OBJECT_IMPL(BaseObject, "BaseObject")
+    {
+        cls;
+    }
+
     BaseObject::BaseObject() : _obj(nullptr)
     {
     }
     BaseObject::~BaseObject()
     {
     }
-    bool BaseObject::has_attr(const char* name)
+    bool BaseObject::has_attribute(const char* name) const
     {
         assert(_obj);
         return PyObject_HasAttrString(_obj, name) == 1;
     }
-    Object BaseObject::attr(const char* name)
+    Object BaseObject::attribute(const char* name) const
     {
         assert(_obj);
         PyObject* attr = PyObject_GetAttrString(_obj, name);
@@ -26,6 +31,22 @@ namespace python
             return Object(Py_None); // TODO: Return None or throw exception?
         }
         return attr;
+    }
+    void BaseObject::set_attribute(const char* name, const Object& obj)
+    {
+        assert(_obj);
+        if (PyObject_SetAttrString(_obj, name, obj.ptr()) != 0)
+            PyErr_Print();
+    }
+    bool BaseObject::is_a(const python::Class& type) const
+    {
+        if (type.is_none())
+            return false;
+
+        if (PyObject_IsInstance(_obj, type.ptr()))
+            return true;
+
+        return false;
     }
     bool BaseObject::is_overridden(const char* name)
     {

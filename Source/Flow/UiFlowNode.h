@@ -12,15 +12,11 @@ class QtFlowNode;
 /// Specialized FlowNode class providing tools for interaction with UI.
 class FLOW_API UiFlowNode : public FlowNode
 {
-    DECLARE_OBJECT(UiFlowNode, FlowNode);
+    PYTHON_OBJECT(UiFlowNode, FlowNode);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(UiFlowNode);
+    UiFlowNode();
     ~UiFlowNode();
-
-    void object_init();
-    void object_init(const FlowNodeDef& def);
-    void object_python_init(const Tuple& args, const Dict& kw);
 
     void set_ui_node(QtFlowNode* node);
 

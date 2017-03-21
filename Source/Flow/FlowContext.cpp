@@ -10,61 +10,27 @@
 
 #include <QTemporaryDir>
 
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowContext, write_pin, const char*, PyObject*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, read_pin, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowContext, is_pin_linked, const char*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0(FlowContext, run);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_dir);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowContext, temp_node_dir);
-
-OBJECT_INIT_TYPE_FN(FlowContext)
+PYTHON_OBJECT_IMPL(FlowContext, "Context")
 {
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, write_pin, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, read_pin, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, is_pin_linked, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, run, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_dir, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowContext, temp_node_dir, "");
+    cls.def_init<FlowContext, FlowGraph*>();
+    cls.def("write_pin", &FlowContext::write_pin, "");
+    cls.def("read_pin", &FlowContext::read_pin, "");
+    cls.def("is_pin_linked", &FlowContext::is_pin_linked, "");
+    cls.def("temp_dir", &FlowContext::temp_dir, "");
+    cls.def("temp_node_dir", &FlowContext::temp_node_dir, "");
 }
 
-IMPLEMENT_OBJECT(FlowContext, "FlowContext", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowContext, Object);
-
+FlowContext::FlowContext(FlowGraph* graph) :
+    _temp_dir(new QTemporaryDir()),
+    _graph(graph),
+    _current_node(nullptr),
+    _failed(false)
+{
+}
 FlowContext::~FlowContext()
 {
     clean_up();
     delete _temp_dir;
-}
-void FlowContext::object_init(FlowGraph* graph)
-{
-    _temp_dir = new QTemporaryDir();
-    _graph = graph;
-    _current_node = nullptr;
-    _failed = false;
-    set_attribute("env", _env_dict);
-
-    initialize();
-}
-void FlowContext::object_python_init(const Tuple& t, const Dict&)
-{
-    if (t.size() != 1)
-        PYTHON_ERROR(PyExc_ValueError, "expected 1 argument");
-
-    python::Object o = t.get(0);
-    if (!python_object::object(o.ptr()))
-        PYTHON_ERROR(PyExc_ValueError, "expected a FlowGraph as argument");
-
-    Object* obj = python_object::object(o.ptr());
-    if (!obj->is_a(FlowGraph::static_class()))
-        PYTHON_ERROR(PyExc_ValueError, "expected a FlowGraph as argument");
-
-    _graph = object_cast<FlowGraph>(obj);
-
-    _current_node = nullptr;
-    _failed = false;
-    set_attribute("env", _env_dict);
-
-    initialize();
 }
 bool FlowContext::run(Callback* cb)
 {
@@ -175,7 +141,7 @@ void FlowContext::clean_up()
 }
 FlowContext* FlowContext::create_child_context(FlowGraph* graph)
 {
-    FlowContext* context = object_new<FlowContext>(graph);
+    FlowContext* context = python::make_object<FlowContext>(graph);
     context->_env_dict = _env_dict;
     return context;
 }
@@ -333,6 +299,8 @@ void FlowContext::initialize()
 {
     if (!_graph)
         return;
+
+    set_attribute("env", _env_dict);
 
     for (auto& n : _graph->nodes())
     {

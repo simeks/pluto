@@ -24,7 +24,7 @@
 QtFlowGraphScene::QtFlowGraphScene(QObject *parent)
     : QGraphicsScene(parent)
 {
-    _flow_graph = object_new<FlowGraph>();
+    _flow_graph = python::make_object<FlowGraph>();
 }
 QtFlowGraphScene::QtFlowGraphScene(FlowGraph* graph, QObject *parent)
     : QGraphicsScene(parent)
@@ -84,7 +84,7 @@ void QtFlowGraphScene::remove_note(QtNoteItem* note)
 }
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
-    _flow_graph->reload(tpl->node_class());
+    _flow_graph->reload_nodes(tpl->node_class());
     set_graph(_flow_graph);
 }
 bool QtFlowGraphScene::try_add_link(QtFlowLink* link)
@@ -186,7 +186,7 @@ void QtFlowGraphScene::new_graph()
     if (_flow_graph)
         _flow_graph->release();
 
-    _flow_graph = object_new<FlowGraph>();
+    _flow_graph = python::make_object<FlowGraph>();
 }
 FlowGraph* QtFlowGraphScene::graph() const
 {

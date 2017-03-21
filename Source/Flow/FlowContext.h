@@ -2,7 +2,8 @@
 #define __FLOW_CONTEXT_H__
 
 #include "API.h"
-#include <Core/Object/Object.h>
+#include <Core/Python/BaseObject.h>
+#include <Core/Python/Dict.h>
 
 class FlowGraph;
 class FlowNode;
@@ -10,9 +11,9 @@ class FlowPin;
 class GraphInputNode;
 class GraphOutputNode;
 class QTemporaryDir;
-class FLOW_API FlowContext : public Object
+class FLOW_API FlowContext : public python::BaseObject
 {
-    DECLARE_OBJECT(FlowContext, Object);
+    PYTHON_OBJECT(FlowContext, python::BaseObject);
 
 public:
     class Callback
@@ -23,11 +24,8 @@ public:
         virtual void node_failed(FlowNode*) {}
     };
     
-    DECLARE_OBJECT_CONSTRUCTOR(FlowContext);
+    FlowContext(FlowGraph* graph);
     ~FlowContext();
-
-    void object_init(FlowGraph* graph);
-    void object_python_init(const Tuple& args, const Dict& kw);
 
     /// Returns true if the run was successful, false if not.
     /// Run will continue from previous state if last run failed.
@@ -71,12 +69,12 @@ public:
     void reset_error();
 
     template<typename T>
-    void write_pin(const char* name, const T& obj)
+    void write_pin_(const char* name, const T& obj)
     {
         write_pin(name, python::Object(python::to_python(obj)));
     }
     template<typename T>
-    T read_pin(const char* name)
+    T read_pin_(const char* name)
     {
         T ret = python::from_python<T>(read_pin(name));
         if (PyErr_Occurred())
@@ -89,7 +87,7 @@ public:
         return ret;
     }
     template<typename T>
-    T read_pin(const char* name, const T& def)
+    T read_pin_(const char* name, const T& def)
     {
         PyObject* obj = read_pin(name);
         if (!obj)
@@ -112,7 +110,7 @@ private:
 
     FlowGraph* _graph;
     std::map<FlowPin*, python::Object> _state;
-    Dict _env_dict;
+    python::Dict _env_dict;
 
     FlowNode* _current_node;
     std::vector<FlowNode*> _nodes_to_execute;

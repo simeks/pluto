@@ -5,14 +5,12 @@
 
 class GraphOutputNode : public FlowNode
 {
-    DECLARE_OBJECT(GraphOutputNode, FlowNode);
+    PYTHON_OBJECT(GraphOutputNode, FlowNode);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(GraphOutputNode);
+    GraphOutputNode();
     ~GraphOutputNode();
 
-    void object_init();
-    
     void run(FlowContext* ctx) OVERRIDE;
 
     /// Output name

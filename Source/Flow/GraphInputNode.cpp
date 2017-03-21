@@ -6,30 +6,25 @@
 #include "FlowProperty.h"
 #include "GraphInputNode.h"
 
-OBJECT_INIT_TYPE_FN(GraphInputNode)
+PYTHON_OBJECT_IMPL(GraphInputNode, "GraphInputNode")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls;
 }
 
+GraphInputNode::GraphInputNode()
+{
+    //set_attribute("node_class", "flow.GraphInput");
+    //set_attribute("title", "Input");
+    //set_attribute("category", "Flow/Graph");
+    //set_attribute("doc", "Graph input node");
 
-IMPLEMENT_OBJECT(GraphInputNode, "GraphInputNode", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(GraphInputNode, FlowNode);
+    //set_attribute("ui_class", "graph_input");
 
+    //add_pin("Out", FlowPin::Out);
+    //add_property(object_new<StringProperty>("name", ""));
+}
 GraphInputNode::~GraphInputNode()
 {
-}
-
-void GraphInputNode::object_init()
-{
-    set_attribute("node_class", "flow.GraphInput");
-    set_attribute("title", "Input");
-    set_attribute("category", "Flow/Graph");
-    set_attribute("doc", "Graph input node");
-
-    set_attribute("ui_class", "graph_input");
-
-    add_pin("Out", FlowPin::Out);
-    add_property(object_new<StringProperty>("name", ""));
 }
 void GraphInputNode::run(FlowContext* ctx)
 {

@@ -47,7 +47,7 @@ void VisNode::run(FlowContext* ctx)
 
     if (_ui_node)
     {
-        Image img = ctx->read_pin<Image>("In");
+        Image img = ctx->read_pin_<Image>("In");
         if (!img.valid())
             return;
 

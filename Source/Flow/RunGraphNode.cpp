@@ -10,15 +10,16 @@
 #include "GraphOutputNode.h"
 #include "RunGraphNode.h"
 
-OBJECT_INIT_TYPE_FN(RunGraphNode)
+PYTHON_OBJECT_IMPL(RunGraphNode, "RunGraphNode")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls;
 }
 
-
-IMPLEMENT_OBJECT(RunGraphNode, "RunGraphNode", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(RunGraphNode, FlowNode);
-
+RunGraphNode::RunGraphNode() :
+    _graph(nullptr),
+    _context(nullptr)
+{
+}
 RunGraphNode::~RunGraphNode()
 {
     if (_graph)
@@ -27,11 +28,6 @@ RunGraphNode::~RunGraphNode()
         _context->release();
 }
 
-void RunGraphNode::object_init()
-{
-    _graph = nullptr;
-    _context = nullptr;
-}
 bool RunGraphNode::load_graph(const char* class_name, const char* file)
 {
     JsonObject obj;
@@ -83,11 +79,11 @@ void RunGraphNode::create_pins()
     {
         if (it.second->is_a(GraphInputNode::static_class()))
         {
-            add_pin(object_cast<GraphInputNode>(it.second)->name(), FlowPin::In);
+            add_pin(python::object_cast<GraphInputNode>(it.second)->name(), FlowPin::In);
         }
         if (it.second->is_a(GraphOutputNode::static_class()))
         {
-            add_pin(object_cast<GraphOutputNode>(it.second)->name(), FlowPin::Out);
+            add_pin(python::object_cast<GraphOutputNode>(it.second)->name(), FlowPin::Out);
         }
     }
 

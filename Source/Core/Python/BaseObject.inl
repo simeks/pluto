@@ -1,6 +1,28 @@
 namespace python
 {
     template<typename T>
+    bool BaseObject::is_a() const
+    {
+        return is_a(T::static_class());
+    }
+
+    template<typename T>
+    void BaseObject::set_attribute(const char* name, const T& attr)
+    {
+        set_attribute(name, python::Object(python::to_python<T>(attr)));
+    }
+    template<int N>
+    void BaseObject::set_attribute(const char* name, const char(&value)[N])
+    {
+        set_attribute(name, PyUnicode_FromString(value));
+    }
+    template<typename T>
+    T BaseObject::attribute(const char* name) const
+    {
+        return python::from_python<T>(attribute(name));
+    }
+
+    template<typename T>
     Ref<T>::Ref(T* ptr) : _ptr(ptr)
     {
         assert(_ptr);
@@ -62,5 +84,13 @@ namespace python
         obj->initialize_python(pyobj);
 
         return obj;
+    }
+    template<typename TClass>
+    TClass* object_cast(python::BaseObject* object)
+    {
+        if (!object || !object->is_a(TClass::static_class()))
+            return nullptr;
+
+        return (TClass*)object;
     }
 }

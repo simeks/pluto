@@ -6,13 +6,11 @@
 /// For running a graph within a graph
 class RunGraphNode : public FlowNode
 {
-    DECLARE_OBJECT(RunGraphNode, FlowNode);
+    PYTHON_OBJECT(RunGraphNode, FlowNode);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(RunGraphNode);
-    ~RunGraphNode();
-
-    void object_init();
+    RunGraphNode();
+    virtual ~RunGraphNode();
 
     bool load_graph(const char* class_name, const char* file);
     void set_graph(const char* class_name, FlowGraph* graph);

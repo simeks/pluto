@@ -13,77 +13,55 @@
 
 #include <QObject>
 
-PYTHON_FUNCTION_WRAPPER_CLASS_TUPLE(UiFlowNode, invoke_ui_method);
 
-OBJECT_INIT_TYPE_FN(UiFlowNode)
-{
-    OBJECT_PYTHON_ADD_METHOD(UiFlowNode, invoke_ui_method, "");
-}
 
-IMPLEMENT_OBJECT_DOC(UiFlowNode, "UiFlowNode", FLOW_API,
+PYTHON_OBJECT_IMPL_DOC(UiFlowNode, "UiFlowNode",
     "UiFlowNode\n"
     "Specialized base class for nodes providing utilities for interaction with the UI\n"
     "\n"
     "Attributes:\n"
     "   node_class (str): Unique class name for this type of node.\n"
     "   title (str): Title visible in the UI\n"
-    "   category (str): Category of the form 'Category/Subcategory'\n");
+    "   category (str): Category of the form 'Category/Subcategory'\n")
+{
+    cls.def_init<UiFlowNode>();
+    cls.def("invoke_ui_method", &UiFlowNode::invoke_ui_method, "");
+}
 
-IMPLEMENT_OBJECT_CONSTRUCTOR(UiFlowNode, FlowNode);
-
+UiFlowNode::UiFlowNode() :
+    _ui_node(nullptr)
+{
+}
 UiFlowNode::UiFlowNode(const UiFlowNode& other) : FlowNode(other)
 {
     _ui_node = nullptr;
 }
-void UiFlowNode::object_init()
-{
-    _owner_graph = nullptr;
-    _function = nullptr;
-    _ui_node = nullptr;
-}
-void UiFlowNode::object_init(const FlowNodeDef& def)
-{
-    _owner_graph = nullptr;
-    _function = def.fn;
-    _ui_node = nullptr;
-
-    if (def.pins)
-    {
-        FlowPinDef* pin = def.pins;
-        while (pin->name)
-        {
-            // TODO: Pin doc
-            add_pin(pin->name, pin->type);
-            ++pin;
-        }
-    }
-}
-void UiFlowNode::object_python_init(const Tuple&, const Dict&)
-{
-    _owner_graph = nullptr;
-    _function = nullptr;
-    _ui_node = nullptr;
-
-    Dict d = get_class()->dict();
-    if (d.has_key("pins"))
-    {
-        Sequence pins = Sequence(d.get("pins"));
-        for (size_t i = 0; i < pins.size(); ++i)
-        {
-            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i).ptr());
-            add_pin(object_clone(pin));
-        }
-    }
-    if (d.has_key("properties"))
-    {
-        Sequence props = Sequence(d.get("properties"));
-        for (size_t i = 0; i < props.size(); ++i)
-        {
-            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i).ptr());
-            add_property(object_clone(prop));
-        }
-    }
-}
+//void UiFlowNode::object_python_init(const Tuple&, const Dict&)
+//{
+//    _owner_graph = nullptr;
+//    _function = nullptr;
+//    _ui_node = nullptr;
+//
+//    Dict d = get_class()->dict();
+//    if (d.has_key("pins"))
+//    {
+//        Sequence pins = Sequence(d.get("pins"));
+//        for (size_t i = 0; i < pins.size(); ++i)
+//        {
+//            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i).ptr());
+//            add_pin(object_clone(pin));
+//        }
+//    }
+//    if (d.has_key("properties"))
+//    {
+//        Sequence props = Sequence(d.get("properties"));
+//        for (size_t i = 0; i < props.size(); ++i)
+//        {
+//            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i).ptr());
+//            add_property(object_clone(prop));
+//        }
+//    }
+//}
 UiFlowNode::~UiFlowNode()
 {
     for (auto p : _pins)

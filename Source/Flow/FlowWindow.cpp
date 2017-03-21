@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 
+#include <Core/Object/Object.h>
 #include <Core/Python/PythonFunction.h>
 #include "FlowGraph.h"
 #include "FlowWindow.h"

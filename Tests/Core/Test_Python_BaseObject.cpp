@@ -10,19 +10,16 @@
 
 #include "Test_Python.h"
 
-#define PYTHON_OBJECT(cls, super)
 
 class Ball : public python::BaseObject
 {
-    PYTHON_OBJECT(Ball, python::BaseObject);
-
 public:
     Ball() {}
     virtual ~Ball() {}
 
     virtual int radius()
     {
-        python::Object method = attr("radius");
+        python::Object method = attribute("radius");
         if (is_overridden(method))
         {
             return python::from_python<int>(method());
@@ -77,12 +74,11 @@ TEST_CASE(python_base_object)
         python::Object PyBall = d.get("PyBall");
 
         python::Ref<Ball> cpp_ball = python::make_object<CppBall>();
+        // TODO: Handle reference count when converting to Ref<>
         python::Ref<Ball> py_ball = python::from_python<Ball*>(python::incref(PyBall().ptr()));
-
 
         ASSERT_EQUAL(cpp_ball->radius(), 5);
         ASSERT_EQUAL(py_ball->radius(), 10);
-
     }
     PYTHON_TEST_CLEANUP();
 }

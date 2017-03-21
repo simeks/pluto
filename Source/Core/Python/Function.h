@@ -74,6 +74,7 @@ namespace python
         /// Caller is responsible for deleting the returned pointer
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
         CallerBase* make_caller(TClass* self, TReturn(TClass::*fn)(TArgs...));
+
     }
 }
 
@@ -88,20 +89,22 @@ namespace python
     Object make_function(Fn* fn, const char* name, const char* doc = nullptr);
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    Object make_function(TClass* self, TReturn (TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
+    Object make_function(TClass* self, TReturn (TClass::*fn)(TArgs...), 
+        const char* name, const char* doc = nullptr);
 
     template<typename Fn>
     Object make_varargs_function(Fn* fn, const char* name, const char* doc = nullptr);
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
+    Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), 
+        const char* name, const char* doc = nullptr);
 
     template<typename Fn>
     Object make_varargs_keywords_function(Fn* fn, const char* name, const char* doc = nullptr);
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    Object make_varargs_keywords_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc = nullptr);
-
+    Object make_varargs_keywords_function(TClass* self, TReturn(TClass::*fn)(TArgs...), 
+        const char* name, const char* doc = nullptr);
 
     /// @brief Adds a regular function the the given module or class
     template<typename TReturn, typename ... TArgs>

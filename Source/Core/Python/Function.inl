@@ -161,7 +161,8 @@ namespace python
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    Object make_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc)
+    Object make_function(TClass* self, TReturn(TClass::*fn)(TArgs...), 
+        const char* name, const char* doc)
     {
         return make_function2(function::make_caller<function::DefaultArgumentPolicy>(self, fn), name, doc);
     }
@@ -173,7 +174,8 @@ namespace python
     }
 
     template<typename TClass, typename TReturn, typename ... TArgs>
-    Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), const char* name, const char* doc)
+    Object make_varargs_function(TClass* self, TReturn(TClass::*fn)(TArgs...), 
+        const char* name, const char* doc)
     {
         return make_function2(function::make_caller<function::VarargsArgumentPolicy>(self, fn), name, doc);
     }

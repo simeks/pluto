@@ -4,7 +4,6 @@ import inspect
 import re
 
 
-@pluto_class
 class FunctionNode(flow.Node):
     def __init__(self, fn, title=None, category=None):
         super(FunctionNode, self).__init__()

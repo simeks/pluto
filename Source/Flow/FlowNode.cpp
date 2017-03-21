@@ -8,45 +8,37 @@
 #include "FlowPin.h"
 #include "FlowProperty.h"
 
-
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1(FlowNode, run, FlowContext*);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS2(FlowNode, add_pin, const char*, int);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS0_RETURN(FlowNode, node_id);
-PYTHON_FUNCTION_WRAPPER_CLASS_ARGS1_RETURN(FlowNode, is_pin_linked, const char*);
-
-OBJECT_INIT_TYPE_FN(FlowNode)
-{
-    OBJECT_PYTHON_ADD_METHOD(FlowNode, run, 
-        "run(ctx)\n"
-        "--\n"
-        "\n"
-        "Args:\n"
-        "   ctx : FlowContext\n");
-    OBJECT_PYTHON_ADD_METHOD(FlowNode, add_pin, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowNode, node_id, "");
-    OBJECT_PYTHON_ADD_METHOD(FlowNode, is_pin_linked, "");
-}
-
-IMPLEMENT_OBJECT_DOC(FlowNode, "FlowNode", FLOW_API, 
+PYTHON_OBJECT_IMPL_DOC(FlowNode, "Node", 
     "FlowNode\n"
     "Base class for nodes\n"
     "\n"
     "Attributes:\n"
     "   node_class (str): Unique class name for this type of node.\n"
     "   title (str): Title visible in the UI\n"
-    "   category (str): Category of the form 'Category/Subcategory'\n");
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowNode, Object);
-
-void FlowNode::object_init()
+    "   category (str): Category of the form 'Category/Subcategory'\n")
 {
-    _owner_graph = nullptr;
-    _function = nullptr;
+    cls.def_init<FlowNode>();
+    cls.def("run", &FlowNode::run, 
+        "run(ctx)\n"
+        "--\n"
+        "\n"
+        "Args:\n"
+        "   ctx : Context\n");
+    // TODO: Template args specifies which add_pin to use, ugly so probably needs rethinking
+    cls.def<FlowNode, void, const char*, int>("add_pin", &FlowNode::add_pin, "");
+    cls.def("node_id", &FlowNode::node_id, "");
+    cls.def("is_pin_linked", &FlowNode::is_pin_linked, "");
 }
-void FlowNode::object_init(const FlowNodeDef& def)
-{
-    _owner_graph = nullptr;
-    _function = def.fn;
 
+FlowNode::FlowNode() :
+    _owner_graph(nullptr),
+    _function(nullptr)
+{
+}
+FlowNode::FlowNode(const FlowNodeDef& def) :
+    _owner_graph(nullptr),
+    _function(def.fn)
+{
     if (def.pins)
     {
         FlowPinDef* pin = def.pins;
@@ -55,31 +47,6 @@ void FlowNode::object_init(const FlowNodeDef& def)
             // TODO: Pin doc
             add_pin(pin->name, pin->type);
             ++pin;
-        }
-    }
-}
-void FlowNode::object_python_init(const Tuple&, const Dict&)
-{
-    _owner_graph = nullptr;
-    _function = nullptr;
-
-    Dict d = get_class()->dict();
-    if (d.has_key("pins"))
-    {
-        Sequence pins = Sequence(d.get("pins"));
-        for (size_t i = 0; i < pins.size(); ++i)
-        {
-            FlowPin* pin = python::from_python<FlowPin*>(pins.get(i));
-            add_pin(object_clone(pin));
-        }
-    }
-    if (d.has_key("properties"))
-    {
-        Sequence props = Sequence(d.get("properties"));
-        for (size_t i = 0; i < props.size(); ++i)
-        {
-            FlowProperty* prop = python::from_python<FlowProperty*>(props.get(i));
-            add_property(object_clone(prop));
         }
     }
 }
@@ -98,17 +65,16 @@ FlowNode::~FlowNode()
 }
 void FlowNode::run(FlowContext* ctx)
 {
-    PyObject* method = PyObject_GetAttrString(_py_object, "run");
-    if (!PyCFunction_Check(method))
+    python::Object method = attribute("run");
+    if (is_overridden(method))
     {
         // To avoid recursion we only call "run" if it is actually overriden by Python.
-        PyObject_Call(method, python_helpers::build_args(ctx), nullptr);
+        method(python::make_tuple(ctx));
     }
     else if (_function)
     {
         _function(ctx);
     }
-    Py_XDECREF(method);
 }
 const std::vector<FlowPin*>& FlowNode::pins() const
 {

@@ -540,7 +540,7 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
                 FlowNode* template_node = action->data().value<FlowNode*>();
                 if (template_node)
                 {
-                    FlowNode* node = object_cast<FlowNode>(object_clone(template_node));
+                    FlowNode* node = python::object_cast<FlowNode>(object_clone(template_node));
                     node->set_node_id(guid::create_guid());
 
                     QtFlowNode* n = _ui->create_ui_node(node);

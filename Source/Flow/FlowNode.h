@@ -1,8 +1,8 @@
 #ifndef __FLOW_NODE_H__
 #define __FLOW_NODE_H__
 
-#include <Core/Object/Object.h>
 #include <Core/Image/Vec2.h>
+#include <Core/Python/BaseObject.h>
 
 #include "API.h"
 
@@ -23,20 +23,6 @@ struct FlowPinDef
     const char* doc;
 };
 
-struct FlowNode
-{
-    std::string title;
-    std::string category;
-    std::string node_class;
-
-    std::vector<FlowPinDef> pins;
-    std::vector<FlowProperty*> propertiese;
-
-    std::string doc;
-
-    PyObject* fn;
-};
-
 struct FlowNodeDef
 {
     const char* class_name;
@@ -48,17 +34,14 @@ struct FlowNodeDef
 };
 
 
-class FLOW_API FlowNode : public Object
+class FLOW_API FlowNode : public python::BaseObject
 {
-    DECLARE_OBJECT(FlowNode, Object);
+    PYTHON_OBJECT(FlowNode, python::BaseObject);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(FlowNode);
+    FlowNode();
+    FlowNode(const FlowNodeDef& def);
     ~FlowNode();
-
-    void object_init();
-    void object_init(const FlowNodeDef& def);
-    void object_python_init(const Tuple& args, const Dict& kw);
 
     virtual void run(FlowContext* ctx);
 
