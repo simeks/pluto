@@ -98,6 +98,8 @@ namespace python
         template<int N>
         void set_attribute(const char* name, const char(&value)[N]);
 
+        BaseObject(const BaseObject& other);
+
     protected:
         void initialize_python(PyObject* obj);
 
@@ -110,6 +112,8 @@ namespace python
         PyObject* _obj;
         PyTypeObject* _type;
 
+        // TODO: Do we need this at all?
+        BaseObject& operator=(const BaseObject& other);
     };
 
     template<typename T>
@@ -136,6 +140,9 @@ namespace python
 
     template<typename TClass>
     TClass* object_cast(python::BaseObject* object);
+
+    template<typename TClass>
+    TClass* clone_object(TClass* object);
 }
 
 #include "BaseObject.inl"

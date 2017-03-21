@@ -46,6 +46,11 @@ std::string function_return_stdstr()
 {
     return "stdteststring";
 }
+const int& function_return_const_ref()
+{
+    static int a = 123;
+    return a;
+}
 
 PYTHON_MODULE(py_test_module)
 {
@@ -58,6 +63,7 @@ PYTHON_MODULE(py_test_module)
     module.def("function_2arg_return", &function_2arg_return);
     module.def("function_return_str", &function_return_str);
     module.def("function_return_stdstr", &function_return_stdstr);
+    module.def("function_return_const_ref", &function_return_const_ref);
 }
 
 
@@ -84,15 +90,13 @@ TEST_CASE(python_function)
             "m.function_void()\n"
             "m.function_1arg(5)\n"
             "m.function_2arg(7, 9)\n"
-            "if m.function_2arg_return(15, 30) != 45:\n"
-            "    raise ValueError('function_2arg_return(15, 30) != 45')\n"
-            "if m.function_return_str() != 'teststring':\n"
-            "    raise ValueError('function_return_str() != \\'teststring\\'')\n"
-            "if m.function_return_stdstr() != 'stdteststring':\n"
-            "    raise ValueError('function_return_stdstr() != \\'stdteststring\\'')\n"
+            "assert m.function_2arg_return(15, 30) == 45\n"
+            "assert m.function_return_str() == 'teststring'\n"
+            "assert m.function_return_stdstr() == 'stdteststring'\n"
+            "assert m.function_return_const_ref() == 123\n"
             "\n"
             ;
-        PyRun_SimpleString(script);
+        ASSERT_EQUAL(PyRun_SimpleString(script), 0);
         ASSERT_NO_PYTHON_ERROR();
         ASSERT_EQUAL(_function_void_flag, true);
         ASSERT_EQUAL(_function_1arg_flag, 5);

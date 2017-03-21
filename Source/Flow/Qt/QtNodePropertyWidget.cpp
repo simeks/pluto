@@ -83,7 +83,7 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
             QString property_name = p->name();
             if (p->is_a(FileProperty::static_class()))
             {
-                FileProperty* file_prop = object_cast<FileProperty>(p);
+                FileProperty* file_prop = python::object_cast<FileProperty>(p);
 
                 QFileDialog::AcceptMode accept_mode = file_prop->file_mode() == FileProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
 
@@ -91,27 +91,27 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
                 _file_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
                 _property_browser->addProperty(prop);
             }
-            else if (p->is_a(BoolProperty::static_class()))
-            {
-                QtProperty* prop = _bool_property_manager->addProperty(property_name);
-                _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
-                _property_browser->addProperty(prop);
-            }
-            else if (p->is_a(IntProperty::static_class()))
-            {
-                QtProperty* prop = _int_property_manager->addProperty(property_name);
-                _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
-                _property_browser->addProperty(prop);
-            }
-            else if (p->is_a(FloatProperty::static_class()))
-            {
-                QtProperty* prop = _double_property_manager->addProperty(property_name);
-                _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
-                _property_browser->addProperty(prop);
-            }
+            //else if (p->is_a(BoolProperty::static_class()))
+            //{
+            //    QtProperty* prop = _bool_property_manager->addProperty(property_name);
+            //    _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
+            //    _property_browser->addProperty(prop);
+            //}
+            //else if (p->is_a(IntProperty::static_class()))
+            //{
+            //    QtProperty* prop = _int_property_manager->addProperty(property_name);
+            //    _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
+            //    _property_browser->addProperty(prop);
+            //}
+            //else if (p->is_a(FloatProperty::static_class()))
+            //{
+            //    QtProperty* prop = _double_property_manager->addProperty(property_name);
+            //    _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
+            //    _property_browser->addProperty(prop);
+            //}
             else if (p->is_a(EnumProperty::static_class()))
             {
-                EnumProperty* enum_prop = object_cast<EnumProperty>(p);
+                EnumProperty* enum_prop = python::object_cast<EnumProperty>(p);
 
                 QtProperty* prop = _enum_property_manager->addProperty(property_name);
                 QStringList options;

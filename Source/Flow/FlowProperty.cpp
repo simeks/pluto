@@ -1,36 +1,34 @@
 #include <Core/Common.h>
+#include <Core/Python/Sequence.h>
 
 #include "FlowProperty.h"
 
 
-OBJECT_INIT_TYPE_FN(FlowProperty)
+PYTHON_OBJECT_IMPL(FlowProperty, "Property")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls.def_init_varargs<FlowProperty>();
 }
 
-IMPLEMENT_OBJECT(FlowProperty, "FlowProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowProperty, Object);
-
-FlowProperty::~FlowProperty()
+FlowProperty::FlowProperty() :
+    _owner(nullptr),
+    _default_value(python::None())
 {
 }
-void FlowProperty::object_init()
+FlowProperty::FlowProperty(const char* name) :
+    _name(name),
+    _owner(nullptr),
+    _default_value(python::None())
 {
-    _owner = nullptr;
-    _default_value = python::None();
 }
-void FlowProperty::object_init(const char* name)
+FlowProperty::FlowProperty(const python::Tuple& args) :
+    _owner(nullptr),
+    _default_value(python::None())
 {
-    _owner = nullptr;
-    _default_value = python::None();
-    _name = name;
-}
-void FlowProperty::object_python_init(const Tuple& args, const Dict&)
-{
-    _owner = nullptr;
     if (args.size() > 0)
         _name = python::from_python<std::string>(args.get(0));
-    _default_value = python::None();
+}
+FlowProperty::~FlowProperty()
+{
 }
 const char* FlowProperty::name() const
 {
@@ -48,7 +46,7 @@ void FlowProperty::set_owner(FlowNode* node)
 {
     _owner = node;
 }
-FlowProperty::FlowProperty(const FlowProperty& other) : Object(other)
+FlowProperty::FlowProperty(const FlowProperty& other) : python::BaseObject(other)
 {
     _name = other._name;
     _default_value = other._default_value;
@@ -70,28 +68,19 @@ namespace python
     }
 }
 
-OBJECT_INIT_TYPE_FN(FileProperty)
-{
-    OBJECT_PYTHON_NO_METHODS();
 
-    OBJECT_PYTHON_ADD_CLASS_ATTR("File_Open", FileProperty::File_Open);
-    OBJECT_PYTHON_ADD_CLASS_ATTR("File_Save", FileProperty::File_Save);
+PYTHON_OBJECT_IMPL(FileProperty, "FileProperty")
+{
+    cls.def_init_varargs<FileProperty>();
+    cls.def("File_Open", FileProperty::File_Open);
+    cls.def("File_Save", FileProperty::File_Save);
 }
 
-IMPLEMENT_OBJECT(FileProperty, "FileProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FileProperty, FlowProperty);
-
-FileProperty::~FileProperty()
+FileProperty::FileProperty() : FlowProperty()
 {
 }
-void FileProperty::object_init()
+FileProperty::FileProperty(const python::Tuple& args) : FlowProperty(args)
 {
-    FlowProperty::object_init();
-}
-void FileProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
     if (args.size() > 1)
     {
         _default_value = args.get(1);
@@ -107,6 +96,9 @@ void FileProperty::object_python_init(const Tuple& args, const Dict& kw)
     else
         _file_filter = "Files (*.*)";
 }
+FileProperty::~FileProperty()
+{
+}
 FileProperty::FileMode FileProperty::file_mode() const
 {
     return _file_mode;
@@ -117,141 +109,22 @@ const std::string& FileProperty::file_filter() const
 }
 
 
-OBJECT_INIT_TYPE_FN(BoolProperty)
+PYTHON_OBJECT_IMPL(EnumProperty, "EnumProperty")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls.def_init_varargs<EnumProperty>();
 }
 
-IMPLEMENT_OBJECT(BoolProperty, "BoolProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(BoolProperty, FlowProperty);
-
-BoolProperty::~BoolProperty()
+EnumProperty::EnumProperty() : FlowProperty()
 {
 }
-void BoolProperty::object_init()
+EnumProperty::EnumProperty(const python::Tuple& args) : FlowProperty(args)
 {
-    FlowProperty::object_init();
-}
-void BoolProperty::object_init(const char* name, bool default_value)
-{
-    FlowProperty::object_init(name);
-    _default_value = PyBool_FromLong(default_value);
-}
-void BoolProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
-    _default_value = python::None();
-    if (args.size() > 1)
-    {
-        python::Object def = args.get(1);
-        if (PyBool_Check(def.ptr()))
-        {
-            _default_value = def;
-        }
-        else
-        {
-            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be bool");
-        }
-    }
-}
-
-
-OBJECT_INIT_TYPE_FN(IntProperty)
-{
-    OBJECT_PYTHON_NO_METHODS();
-}
-
-IMPLEMENT_OBJECT(IntProperty, "IntProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(IntProperty, FlowProperty);
-
-IntProperty::~IntProperty()
-{
-}
-void IntProperty::object_init()
-{
-    FlowProperty::object_init();
-}
-void IntProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
-    if (args.size() > 1)
-    {
-        python::Object def = args.get(1);
-        if (PyLong_Check(def.ptr()))
-        {
-            _default_value = def;
-        }
-        else
-        {
-            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be integer");
-        }
-    }
-    else
-        _default_value = PyLong_FromLong(0);
-}
-
-
-OBJECT_INIT_TYPE_FN(FloatProperty)
-{
-    OBJECT_PYTHON_NO_METHODS();
-}
-
-IMPLEMENT_OBJECT(FloatProperty, "FloatProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FloatProperty, FlowProperty);
-
-FloatProperty::~FloatProperty()
-{
-}
-void FloatProperty::object_init()
-{
-    FlowProperty::object_init();
-}
-void FloatProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
-    if (args.size() > 1)
-    {
-        python::Object def = args.get(1);
-        if (PyNumber_Check(def.ptr()))
-        {
-            _default_value = args.get(1);
-        }
-        else
-        {
-            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be float");
-        }
-    }
-}
-
-
-OBJECT_INIT_TYPE_FN(EnumProperty)
-{
-    OBJECT_PYTHON_NO_METHODS();
-}
-
-IMPLEMENT_OBJECT(EnumProperty, "EnumProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(EnumProperty, FlowProperty);
-
-EnumProperty::~EnumProperty()
-{
-}
-void EnumProperty::object_init()
-{
-    FlowProperty::object_init();
-}
-void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
     if (args.size() < 2)
         PYTHON_ERROR(PyExc_ValueError, "Expected at least 2 arguments");
 
     _default_index = -1;
 
-    Sequence opts(args.get(1));
+    python::Sequence opts(args.get(1));
     for (int i = 0; i < opts.size(); ++i)
     {
         python::Object str = opts.get(i);
@@ -281,7 +154,9 @@ void EnumProperty::object_python_init(const Tuple& args, const Dict& kw)
             PYTHON_ERROR(PyExc_TypeError, "Expected default index to be int");
         }
     }
-
+}
+EnumProperty::~EnumProperty()
+{
 }
 const std::vector<std::string>& EnumProperty::options() const
 {
@@ -290,42 +165,4 @@ const std::vector<std::string>& EnumProperty::options() const
 int EnumProperty::default_index() const
 {
     return _default_index;
-}
-
-OBJECT_INIT_TYPE_FN(StringProperty)
-{
-    OBJECT_PYTHON_NO_METHODS();
-}
-
-IMPLEMENT_OBJECT(StringProperty, "StringProperty", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(StringProperty, FlowProperty);
-
-StringProperty::~StringProperty()
-{
-}
-void StringProperty::object_init()
-{
-    FlowProperty::object_init();
-}
-void StringProperty::object_init(const char* name, const char* default_value)
-{
-    FlowProperty::object_init(name);
-    _default_value = PyUnicode_FromString(default_value);
-}
-void StringProperty::object_python_init(const Tuple& args, const Dict& kw)
-{
-    FlowProperty::object_python_init(args, kw);
-
-    if (args.size() > 1)
-    {
-        python::Object def = args.get(1);
-        if (PyUnicode_Check(def.ptr()))
-        {
-            _default_value = args.get(1);
-        }
-        else
-        {
-            PYTHON_ERROR(PyExc_TypeError, "Expected default argument to be string");
-        }
-    }
 }

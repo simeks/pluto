@@ -3,8 +3,6 @@
 
 #include "PythonWrapper.h"
 
-class PythonClass;
-
 namespace python
 {
     class Dict;

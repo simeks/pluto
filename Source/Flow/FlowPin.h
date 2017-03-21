@@ -1,14 +1,14 @@
 #ifndef __FLOW_PIN_H__
 #define __FLOW_PIN_H__
 
-#include <Core/Object/Object.h>
+#include <Core/Python/BaseObject.h>
 
 #include "API.h"
 
 class FlowNode;
-class FLOW_API FlowPin : public Object
+class FLOW_API FlowPin : public python::BaseObject
 {
-    DECLARE_OBJECT(FlowPin, Object);
+    PYTHON_OBJECT(FlowPin, python::BaseObject);
 
 public:
     enum Type
@@ -18,18 +18,18 @@ public:
         Unknown
     };
 
-    DECLARE_OBJECT_CONSTRUCTOR(FlowPin);
+    
+    /// @param name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
+    FlowPin(const std::string& name,
+            Type pin_type,
+            FlowNode* owner); 
+
+    FlowPin(const python::Tuple& args);
+    
+    FlowPin();
     FlowPin(const FlowPin& other);
     virtual ~FlowPin();
     
-    void object_init();
-
-    /// @param name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
-    void object_init(const std::string& name,
-                     Type pin_type,
-                     FlowNode* owner);
-    void object_python_init(const Tuple& args, const Dict&);
-
     Type pin_type() const;
 
     const char* name() const;
@@ -57,21 +57,21 @@ protected:
 
 class FLOW_API ArrayFlowPin : public FlowPin
 {
-    DECLARE_OBJECT(ArrayFlowPin, FlowPin);
+    PYTHON_OBJECT(ArrayFlowPin, FlowPin);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(ArrayFlowPin);
+    /// @param base_name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
+    ArrayFlowPin(const std::string& base_name,
+        Type pin_type,
+        FlowNode* owner,
+        int index = 0);
+
+    ArrayFlowPin(const python::Tuple& args);
+
+    ArrayFlowPin();
     ArrayFlowPin(const ArrayFlowPin& other);
     virtual ~ArrayFlowPin();
 
-    void object_init();
-
-    /// @param base_name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
-    void object_init(const std::string& base_name,
-                     Type pin_type,
-                     FlowNode* owner,
-                     int index = 0);
-    void object_python_init(const Tuple& args, const Dict&);
 
     const char* base_name() const;
 

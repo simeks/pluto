@@ -2,7 +2,7 @@
 #define __REGISTRATION_ENGINE_H__
 
 #include <Core/Image/Image.h>
-#include <Core/Object/Object.h>
+#include <Core/Python/Object.h>
 
 class Optimizer;
 class Tuple;
@@ -33,7 +33,7 @@ public:
 
 private:
     Optimizer* create_optimizer(const char* name, 
-        image::PixelType image_type, const Dict& settings) const;
+        image::PixelType image_type, const python::Dict& settings) const;
 
     void build_pyramid();
     double unit_sigma(const Image& img);

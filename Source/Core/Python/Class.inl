@@ -118,7 +118,13 @@ namespace python
             (TReturn(TClass::*)(const Tuple&, const Dict&))meth,  // Remove const postfix 
             name, doc));
     }
-    
+
+    template<typename T>
+    INLINE void Class::def(const char* name, const T& obj)
+    {
+        python::def(*this, name, obj);
+    }
+
     template<typename T>
     PyObject* instance_ptr_to_python(void const* val)
     {

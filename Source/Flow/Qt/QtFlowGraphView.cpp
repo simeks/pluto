@@ -540,7 +540,7 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
                 FlowNode* template_node = action->data().value<FlowNode*>();
                 if (template_node)
                 {
-                    FlowNode* node = python::object_cast<FlowNode>(object_clone(template_node));
+                    FlowNode* node = python::clone_object(template_node);
                     node->set_node_id(guid::create_guid());
 
                     QtFlowNode* n = _ui->create_ui_node(node);
@@ -591,7 +591,7 @@ void QtFlowGraphView::node_paste()
                 QtFlowNode* node = (QtFlowNode*)i;
 
                 QPointF offset = node->scenePos() - origin;
-                FlowNode* copy = object_clone(node->node());
+                FlowNode* copy = python::clone_object(node->node());
                 copy->set_node_id(guid::create_guid());
 
                 QtFlowNode* n = _ui->create_ui_node(copy);

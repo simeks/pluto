@@ -26,14 +26,14 @@ namespace flow
     void save(const char* file, FlowGraph* graph);
 
     /// @brief Runs a graph
-    Dict run(const Tuple& args, const Dict& kw);
+    python::Dict run(const python::Tuple& args, const python::Dict& kw);
 
     /// Graph node management
 
     FlowNode* create_node(const char* node_class);
 
     /// @brief Returns a tuple with all node templates
-    Tuple node_templates();
+    python::Tuple node_templates();
 
     void install_python_module();
 

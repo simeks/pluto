@@ -13,32 +13,28 @@
 #include "Qt/QtVisWindow.h"
 #include "VisNode.h"
 
-OBJECT_INIT_TYPE_FN(VisNode)
+PYTHON_OBJECT_IMPL(VisNode, "VisNode")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls;
 }
 
-IMPLEMENT_OBJECT(VisNode, "VisNode", VIS_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(VisNode, UiFlowNode);
+VisNode::VisNode()
+{
+    //_current_window = nullptr;
 
+    //set_attribute("node_class", "vis.VisNode");
+    //set_attribute("title", "Show");
+    //set_attribute("category", "Image");
+    //set_attribute("doc", "");
+
+    //set_attribute("ui_class", "vis_node");
+
+    //add_pin("In", FlowPin::In);
+
+    //add_property(object_new<BoolProperty>("window", false));
+}
 VisNode::~VisNode()
 {
-}
-
-void VisNode::object_init()
-{
-    _current_window = nullptr;
-
-    set_attribute("node_class", "vis.VisNode");
-    set_attribute("title", "Show");
-    set_attribute("category", "Image");
-    set_attribute("doc", "");
-
-    set_attribute("ui_class", "vis_node");
-
-    add_pin("In", FlowPin::In);
-
-    add_property(object_new<BoolProperty>("window", false));
 }
 void VisNode::run(FlowContext* ctx)
 {

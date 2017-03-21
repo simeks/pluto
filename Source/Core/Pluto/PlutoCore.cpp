@@ -1,7 +1,6 @@
 #include "Common.h"
 
 #include "Modules/ModuleManager.h"
-#include "Object/PythonClass.h"
 #include "PlutoCore.h"
 #include "PlutoKernel.h"
 #include "PlutoKernelProxy.h"

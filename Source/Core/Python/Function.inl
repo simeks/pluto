@@ -7,7 +7,7 @@ namespace python
         PyObject* invoke(TReturn(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return python::to_python<TReturn>(fn(std::get<Index>(args)...));
+            return python::to_python<typename std::decay<TReturn>::type>(fn(std::get<Index>(args)...));
         }
         template<typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(void(*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -21,7 +21,7 @@ namespace python
         PyObject* invoke(TClass* self, TReturn(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
         {
             args; // Avoid C4189 when having no args
-            return python::to_python<TReturn>((self->*fn)(std::get<Index>(args)...));
+            return python::to_python<typename std::decay<TReturn>::type>((self->*fn)(std::get<Index>(args)...));
         }
         template<typename TClass, typename ... TArgs, typename TTuple, size_t... Index>
         PyObject* invoke(TClass* self, void(TClass::*fn)(TArgs...), const TTuple& args, const std::index_sequence<Index...>&)
@@ -195,6 +195,7 @@ namespace python
     template<typename TReturn, typename ... TArgs>
     INLINE void def(const Object& m, const char* name, TReturn(*fn)(TArgs...), const char* doc)
     {
+        // Template spec has to be explicit to avoid colision with def() in Object.h
         python::setattr(m, name, python::make_function(fn, name, doc));
     }
 

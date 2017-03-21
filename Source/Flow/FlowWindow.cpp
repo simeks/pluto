@@ -1,6 +1,5 @@
 #include <Core/Common.h>
 
-#include <Core/Object/Object.h>
 #include <Core/Python/PythonFunction.h>
 #include "FlowGraph.h"
 #include "FlowWindow.h"
@@ -51,11 +50,11 @@ void FlowWindow::save(const char* file)
 FlowGraph* FlowWindow::graph()
 {
     FlowGraph* g = _window->graph();
-    return object_clone(g);
+    return python::clone_object(g);
 }
 void FlowWindow::set_graph(FlowGraph* graph)
 {
-    emit _window->set_graph(object_clone(graph));
+    emit _window->set_graph(python::clone_object(graph));
 }
 void FlowWindow::clear()
 {

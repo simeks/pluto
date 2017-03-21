@@ -1,22 +1,20 @@
 #ifndef __GRAPH_NOTE_H__
 #define __GRAPH_NOTE_H__
 
-#include <Core/Object/Object.h>
+#include <Core/Python/BaseObject.h>
 #include <Core/Image/Vec2.h>
 
 #include "API.h"
 
 class FlowGraph;
 
-class FLOW_API GraphNote : public Object
+class FLOW_API GraphNote : public python::BaseObject
 {
-    DECLARE_OBJECT(GraphNote, Object);
+    PYTHON_OBJECT(GraphNote, python::BaseObject);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(GraphNote);
+    GraphNote();
     ~GraphNote();
-
-    void object_init();
 
     const Guid& id() const;
     void set_id(const Guid& id);

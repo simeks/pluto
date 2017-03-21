@@ -97,4 +97,10 @@ namespace python
         _obj = obj;
         _type = Py_TYPE(obj);
     }
+
+    BaseObject::BaseObject(const BaseObject& other) 
+    {
+        _type = other._type;
+       // _obj = ;
+    }
 }

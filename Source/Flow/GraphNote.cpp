@@ -3,21 +3,16 @@
 #include "FlowGraph.h"
 #include "GraphNote.h"
 
-OBJECT_INIT_TYPE_FN(GraphNote)
+PYTHON_OBJECT_IMPL(GraphNote, "GraphNote")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls;
 }
 
-IMPLEMENT_OBJECT(GraphNote, "GraphNote", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(GraphNote, Object);
-
+GraphNote::GraphNote() : _owner_graph(nullptr)
+{
+}
 GraphNote::~GraphNote()
 {
-}
-
-void GraphNote::object_init()
-{
-    _owner_graph = nullptr;
 }
 const Guid& GraphNote::id() const
 {

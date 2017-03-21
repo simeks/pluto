@@ -1,7 +1,6 @@
 #ifndef __UI_FLOW_NODE_H__
 #define __UI_FLOW_NODE_H__
 
-#include <Core/Object/Object.h>
 #include <Core/Image/Vec2.h>
 
 #include "API.h"
@@ -20,7 +19,7 @@ public:
 
     void set_ui_node(QtFlowNode* node);
 
-    void invoke_ui_method(const Tuple& args);
+    void invoke_ui_method(const python::Tuple& args);
     
     UiFlowNode(const UiFlowNode&);
 

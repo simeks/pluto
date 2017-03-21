@@ -102,7 +102,7 @@ void GraphFileLoader::load(const QString& path)
             category.append('/' + FlowUIStyle::stylize_text(split_path[i].toUtf8().constData()));
         }
 
-        RunGraphNode* node = object_new<RunGraphNode>();
+        RunGraphNode* node = python::make_object<RunGraphNode>();
         if (!node->load_graph(class_name.c_str(), path.toUtf8().constData()))
         {
             node->release();

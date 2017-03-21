@@ -99,7 +99,7 @@ namespace
         T p;
     };
 }
-void UiFlowNode::invoke_ui_method(const Tuple& args)
+void UiFlowNode::invoke_ui_method(const python::Tuple& args)
 {
     if (!_ui_node)
         PYTHON_STDERR("UiFlowNode: No UI object\n");

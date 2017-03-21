@@ -55,8 +55,8 @@ void FlowModule::uninstall()
 }
 void FlowModule::init()
 {
-    _node_templates.push_back(object_new<GraphInputNode>());
-    _node_templates.push_back(object_new<GraphOutputNode>());
+    _node_templates.push_back(python::make_object<GraphInputNode>());
+    _node_templates.push_back(python::make_object<GraphOutputNode>());
 }
 void FlowModule::install_node_template(FlowNode* node)
 {

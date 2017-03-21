@@ -130,6 +130,10 @@ namespace python
         template<typename TClass, typename TReturn>
         void def_varargs_keywords(const char* name, TReturn(TClass::*meth)(const Tuple&, const Dict&) const,
             const char* doc = nullptr);
+
+        /// @brief Defins a static member
+        template<typename T>
+        void def(const char* name, const T& obj);
     };
 
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.

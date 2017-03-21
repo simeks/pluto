@@ -1,7 +1,6 @@
 #include "Common.h"
 
 #include "Object.h"
-#include "Object/PythonClass.h"
 #include "PythonCommon.h"
 
 

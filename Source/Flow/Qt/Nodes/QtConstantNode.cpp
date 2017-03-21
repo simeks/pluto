@@ -22,8 +22,8 @@ QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsObject* parent) :
     }
     else if (_node->has_attribute("value"))
     {
-        PyObject* value = _node->attribute("value");
-        _text = python::from_python<const char*>(PyObject_Str(value));
+        python::Object value = _node->attribute("value");
+        _text = python::from_python<const char*>(PyObject_Str(value.ptr()));
     }
     
     if (_text.length() > 50)
@@ -44,8 +44,8 @@ void QtConstantNode::node_updated()
     }
     else if (_node->has_attribute("value"))
     {
-        PyObject* value = _node->attribute("value");
-        _text = python::from_python<const char*>(PyObject_Str(value));
+        python::Object value = _node->attribute("value");
+        _text = python::from_python<const char*>(PyObject_Str(value.ptr()));
     }
 
     if (_text.length() > 50)

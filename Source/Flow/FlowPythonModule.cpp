@@ -32,12 +32,12 @@ PYTHON_MODULE(_flow)
     module.def("Pin", FlowPin::static_class());
     module.def("ArrayPin", ArrayFlowPin::static_class());
     module.def("Property", FlowProperty::static_class());
-    module.def("BoolProperty", BoolProperty::static_class());
-    module.def("IntProperty", IntProperty::static_class());
-    module.def("FloatProperty", FloatProperty::static_class());
+    //module.def("BoolProperty", BoolProperty::static_class());
+    //module.def("IntProperty", IntProperty::static_class());
+    //module.def("FloatProperty", FloatProperty::static_class());
     module.def("EnumProperty", EnumProperty::static_class());
     module.def("FileProperty", FileProperty::static_class());
-    module.def("StringProperty", StringProperty::static_class());
+//    module.def("StringProperty", StringProperty::static_class());
 
     module.def("open", &flow::open, "open(file)");
     module.def("window", &flow::window, "window()");
@@ -152,7 +152,7 @@ FlowNode* flow::create_node(const char* node_class)
 {
     FlowNode* n = FlowModule::instance().node_template(node_class);
     if (n)
-        return object_clone(n);
+        return python::clone_object(n);
     return nullptr;
 }
 Tuple flow::node_templates()

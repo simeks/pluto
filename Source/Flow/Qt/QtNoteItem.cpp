@@ -40,7 +40,7 @@ QtNoteItem::QtNoteItem(QGraphicsWidget* parent) : QGraphicsObject(parent)
     setFlag(QGraphicsItem::ItemIsFocusable, true);
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
-    _note = object_new<GraphNote>();
+    _note = python::make_object<GraphNote>();
 
     _text_edit = new QTextEdit();
     _text_edit->setWindowFlags(Qt::FramelessWindowHint);

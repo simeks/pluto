@@ -1,22 +1,20 @@
 #ifndef __FLOW_PROPERTY_H__
 #define __FLOW_PROPERTY_H__
 
-#include <Core/Object/Object.h>
+#include <Core/Python/BaseObject.h>
 
 #include "API.h"
 
 class FlowNode;
-class FLOW_API FlowProperty : public Object
+class FLOW_API FlowProperty : public python::BaseObject
 {
-    DECLARE_OBJECT(FlowProperty, Object);
+    PYTHON_OBJECT(FlowProperty, python::BaseObject);
 
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(FlowProperty);
+    FlowProperty();
+    FlowProperty(const char* name);
+    FlowProperty(const python::Tuple& args);
     ~FlowProperty();
-
-    void object_init();
-    void object_init(const char* name);
-    void object_python_init(const Tuple&, const Dict&);
 
     const char* name() const;
     python::Object default_value() const;
@@ -35,7 +33,7 @@ protected:
 
 class FLOW_API FileProperty : public FlowProperty
 {
-    DECLARE_OBJECT(FileProperty, FlowProperty);
+    PYTHON_OBJECT(FileProperty, FlowProperty);
 public:
     enum FileMode
     {
@@ -43,11 +41,9 @@ public:
         File_Save
     };
 
-    DECLARE_OBJECT_CONSTRUCTOR(FileProperty);
+    FileProperty();
+    FileProperty(const python::Tuple& args);
     ~FileProperty();
-
-    void object_init();
-    void object_python_init(const Tuple&, const Dict&);
 
     /// File mode if property is of type FilePath
     FileMode file_mode() const;
@@ -60,47 +56,13 @@ protected:
     std::string _file_filter;
 };
 
-
-class FLOW_API BoolProperty : public FlowProperty
-{
-    DECLARE_OBJECT(BoolProperty, FlowProperty);
-public:
-    DECLARE_OBJECT_CONSTRUCTOR(BoolProperty);
-    ~BoolProperty();
-
-    void object_init();
-    void object_init(const char* name, bool default_value);
-    void object_python_init(const Tuple&, const Dict&);
-}; 
-class FLOW_API IntProperty : public FlowProperty
-{
-    DECLARE_OBJECT(IntProperty, FlowProperty);
-public:
-    DECLARE_OBJECT_CONSTRUCTOR(IntProperty);
-    ~IntProperty();
-
-    void object_init();
-    void object_python_init(const Tuple&, const Dict&);
-};
-class FLOW_API FloatProperty : public FlowProperty
-{
-    DECLARE_OBJECT(FloatProperty, FlowProperty);
-public:
-    DECLARE_OBJECT_CONSTRUCTOR(FloatProperty);
-    ~FloatProperty();
-
-    void object_init();
-    void object_python_init(const Tuple&, const Dict&);
-};
 class FLOW_API EnumProperty : public FlowProperty
 {
-    DECLARE_OBJECT(EnumProperty, FlowProperty);
+    PYTHON_OBJECT(EnumProperty, FlowProperty);
 public:
-    DECLARE_OBJECT_CONSTRUCTOR(EnumProperty);
+    EnumProperty();
+    EnumProperty(const python::Tuple& args);
     ~EnumProperty();
-
-    void object_init();
-    void object_python_init(const Tuple&, const Dict&);
 
     const std::vector<std::string>& options() const;
     int default_index() const;
@@ -108,19 +70,6 @@ public:
 private:
     std::vector<std::string> _options;
     int _default_index; // Index to default value
-};
-
-class FLOW_API StringProperty : public FlowProperty
-{
-    DECLARE_OBJECT(StringProperty, FlowProperty);
-public:
-    DECLARE_OBJECT_CONSTRUCTOR(StringProperty);
-    ~StringProperty();
-
-    void object_init();
-    void object_init(const char* name, const char* default_value);
-    void object_python_init(const Tuple&, const Dict&);
-
 };
 
 

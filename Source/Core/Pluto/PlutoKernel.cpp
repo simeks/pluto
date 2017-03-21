@@ -2,7 +2,6 @@
 
 #include "AutoReloader.h"
 #include "Image/ImageModule.h"
-#include "Object/PythonClass.h"
 #include "Platform/FilePath.h"
 #include "Platform/FileUtil.h"
 #include "PlutoCore.h"
@@ -42,7 +41,6 @@ PlutoKernel::~PlutoKernel()
 void PlutoKernel::prepare()
 {
     Py_Initialize();
-    PythonClass::ready_all();
 
     python::Object sys = python::import("sys");
 

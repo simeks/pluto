@@ -5,46 +5,39 @@
 
 #include <regex>
 
-OBJECT_INIT_TYPE_FN(FlowPin)
+PYTHON_OBJECT_IMPL(FlowPin, "Pin")
 {
-    OBJECT_PYTHON_ADD_CLASS_ATTR("In", (int)FlowPin::In);
-    OBJECT_PYTHON_ADD_CLASS_ATTR("Out", (int)FlowPin::Out);
+    cls.def_init_varargs<FlowPin>();
+    cls.def("In", (int)FlowPin::In);
+    cls.def("Out", (int)FlowPin::Out);
 }
-
-IMPLEMENT_OBJECT(FlowPin, "FlowPin", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(FlowPin, Object);
 
 namespace flow_pin
 {
     std::regex pin_name_pattern("\\w+");
 }
 
-FlowPin::FlowPin(const FlowPin& other) : Object(other)
+FlowPin::FlowPin(
+    const std::string& name,
+    Type pin_type,
+    FlowNode* owner) : 
+    _name(name),
+    _pin_type(pin_type), 
+    _owner(owner)
+{
+    if (!std::regex_match(name, flow_pin::pin_name_pattern))
+        PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
+}
+FlowPin::FlowPin() : _pin_type(Unknown), _owner(nullptr)
+{
+}
+FlowPin::FlowPin(const FlowPin& other) : python::BaseObject(other)
 {
     _name = other._name;
     _pin_type = other._pin_type;
     _owner = other._owner;
 }
-FlowPin::~FlowPin()
-{
-}
-void FlowPin::object_init()
-{
-    _pin_type = Unknown;
-    _owner = nullptr;
-}
-void FlowPin::object_init(const std::string& name,
-    Type pin_type,
-    FlowNode* owner)
-{
-    if (!std::regex_match(name, flow_pin::pin_name_pattern))
-        PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
-
-    _name = name;
-    _pin_type = pin_type;
-    _owner = owner;
-}
-void FlowPin::object_python_init(const Tuple& args, const Dict& )
+FlowPin::FlowPin(const python::Tuple& args)
 {
     if (args.size() < 2)
         PYTHON_ERROR(PyExc_ValueError, "FlowPin expected at least 2 arguments");
@@ -56,6 +49,9 @@ void FlowPin::object_python_init(const Tuple& args, const Dict& )
     }
     _name = name;
     _pin_type = (FlowPin::Type)python::from_python<int>(args.get(1));
+}
+FlowPin::~FlowPin()
+{
 }
 FlowPin::Type FlowPin::pin_type() const
 {
@@ -122,40 +118,21 @@ bool FlowPin::is_linked_to(FlowPin* other) const
     return std::find(_links.begin(), _links.end(), other) != _links.end();
 }
 
-OBJECT_INIT_TYPE_FN(ArrayFlowPin)
+PYTHON_OBJECT_IMPL(ArrayFlowPin, "ArrayPin")
 {
-    OBJECT_PYTHON_NO_METHODS();
+    cls.def_init<ArrayFlowPin>();
 }
 
-IMPLEMENT_OBJECT(ArrayFlowPin, "ArrayFlowPin", FLOW_API);
-IMPLEMENT_OBJECT_CONSTRUCTOR(ArrayFlowPin, FlowPin);
-
-ArrayFlowPin::ArrayFlowPin(const ArrayFlowPin& other) : FlowPin(other)
-{
-    _base_name = other._base_name;
-    _index = other._index;
-    _prev = nullptr;
-    _next = nullptr;
-}
-ArrayFlowPin::~ArrayFlowPin()
-{
-}
-void ArrayFlowPin::object_init()
-{
-    _index = -1;
-    _prev = nullptr;
-    _next = nullptr;
-}
-void ArrayFlowPin::object_init(const std::string& base_name,
-    Type pin_type,
-    FlowNode* owner,
-    int index)
+ArrayFlowPin::ArrayFlowPin(const std::string& base_name,
+                           Type pin_type,
+                           FlowNode* owner,
+                           int index) :
+    FlowPin(base_name, pin_type, owner),
+    _prev(nullptr),
+    _next(nullptr)
 {
     if (pin_type != FlowPin::In)
         PYTHON_ERROR(PyExc_ValueError, "ArrayFlowPin can only be created as an In-pin.");
-
-
-    FlowPin::object_init(base_name, pin_type, owner);
 
     _base_name = base_name;
     _index = index;
@@ -167,10 +144,8 @@ void ArrayFlowPin::object_init(const std::string& base_name,
     _prev = nullptr;
     _next = nullptr;
 }
-void ArrayFlowPin::object_python_init(const Tuple& args, const Dict& kw)
+ArrayFlowPin::ArrayFlowPin(const python::Tuple& args) : FlowPin(args)
 {
-    FlowPin::object_python_init(args, kw);
-
     if (_pin_type != FlowPin::In)
         PYTHON_ERROR(PyExc_ValueError, "ArrayFlowPin can only be created as an In-pin.");
 
@@ -183,6 +158,22 @@ void ArrayFlowPin::object_python_init(const Tuple& args, const Dict& kw)
 
     _prev = nullptr;
     _next = nullptr;
+}
+ArrayFlowPin::ArrayFlowPin() : 
+    _index(-1),
+    _prev(nullptr),
+    _next(nullptr)
+{
+}
+ArrayFlowPin::ArrayFlowPin(const ArrayFlowPin& other) : FlowPin(other)
+{
+    _base_name = other._base_name;
+    _index = other._index;
+    _prev = nullptr;
+    _next = nullptr;
+}
+ArrayFlowPin::~ArrayFlowPin()
+{
 }
 const char* ArrayFlowPin::base_name() const
 {

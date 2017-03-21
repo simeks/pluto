@@ -93,4 +93,9 @@ namespace python
 
         return (TClass*)object;
     }
+    template<typename TClass>
+    TClass* clone_object(TClass* object)
+    {
+        return (TClass*)object->clone();
+    }
 }

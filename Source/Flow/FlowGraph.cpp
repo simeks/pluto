@@ -219,11 +219,11 @@ FlowGraph::FlowGraph(const FlowGraph& other) : python::BaseObject(other)
 {
     for (auto& n : other._nodes)
     {
-        _nodes[n.first] = object_clone(n.second);
+        _nodes[n.first] = python::clone_object(n.second);
     }
     for (auto& n : other._notes)
     {
-        _notes[n.first] = object_clone(n.second);
+        _notes[n.first] = python::clone_object(n.second);
     }
 }
 
@@ -259,7 +259,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             // TODO: Error handling
             continue;
         }
-        FlowNode* out_node = object_clone(tpl);
+        FlowNode* out_node = python::clone_object(tpl);
 
         out_node->set_node_id(guid::from_string(n["id"].as_string()));
         out_node->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
@@ -354,7 +354,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             const JsonObject& n = notes[i];
 
-            GraphNote* note = object_new<GraphNote>();
+            GraphNote* note = python::make_object<GraphNote>();
             note->set_text(n["text"].as_string().c_str());
             note->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
 
@@ -404,18 +404,18 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
             {
                 properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
             }
-            else if (p->is_a(BoolProperty::static_class()))
-            {
-                properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
-            }
-            else if (p->is_a(IntProperty::static_class()))
-            {
-                properties[p->name()].set_int(n.second->attribute<int>(p->name()));
-            }
-            else if (p->is_a(FloatProperty::static_class()))
-            {
-                properties[p->name()].set_double(n.second->attribute<double>(p->name()));
-            }
+            //else if (p->is_a(BoolProperty::static_class()))
+            //{
+            //    properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
+            //}
+            //else if (p->is_a(IntProperty::static_class()))
+            //{
+            //    properties[p->name()].set_int(n.second->attribute<int>(p->name()));
+            //}
+            //else if (p->is_a(FloatProperty::static_class()))
+            //{
+            //    properties[p->name()].set_double(n.second->attribute<double>(p->name()));
+            //}
             else if (p->is_a(EnumProperty::static_class()))
             {
                 properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
@@ -479,7 +479,7 @@ FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
     if (strcmp(tpl->node_class(), old->node_class()) != 0)
         return nullptr;
 
-    FlowNode* n = object_clone(tpl);
+    FlowNode* n = python::clone_object(tpl);
     n->set_node_id(old->node_id());
     n->set_graph(old->graph());
     n->set_ui_pos(old->ui_pos());
