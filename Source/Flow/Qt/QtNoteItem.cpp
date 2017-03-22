@@ -1,6 +1,6 @@
 #include <Core/Common.h>
 
-#include "GraphNote.h"
+#include "FlowGraph.h"
 #include "QtNoteItem.h"
 
 #include <QGraphicsProxyWidget>
@@ -8,45 +8,26 @@
 #include <QTextEdit>
 
 
-QtNoteItem::QtNoteItem(GraphNote* note, QGraphicsWidget* parent) : QGraphicsObject(parent)
+QtNoteItem::QtNoteItem(FlowGraph* graph, 
+    const Guid& note_id, QGraphicsWidget* parent) : 
+    QGraphicsObject(parent),
+    _graph(graph),
+    _note_id(note_id)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
-    _note = note;
-    _note->addref();
-
-    setPos(_note->ui_pos().x, _note->ui_pos().y);
+    Vec2i pos = graph->note_position(note_id);
+    setPos(pos.x, pos.y);
 
     _text_edit = new QTextEdit();
     _text_edit->setWindowFlags(Qt::FramelessWindowHint);
     _text_edit->setAttribute(Qt::WA_TranslucentBackground);
     _text_edit->setStyleSheet("background: transparent; border: none; color: white; font-size:9pt;");
     _text_edit->setFixedSize(190, 50);
-    _text_edit->setText(note->text());
-
-    connect(_text_edit, SIGNAL(textChanged()), this, SLOT(text_changed()));
-
-    _proxy = new QGraphicsProxyWidget(this);
-    _proxy->setWidget(_text_edit);
-    _proxy->setPos(5, 5);
-}
-QtNoteItem::QtNoteItem(QGraphicsWidget* parent) : QGraphicsObject(parent)
-{
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsFocusable, true);
-    setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
-
-    _note = python::make_object<GraphNote>();
-
-    _text_edit = new QTextEdit();
-    _text_edit->setWindowFlags(Qt::FramelessWindowHint);
-    _text_edit->setAttribute(Qt::WA_TranslucentBackground);
-    _text_edit->setStyleSheet("background: transparent; border: none; color: white; font-size:9pt;");
-    _text_edit->setFixedSize(190, 50);
+    _text_edit->setText(_graph->note_text(_note_id));
 
     connect(_text_edit, SIGNAL(textChanged()), this, SLOT(text_changed()));
 
@@ -56,8 +37,6 @@ QtNoteItem::QtNoteItem(QGraphicsWidget* parent) : QGraphicsObject(parent)
 }
 QtNoteItem::~QtNoteItem()
 {
-    if (_note)
-        _note->release();
 }
 QRectF QtNoteItem::boundingRect() const
 {
@@ -87,16 +66,16 @@ void QtNoteItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 }
 void QtNoteItem::set_text(const QString& txt) const
 {
-    _note->set_text(txt.toUtf8().constData());
+    _graph->set_note_text(_note_id, txt.toUtf8().constData());
     _text_edit->setText(txt);
 }
 QString QtNoteItem::text() const
 {
     return _text_edit->toPlainText();
 }
-GraphNote* QtNoteItem::note() const
+Guid QtNoteItem::note_id() const
 {
-    return _note;
+    return _note_id;
 }
 int QtNoteItem::type() const
 {
@@ -104,14 +83,14 @@ int QtNoteItem::type() const
 }
 void QtNoteItem::text_changed()
 {
-    _note->set_text(_text_edit->toPlainText().toUtf8().constData());
+    _graph->set_note_text(_note_id, _text_edit->toPlainText().toUtf8().constData());
 }
 QVariant QtNoteItem::itemChange(GraphicsItemChange change, const QVariant & value)
 {
     if (change == ItemPositionHasChanged)
     {
         QPointF pos = value.toPointF();
-        _note->set_ui_pos(Vec2i(int(pos.x()), int(pos.y())));
+        _graph->set_note_position(_note_id, Vec2i(int(pos.x()), int(pos.y())));
     }
     return QGraphicsObject::itemChange(change, value);
 }

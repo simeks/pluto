@@ -17,8 +17,6 @@ namespace pluto
 
     CORE_API void run_file(const std::string& file);
 
-    CORE_API python::Object register_class(const python::Object& cls);
-
     /// Enables auto reloading of the given module. Whenever the python file containing
     ///     the given module is changed the module is reimported.
     CORE_API void auto_reload(const python::Object& module);

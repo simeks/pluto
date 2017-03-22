@@ -53,11 +53,13 @@ NoteCreateCommand::NoteCreateCommand(
 }
 void NoteCreateCommand::undo()
 {
-    _scene->remove_note(_note);
+    // TODO:
+    //_scene->remove_note(_note);
 }
 void NoteCreateCommand::redo()
 {
-    _scene->add_note(_note);
+    // TODO:
+    //_scene->add_note(_note);
 }
 
 SelectionDestroyCommand::SelectionDestroyCommand(
@@ -95,10 +97,10 @@ void SelectionDestroyCommand::undo()
         {
             _scene->try_add_link((QtFlowLink*)i);
         }
-        else if (i->type() == QtNoteItem::Type)
+        /*else if (i->type() == QtNoteItem::Type)
         {
             _scene->add_note((QtNoteItem*)i);
-        }
+        }*/
     }
 }
 void SelectionDestroyCommand::redo()
@@ -113,10 +115,10 @@ void SelectionDestroyCommand::redo()
         {
             _scene->remove_link((QtFlowLink*)i);
         }
-        else if (i->type() == QtNoteItem::Type)
+        /*else if (i->type() == QtNoteItem::Type)
         {
             _scene->remove_note((QtNoteItem*)i);
-        }
+        }*/
     }
 }
 SelectionMoveCommand::SelectionMoveCommand(

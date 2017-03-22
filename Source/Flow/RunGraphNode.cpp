@@ -96,7 +96,6 @@ void RunGraphNode::run(FlowContext* ctx)
     if (!_context)
     {
         _context = ctx->create_child_context(_graph);
-
         for (auto p : pins())
         {
             if (p->pin_type() == FlowPin::In)

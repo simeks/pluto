@@ -4,7 +4,7 @@
 #include <Core/Common.h>
 #include <QGraphicsItem>
 
-class GraphNote;
+class FlowGraph;
 class QGraphicsProxyWidget;
 class QTextEdit;
 class QtNoteItem : public QGraphicsObject
@@ -14,8 +14,7 @@ class QtNoteItem : public QGraphicsObject
 public:
     enum { Type = UserType + 3 };
 
-    QtNoteItem(GraphNote* note, QGraphicsWidget* parent = nullptr);
-    QtNoteItem(QGraphicsWidget* parent = nullptr);
+    QtNoteItem(FlowGraph* graph, const Guid& note_id, QGraphicsWidget* parent = nullptr);
     virtual ~QtNoteItem();
 
     QRectF boundingRect() const;
@@ -24,7 +23,7 @@ public:
     void set_text(const QString& txt) const;
     QString text() const;
 
-    GraphNote* note() const;
+    Guid note_id() const;
 
     int type() const;
 
@@ -35,7 +34,8 @@ protected:
     virtual QVariant itemChange(GraphicsItemChange change, const QVariant & value) OVERRIDE;
 
 private:
-    GraphNote* _note;
+    FlowGraph* _graph;
+    Guid _note_id;
 
     QGraphicsProxyWidget* _proxy;
     QTextEdit* _text_edit;

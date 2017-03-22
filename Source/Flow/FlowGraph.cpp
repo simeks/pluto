@@ -7,10 +7,14 @@
 #include "FlowModule.h"
 #include "FlowPin.h"
 #include "FlowProperty.h"
-#include "GraphNote.h"
 #include "RunGraphNode.h"
 
 #include <regex>
+
+GraphNote::GraphNote() : 
+    owner(nullptr)
+{
+}
 
 
 PYTHON_OBJECT_IMPL(FlowGraph, "Graph")
@@ -59,42 +63,11 @@ void FlowGraph::remove_node(FlowNode* node)
         }
     }
 }
-void FlowGraph::add_note(GraphNote* note)
-{
-    assert(note);
-    assert(_notes.find(note->id()) == _notes.end()); // Collision detected: Node ID already exists in graph
-
-    if (!note->id().is_valid())
-    {
-        // Node have no ID, assign a new one
-        note->set_id(guid::create_guid());
-    }
-    _notes[note->id()] = note;
-
-    note->addref();
-    note->set_graph(this);
-}
-void FlowGraph::remove_note(GraphNote* note)
-{
-    assert(note);
-    for (auto it = _notes.begin(); it != _notes.end(); ++it)
-    {
-        if (it->second == note)
-        {
-            note->set_graph(nullptr);
-            note->release();
-            _notes.erase(it);
-            break;
-        }
-    }
-}
-
 void FlowGraph::clear()
 {
     for (auto& n : _nodes)
         n.second->release();
-    for (auto& n : _notes)
-        n.second->release();
+    
     _nodes.clear();
     _notes.clear();
 }
@@ -145,15 +118,61 @@ const std::map<Guid, FlowNode*>& FlowGraph::nodes() const
 {
     return _nodes;
 }
-GraphNote* FlowGraph::note(const Guid& id) const
+Guid FlowGraph::make_note(const char* text, const Vec2i& pos)
 {
-    assert(id.is_valid());
-    auto it = _notes.find(id);
-    if (it != _notes.end())
-        return it->second;
-    return nullptr;
+    Guid id = guid::create_guid();
+    GraphNote& note = _notes[id];
+    note.id = id;
+    note.owner = this;
+    note.pos = pos;
+    if (text)
+        note.text = text;
+    return id;
 }
-const std::map<Guid, GraphNote*>& FlowGraph::notes() const
+void FlowGraph::insert_note(const Guid& id, const char* text, const Vec2i& pos)
+{
+    assert(_notes.find(id) == _notes.end());
+    if (_notes.find(id) != _notes.end())
+        return;
+
+    GraphNote& note = _notes[id];
+    note.id = id;
+    note.owner = this;
+    note.pos = pos;
+    if (text)
+        note.text = text;
+}
+void FlowGraph::remove_note(const Guid& id)
+{
+    auto it = _notes.find(id);
+    assert(it != _notes.end());
+    _notes.erase(id);
+}
+Vec2i FlowGraph::note_position(const Guid& id) const
+{
+    auto it = _notes.find(id);
+    assert(it != _notes.end());
+    return it->second.pos;
+}
+const char* FlowGraph::note_text(const Guid& id) const
+{
+    auto it = _notes.find(id);
+    assert(it != _notes.end());
+    return it->second.text.c_str();
+}
+void FlowGraph::set_note_position(const Guid& id, const Vec2i& pos)
+{
+    auto it = _notes.find(id);
+    assert(it != _notes.end());
+    it->second.pos = pos;
+}
+void FlowGraph::set_note_text(const Guid& id, const char* text)
+{
+    auto it = _notes.find(id);
+    assert(it != _notes.end());
+    it->second.text = text;
+}
+const std::map<Guid, GraphNote>& FlowGraph::notes() const
 {
     return _notes;
 }
@@ -220,10 +239,12 @@ FlowGraph::FlowGraph(const FlowGraph& other) : python::BaseObject(other)
     for (auto& n : other._nodes)
     {
         _nodes[n.first] = python::clone_object(n.second);
+        _nodes[n.first]->set_graph(this);
     }
-    for (auto& n : other._notes)
+    _notes = other._notes;
+    for (auto& n : _notes)
     {
-        _notes[n.first] = python::clone_object(n.second);
+        n.second.owner = this;
     }
 }
 
@@ -354,11 +375,21 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             const JsonObject& n = notes[i];
 
-            GraphNote* note = python::make_object<GraphNote>();
-            note->set_text(n["text"].as_string().c_str());
-            note->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
+            if (n["id"].is_string())
+            {
+                Guid id = guid::from_string(n["id"].as_string());
+                out_graph->insert_note(
+                    id, 
+                    n["text"].as_string().c_str(),
+                    Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
+            }
+            else
+            {
+                out_graph->make_note(
+                    n["text"].as_string().c_str(),
+                    Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
 
-            out_graph->add_note(note);
+            }
         }
     }
 
@@ -459,14 +490,15 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
         JsonObject& n = notes.append();
         n.set_empty_object();
 
-        n["text"].set_string(note.second->text());
+        n["id"].set_string(guid::to_string(note.second.id));
 
-        Vec2i pos = note.second->ui_pos();
+        n["text"].set_string(note.second.text);
+
+        Vec2i pos = note.second.pos;
         n["ui_pos"].set_empty_array();
         n["ui_pos"].append().set_int(pos.x);
         n["ui_pos"].append().set_int(pos.y);
     }
-
 
     // TODO: Ugly error catching
     if (PyErr_Occurred())

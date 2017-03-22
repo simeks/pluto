@@ -531,7 +531,7 @@ void QtFlowGraphView::show_context_menu(const QPoint& pt)
         {
             if (action == _note_action)
             {
-                QtNoteItem* note = new QtNoteItem();
+                QtNoteItem* note = new QtNoteItem(_scene->graph(), _scene->graph()->make_note());
                 note->setPos(mapToScene(pt));
                 emit note_create(note);
             }

@@ -68,7 +68,6 @@ def node_template(**kwargs):
         func        : Function bound to node. (required)
     """
 
-
     if 'title' not in kwargs:
         raise ValueError('\'title\' missing')
 

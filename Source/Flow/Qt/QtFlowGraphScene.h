@@ -22,8 +22,8 @@ public:
     void add_node(QtFlowNode* node);
     void remove_node(QtFlowNode* node);
 
-    void add_note(QtNoteItem* note);
-    void remove_note(QtNoteItem* note);
+    //void add_note(QtNoteItem* note);
+    //void remove_note(QtNoteItem* note);
     
     /// Called whenever a node template is reloaded.
     /// This reloads all nodes belonging to the node class associated with the template

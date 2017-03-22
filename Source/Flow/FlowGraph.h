@@ -2,12 +2,25 @@
 #define __FLOW_GRAPH_H__
 
 #include <Core/Python/BaseObject.h>
+#include <Core/Image/Vec2.h>
 
 #include "API.h"
 
+class FlowGraph;
 class FlowNode;
 class FlowPin;
-class GraphNote;
+
+struct GraphNote
+{
+    GraphNote();
+
+    FlowGraph* owner;
+    Guid id;
+
+    std::string text;
+    Vec2i pos;
+};
+
 class FLOW_API FlowGraph : public python::BaseObject
 {
     PYTHON_OBJECT(FlowGraph, python::BaseObject);
@@ -18,9 +31,6 @@ public:
 
     void add_node(FlowNode* node);
     void remove_node(FlowNode* node);
-
-    void add_note(GraphNote* note);
-    void remove_note(GraphNote* note);
 
     void clear();
 
@@ -37,9 +47,26 @@ public:
     FlowNode* node(const Guid& id) const;
     const std::map<Guid, FlowNode*>& nodes() const;
 
-    GraphNote* note(const Guid& id) const;
-    const std::map<Guid, GraphNote*>& notes() const;
+    /// Adds a new note with the given properties to the graph and returns the id to said note.
+    Guid make_note(const char* text=nullptr, const Vec2i& pos = Vec2i(0, 0));
+
+    /// Similar to make_note but for when the user already have a desired id.
+    /// Fails if a note with given id already exists
+    void insert_note(const Guid& id, const char* text, const Vec2i& pos);
+
+    /// Removes the note with the given id
+    /// Fails if no note with the given id exists
+    void remove_note(const Guid& id);
+
+
+    Vec2i note_position(const Guid& id) const;
+    const char* note_text(const Guid& id) const;
+
+    void set_note_position(const Guid& id, const Vec2i& pos);
+    void set_note_text(const Guid& id, const char* text);
     
+    const std::map<Guid, GraphNote>& notes() const;
+
     /// Reloads all nodes in the graph
     void reload_all();
     /// Reloads all nodes of the specified class
@@ -49,7 +76,7 @@ public:
 
 private:
     std::map<Guid, FlowNode*> _nodes;
-    std::map<Guid, GraphNote*> _notes;
+    std::map<Guid, GraphNote> _notes;
 };
 
 class JsonObject;
