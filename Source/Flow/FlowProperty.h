@@ -6,35 +6,32 @@
 #include "API.h"
 
 class FlowNode;
-class FLOW_API FlowProperty : public python::BaseObject
+
+struct FlowProperty
 {
-    PYTHON_OBJECT(FlowProperty, python::BaseObject);
+    enum Type
+    {
+        Type_Primitive, /// I.e. int, float, string, bool
+        Type_File,
+        Type_Enum
+    };
 
-public:
-    FlowProperty();
-    FlowProperty(const char* name);
-    FlowProperty(const python::Tuple& args);
-    ~FlowProperty();
+    FlowProperty(Type type);
+    virtual ~FlowProperty();
 
-    const char* name() const;
-    python::Object default_value() const;
-
-    FlowNode* owner() const;
-    void set_owner(FlowNode* node);
-
-    FlowProperty(const FlowProperty& other);
-
-protected:
-    std::string _name;
-    python::Object _default_value;
-
-    FlowNode* _owner;
+    Type type;
+    FlowNode* owner;
 };
 
-class FLOW_API FileProperty : public FlowProperty
+struct PrimitiveProperty : public FlowProperty
 {
-    PYTHON_OBJECT(FileProperty, FlowProperty);
-public:
+    PrimitiveProperty();
+
+    python::Object default_value;
+};
+
+struct FileProperty : public FlowProperty
+{
     enum FileMode
     {
         File_Open,
@@ -42,36 +39,18 @@ public:
     };
 
     FileProperty();
-    FileProperty(const python::Tuple& args);
-    ~FileProperty();
 
-    /// File mode if property is of type FilePath
-    FileMode file_mode() const;
-
-    /// File filter if property is of type FilePath
-    const std::string& file_filter() const;
-
-protected:
-    FileMode _file_mode;
-    std::string _file_filter;
+    FileMode file_mode;
+    std::string file_filter;
 };
 
-class FLOW_API EnumProperty : public FlowProperty
+struct EnumProperty : public FlowProperty
 {
-    PYTHON_OBJECT(EnumProperty, FlowProperty);
-public:
     EnumProperty();
-    EnumProperty(const python::Tuple& args);
-    ~EnumProperty();
 
-    const std::vector<std::string>& options() const;
-    int default_index() const;
-
-private:
-    std::vector<std::string> _options;
-    int _default_index; // Index to default value
+    std::vector<std::string> options;
+    int default_index; // Index to default value
 };
-
 
 
 

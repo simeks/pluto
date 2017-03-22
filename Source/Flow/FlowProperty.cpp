@@ -4,54 +4,30 @@
 #include "FlowProperty.h"
 
 
-PYTHON_OBJECT_IMPL(FlowProperty, "Property")
+FlowProperty::FlowProperty(Type type) :
+    type(type),
+    owner(nullptr)
 {
-    cls.def_init_varargs<FlowProperty>();
-}
-
-FlowProperty::FlowProperty() :
-    _owner(nullptr),
-    _default_value(python::None())
-{
-}
-FlowProperty::FlowProperty(const char* name) :
-    _name(name),
-    _owner(nullptr),
-    _default_value(python::None())
-{
-}
-FlowProperty::FlowProperty(const python::Tuple& args) :
-    _owner(nullptr),
-    _default_value(python::None())
-{
-    if (args.size() > 0)
-        _name = python::from_python<std::string>(args.get(0));
 }
 FlowProperty::~FlowProperty()
 {
 }
-const char* FlowProperty::name() const
+
+PrimitiveProperty::PrimitiveProperty() : 
+    FlowProperty(Type_Primitive),
+    default_value(python::None())
 {
-    return _name.c_str();
 }
-python::Object FlowProperty::default_value() const
+FileProperty::FileProperty() 
+    : FlowProperty(Type_File)
 {
-    return _default_value;
 }
-FlowNode* FlowProperty::owner() const
+EnumProperty::EnumProperty() 
+    : FlowProperty(Type_Enum)
 {
-    return _owner;
+
 }
-void FlowProperty::set_owner(FlowNode* node)
-{
-    _owner = node;
-}
-FlowProperty::FlowProperty(const FlowProperty& other) : python::BaseObject(other)
-{
-    _name = other._name;
-    _default_value = other._default_value;
-    _owner = other._owner;
-}
+
 
 
 namespace python
