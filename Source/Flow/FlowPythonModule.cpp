@@ -14,30 +14,30 @@
 #include "FlowProperty.h"
 #include "FlowPythonModule.h"
 #include "FlowWindow.h"
+#include "GraphInputNode.h"
+#include "GraphOutputNode.h"
 #include "Qt/QtFlowUI.h"
 #include "Qt/QtFlowWindow.h"
 #include "Qt/QtGraphFileLoader.h"
-#include "UiFlowNode.h"
 
 namespace py = python;
 
 PYTHON_MODULE(_flow)
 {
-    auto window_cls = FlowWindow::python_class();
-    module.def("Window", window_cls);
+    module.def("Window", FlowWindow::python_class());
 
     module.def("Context", FlowContext::static_class());
     module.def("Graph", FlowGraph::static_class());
     module.def("Node", FlowNode::static_class());
     module.def("Pin", FlowPin::static_class());
     module.def("ArrayPin", ArrayFlowPin::static_class());
-    module.def("Property", FlowProperty::static_class());
-    //module.def("BoolProperty", BoolProperty::static_class());
-    //module.def("IntProperty", IntProperty::static_class());
-    //module.def("FloatProperty", FloatProperty::static_class());
-    module.def("EnumProperty", EnumProperty::static_class());
-    module.def("FileProperty", FileProperty::static_class());
-//    module.def("StringProperty", StringProperty::static_class());
+    module.def("GraphInputNode", GraphInputNode::static_class());
+    module.def("GraphOutputNode", GraphOutputNode::static_class());
+
+    module.def("Property", FlowProperty::python_class());
+    module.def("PrimitiveProperty", PrimitiveProperty::python_class());
+    module.def("EnumProperty", EnumProperty::python_class());
+    module.def("FileProperty", FileProperty::python_class());
 
     module.def("open", &flow::open, "open(file)");
     module.def("window", &flow::window, "window()");

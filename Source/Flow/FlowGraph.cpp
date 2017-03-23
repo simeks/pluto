@@ -290,7 +290,6 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             for (auto& p : properties)
             {
-                // TODO: Error checking, what if property type has changed?
                 if (p.second.is_string())
                 {
                     out_node->set_property(p.first.c_str(), python::to_python(p.second.as_string()));
@@ -429,12 +428,17 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 
         JsonObject& properties = node["properties"];
         properties.set_empty_object();
-        for (auto p : n.second->properties())
-        {
-            if (p->is_a(FileProperty::static_class()))
+        //for (auto p : n.second->properties())
+        //{
+        //    switch (p->type)
+        //    {
+
+        //    }
+
+            /*if (p->is_a(FileProperty::static_class()))
             {
                 properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-            }
+            }*/
             //else if (p->is_a(BoolProperty::static_class()))
             //{
             //    properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
@@ -447,15 +451,15 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
             //{
             //    properties[p->name()].set_double(n.second->attribute<double>(p->name()));
             //}
-            else if (p->is_a(EnumProperty::static_class()))
+            /*else if (p->is_a(EnumProperty::static_class()))
             {
                 properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
             }
             else
             {
                 properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-            }
-        }
+            }*/
+        //}
 
         for (auto outpin : n.second->pins())
         {
@@ -515,10 +519,10 @@ FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
     n->set_node_id(old->node_id());
     n->set_graph(old->graph());
     n->set_ui_pos(old->ui_pos());
-    for (auto p : old->properties())
+    /*for (auto p : old->properties())
     {
         n->set_attribute(p->name(), old->attribute(p->name()));
-    }
+    }*/
 
     return n;
 }

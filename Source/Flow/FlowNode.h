@@ -12,7 +12,7 @@ class ArrayFlowPin;
 class FlowContext;
 class FlowGraph;
 class FlowPin;
-class FlowProperty;
+struct FlowProperty;
 
 typedef void(*FlowNodeFunction)(FlowContext*);
 

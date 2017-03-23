@@ -3,12 +3,12 @@
 
 #include "API.h"
 
-#include <Flow/UiFlowNode.h>
+#include <Flow/FlowNode.h>
 
 class QtVisWindow;
-class VIS_API VisNode : public UiFlowNode
+class VIS_API VisNode : public FlowNode
 {
-    PYTHON_OBJECT(VisNode, UiFlowNode);
+    PYTHON_OBJECT(VisNode, FlowNode);
 
 public:
     VisNode();

@@ -21,13 +21,18 @@ struct FlowProperty
 
     Type type;
     FlowNode* owner;
+
+    static python::Class python_class();
 };
 
 struct PrimitiveProperty : public FlowProperty
 {
     PrimitiveProperty();
+    PrimitiveProperty(const python::Object& default_value);
 
     python::Object default_value;
+
+    static python::Class python_class();
 };
 
 struct FileProperty : public FlowProperty
@@ -39,17 +44,25 @@ struct FileProperty : public FlowProperty
     };
 
     FileProperty();
+    FileProperty(const python::Tuple& args);
+
+    std::string default_value;
 
     FileMode file_mode;
     std::string file_filter;
+
+    static python::Class python_class();
 };
 
 struct EnumProperty : public FlowProperty
 {
     EnumProperty();
+    EnumProperty(const python::Tuple& args);
 
     std::vector<std::string> options;
     int default_index; // Index to default value
+
+    static python::Class python_class();
 };
 
 

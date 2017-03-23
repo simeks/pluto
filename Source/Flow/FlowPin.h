@@ -17,7 +17,6 @@ public:
         Out,
         Unknown
     };
-
     
     /// @param name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
     FlowPin(const std::string& name,

@@ -66,20 +66,14 @@ namespace python
     {
         static_assert(std::is_base_of<python::BaseObject, TClass>::value, "make_object only works for types derived from python::BaseObject");
         
+        Class cls = TClass::static_class();
+
         // Holder will be the owner of our object, deleting it whenever it gets destroyed.
         PtrHolder<TClass>* holder = new PtrHolder<TClass>();
         TClass* obj = new (holder->ptr()) TClass(args...);
-        
-        PyTypeObject* type = TypeInfo<TClass>::info.py_type;
-        if (type == nullptr)
-        {
-            PyErr_Format(PyExc_TypeError, "No python type found for type '%s'",
-                typeid(TClass).name());
-            return nullptr;
-        }
 
         // Create a Python object which will act as the owner of obj
-        PyObject* pyobj = incref(make_instance(type, holder).ptr());
+        PyObject* pyobj = incref(make_instance((PyTypeObject*)cls.ptr(), holder).ptr());
         // Let the C++ object know of its owner
         obj->initialize_python(pyobj);
 

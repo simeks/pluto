@@ -59,7 +59,7 @@ FlowNode::~FlowNode()
     _pins.clear();
     for (auto p : _properties)
     {
-        p->release();
+        delete p;
     }
     _properties.clear();
 }
@@ -174,10 +174,10 @@ void FlowNode::add_pin(FlowPin* pin)
 }
 void FlowNode::add_property(FlowProperty* prop)
 {
-    prop->set_owner(this);
-    _properties.push_back(prop);
+    prop->owner = this;
+    //_properties.push_back(prop);
 
-    set_attribute(prop->name(), prop->default_value());
+    //set_attribute(prop->name, prop->default_value());
 }
 const std::vector<FlowProperty*>& FlowNode::properties() const
 {
@@ -231,13 +231,13 @@ FlowNode::FlowNode(const FlowNode& other) : python::BaseObject(other)
         FlowPin* p = python::clone_object(pin);
         add_pin(p);
     }
-    for (auto& prop : other._properties)
-    {
-        FlowProperty* p = python::clone_object(prop);
-        add_property(p);
-
-        set_attribute(p->name(), other.attribute(p->name()));
-    }
+//    for (auto& prop : other._properties)
+//    {
+//        FlowProperty* p = python::clone_object(prop);
+//        add_property(p);
+//
+////        set_attribute(p->name(), other.attribute(p->name()));
+//    }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
     _function = other._function;
