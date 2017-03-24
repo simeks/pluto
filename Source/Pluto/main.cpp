@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <QSplashScreen>
+#include <QStyleFactory>
 
 #include "Console/ConsoleModule.h"
 #include "MainWindow.h"

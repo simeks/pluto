@@ -11,6 +11,7 @@ class FlowPin;
 class GraphInputNode;
 class GraphOutputNode;
 class QTemporaryDir;
+
 class FLOW_API FlowContext : public python::BaseObject
 {
     PYTHON_OBJECT(FlowContext, python::BaseObject);
@@ -109,14 +110,8 @@ private:
     void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
 
     FlowGraph* _graph;
-    std::map<FlowPin*, python::Object> _state;
+    FlowGraphState* _state;
     python::Dict _env_dict;
-
-    FlowNode* _current_node;
-    std::vector<FlowNode*> _nodes_to_execute;
-
-    std::map<std::string, python::Object> _inputs;
-    std::map<std::string, python::Object> _outputs;
 
     QTemporaryDir* _temp_dir;
 

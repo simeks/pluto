@@ -120,7 +120,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     else
         PYTHON_ERROR(PyExc_ValueError, "Invalid argument, expected graph or path to graph file");
 
-    FlowContext* context = python::make_object<FlowContext>(graph);
+    python::Ref<FlowContext> context = python::make_object<FlowContext>(graph);
 
     if (kw.valid())
     {
