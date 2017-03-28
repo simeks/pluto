@@ -292,19 +292,19 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             {
                 if (p.second.is_string())
                 {
-                    out_node->set_property(p.first.c_str(), python::to_python(p.second.as_string()));
+                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_string()));
                 }
                 else if (p.second.is_int())
                 {
-                    out_node->set_property(p.first.c_str(), python::to_python(p.second.as_int()));
+                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_int()));
                 }
                 else if (p.second.is_float())
                 {
-                    out_node->set_property(p.first.c_str(), python::to_python(p.second.as_double()));
+                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_double()));
                 }
                 else if (p.second.is_bool())
                 {
-                    out_node->set_property(p.first.c_str(), python::to_python(p.second.as_bool()));
+                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_bool()));
                 }
 
             }

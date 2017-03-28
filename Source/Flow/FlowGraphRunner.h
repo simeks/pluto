@@ -1,6 +1,8 @@
 #ifndef __FLOW_GRAPH_RUNNER_H__
 #define __FLOW_GRAPH_RUNNER_H__
 
+#include <Core/Python/Object.h>
+
 class FlowGraph;
 class FlowNode;
 class FlowPin;

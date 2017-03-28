@@ -62,7 +62,7 @@ QtFlowGraphRunner::~QtFlowGraphRunner()
     if (_context)
         _context->release();
 }
-Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
+Dict QtFlowGraphRunner::run(FlowGraph* , const Tuple& , const Dict& kw)
 {
     emit run_started();
 
@@ -70,7 +70,7 @@ Dict QtFlowGraphRunner::run(FlowGraph* graph, const Tuple& , const Dict& kw)
 
     if (!_context)
     {
-        _context = python::make_object<FlowContext>(graph);
+        //_context = python::make_object<FlowContext>(graph);
 
         if (kw.valid())
         {
@@ -115,7 +115,7 @@ bool QtFlowGraphRunner::failed() const
 {
     return _context != nullptr;
 }
-void QtFlowGraphRunner::run(FlowGraph* graph)
+void QtFlowGraphRunner::run(FlowGraph* )
 {
     emit run_started();
 
@@ -124,8 +124,8 @@ void QtFlowGraphRunner::run(FlowGraph* graph)
 
     PYTHON_STDOUT("Running graph...\n");
 
-    if (!_context)
-        _context = python::make_object<FlowContext>(graph);
+    //if (!_context)
+    //    _context = python::make_object<FlowContext>(graph);
     
     QtFlowGraphRunnerCallback cb(this);
     if (_context->run(&cb))

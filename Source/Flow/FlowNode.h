@@ -12,27 +12,9 @@ class ArrayFlowPin;
 class FlowContext;
 class FlowGraph;
 class FlowPin;
-struct FlowProperty;
+class FlowProperty;
 
 typedef void(*FlowNodeFunction)(FlowContext*);
-
-struct FlowPinDef
-{
-    const char* name;
-    int type;
-    const char* doc;
-};
-
-struct FlowNodeDef
-{
-    const char* class_name;
-    const char* title;
-    const char* category;
-    FlowPinDef* pins;
-    FlowNodeFunction fn;
-    const char* doc;
-};
-
 
 class FLOW_API FlowNode : public python::BaseObject
 {
@@ -40,7 +22,6 @@ class FLOW_API FlowNode : public python::BaseObject
 
 public:
     FlowNode();
-    FlowNode(const FlowNodeDef& def);
     ~FlowNode();
 
     virtual void run(FlowContext* ctx);
@@ -61,6 +42,9 @@ public:
     /// Note: Pin names are case-insensitive
     bool is_pin_linked(const char* name) const;
 
+    /// Returns the property with the given name, returns null if not found
+    FlowProperty* property(const char* name);
+
     const Guid& node_id() const;
     void set_node_id(const Guid& id);
 
@@ -72,12 +56,8 @@ public:
     const char* category() const;
 
     void add_pin(const char* name, int pin_type);
-    void add_pin(FlowPin* pin);
-
+    
     const std::vector<FlowProperty*>& properties() const;
-
-    void set_property(const char* name, const char* value);
-    void set_property(const char* name, const python::Object& value);
 
     const Vec2i& ui_pos() const;
     void set_ui_pos(const Vec2i& pos);

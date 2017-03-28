@@ -12,6 +12,8 @@ class GraphInputNode;
 class GraphOutputNode;
 class QTemporaryDir;
 
+struct FlowGraphState;
+
 class FLOW_API FlowContext : public python::BaseObject
 {
     PYTHON_OBJECT(FlowContext, python::BaseObject);
@@ -25,7 +27,7 @@ public:
         virtual void node_failed(FlowNode*) {}
     };
     
-    FlowContext(FlowGraph* graph);
+    FlowContext(FlowGraphState* state);
     ~FlowContext();
 
     /// Returns true if the run was successful, false if not.
@@ -109,7 +111,6 @@ private:
     void initialize();
     void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
 
-    FlowGraph* _graph;
     FlowGraphState* _state;
     python::Dict _env_dict;
 

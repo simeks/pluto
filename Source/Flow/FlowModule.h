@@ -11,7 +11,6 @@ class FlowPythonModule;
 class FlowWindow;
 class GraphFileLoader;
 class QtFlowUI;
-struct FlowNodeDef;
 class FLOW_API FlowModule : public ModuleInterface
 {
 public:

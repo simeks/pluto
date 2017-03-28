@@ -3,6 +3,7 @@
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
+#include "FlowGraphRunner.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
 #include "GraphInputNode.h"
@@ -12,7 +13,6 @@
 
 PYTHON_OBJECT_IMPL(FlowContext, "Context")
 {
-    cls.def_init<FlowContext, FlowGraph*>();
     cls.def("write_pin", &FlowContext::write_pin, "");
     cls.def("read_pin", &FlowContext::read_pin, "");
     cls.def("is_pin_linked", &FlowContext::is_pin_linked, "");
@@ -20,10 +20,9 @@ PYTHON_OBJECT_IMPL(FlowContext, "Context")
     cls.def("temp_node_dir", &FlowContext::temp_node_dir, "");
 }
 
-FlowContext::FlowContext(FlowGraph* graph) :
+FlowContext::FlowContext(FlowGraphState* state) :
+    _state(state),
     _temp_dir(new QTemporaryDir()),
-    _graph(graph),
-    _current_node(nullptr),
     _failed(false)
 {
 }
@@ -39,10 +38,10 @@ bool FlowContext::run(Callback* cb)
     // Only perform initialization if last run didn't fail
     if (!_failed)
     {
-        _nodes_to_execute.clear();
+        _state->nodes_to_execute.clear();
 
         // Find all nodes without inputs
-        for (auto& n : _graph->nodes())
+        for (auto& n : _state->graph->nodes())
         {
             int edges = 0;
             for (auto p : n.second->pins())
@@ -52,35 +51,35 @@ bool FlowContext::run(Callback* cb)
             }
             incoming_edges[n.second] = edges;
             if (edges == 0)
-                _nodes_to_execute.push_back(n.second);
+                _state->nodes_to_execute.push_back(n.second);
         }
     }
     else
     {
         // Reload nodes
-        for (auto it = _nodes_to_execute.begin(); it != _nodes_to_execute.end(); ++it)
+        for (auto it = _state->nodes_to_execute.begin(); it != _state->nodes_to_execute.end(); ++it)
         {
-            (*it) = _graph->node((*it)->node_id());
+            (*it) = _state->graph->node((*it)->node_id());
         }
         reset_error();
     }
 
     std::set<FlowNode*> next;
-    while (!_nodes_to_execute.empty())
+    while (!_state->nodes_to_execute.empty())
     {
-        _current_node = _nodes_to_execute.back();
+        _state->current_node = _state->nodes_to_execute.back();
 
-        std::cout << "Running " << _current_node->category() << "/" << _current_node->title() << std::endl;
+        std::cout << "Running " << _state->current_node->category() << "/" << _state->current_node->title() << std::endl;
 
         if (cb)
-            cb->node_started(_current_node);
+            cb->node_started(_state->current_node);
 
-        _current_node->run(this);
+        _state->current_node->run(this);
 
         if (failed())
         {
             if (cb)
-                cb->node_failed(_current_node);
+                cb->node_failed(_state->current_node);
 
             return false;
         }
@@ -105,7 +104,7 @@ bool FlowContext::run(Callback* cb)
             PyErr_Print();
 
             if (cb)
-                cb->node_failed(_current_node);
+                cb->node_failed(_state->current_node);
 
             _failed = true;
             return false;
@@ -113,65 +112,64 @@ bool FlowContext::run(Callback* cb)
         else
         {
             if (cb)
-                cb->node_finished(_current_node);
+                cb->node_finished(_state->current_node);
         }
-        _nodes_to_execute.pop_back();
+        _state->nodes_to_execute.pop_back();
 
         next.clear();
-        find_dependents(_current_node, next);
+        find_dependents(_state->current_node, next);
         for (auto n : next)
         {
             for (auto p : n->pins())
             {
-                if (p->pin_type() == FlowPin::In && !p->links().empty() && p->links()[0]->owner() == _current_node)
+                if (p->pin_type() == FlowPin::In && !p->links().empty() && p->links()[0]->owner() == _state->current_node)
                     --incoming_edges[n];
             }
             if (incoming_edges[n] == 0)
-                _nodes_to_execute.push_back(n);
+                _state->nodes_to_execute.push_back(n);
         }
-        _current_node = nullptr;
+        _state->current_node = nullptr;
     }
     return true;
 }
 void FlowContext::clean_up()
 {
-    _state.clear();
     _env_dict.clear();
-    _nodes_to_execute.clear();
 }
-FlowContext* FlowContext::create_child_context(FlowGraph* graph)
-{
+FlowContext* FlowContext::create_child_context(FlowGraph*)
+{/*
     FlowContext* context = python::make_object<FlowContext>(graph);
     context->_env_dict = _env_dict;
-    return context;
+    return context;*/
+    return nullptr;
 }
 FlowNode* FlowContext::current_node()
 {
-    return _current_node;
+    return _state->current_node;
 }
 void FlowContext::write_pin(const char* name, const python::Object& obj)
 {
-    if (_current_node)
+    if (_state->current_node)
     {
-        FlowPin* pin = _current_node->pin(name);
+        FlowPin* pin = _state->current_node->pin(name);
         if (pin && pin->pin_type() == FlowPin::Out)
         {
-            _state[pin] = obj;
+            _state->pins[pin] = obj;
         }
         // else TODO: Error
     }
 }
 python::Object FlowContext::read_pin(const char* name)
 {
-    if (_current_node)
+    if (_state->current_node)
     {
-        FlowPin* pin = _current_node->pin(name);
+        FlowPin* pin = _state->current_node->pin(name);
         if (pin)
         {
             if (!pin->links().empty() && pin->pin_type() == FlowPin::In)
             {
-                auto it = _state.find(pin->links()[0]);
-                if (it != _state.end())
+                auto it = _state->pins.find(pin->links()[0]);
+                if (it != _state->pins.end())
                 {
                     return it->second;
                 }
@@ -181,7 +179,7 @@ python::Object FlowContext::read_pin(const char* name)
         {
             // If no single pin was found, try for pin array
 
-            std::vector<ArrayFlowPin*> pin_array = _current_node->pin_array(name);
+            std::vector<ArrayFlowPin*> pin_array = _state->current_node->pin_array(name);
             if (pin_array.size() > 1)
             {
                 // The way pin array work we always have n + 1 pins when n is the number of linked pins
@@ -189,8 +187,8 @@ python::Object FlowContext::read_pin(const char* name)
                 Tuple t(pin_array.size() - 1);
                 for (int i = 0; i < pin_array.size() - 1; ++i)
                 {
-                    auto it = _state.find(pin_array[i]->links()[0]);
-                    if (it != _state.end())
+                    auto it = _state->pins.find(pin_array[i]->links()[0]);
+                    if (it != _state->pins.end())
                     {
                         t.set(i, it->second);
                     }
@@ -204,8 +202,8 @@ python::Object FlowContext::read_pin(const char* name)
 }
 bool FlowContext::is_pin_linked(const char* name)
 {
-    if (_current_node)
-        return _current_node->is_pin_linked(name);
+    if (_state->current_node)
+        return _state->current_node->is_pin_linked(name);
     return false;
 }
 bool FlowContext::has_env_var(const char* key) const
@@ -228,35 +226,35 @@ void FlowContext::env_set(const char* key, const char* value)
 
 const std::map<std::string, python::Object>& FlowContext::inputs() const
 {
-    return _inputs;
+    return _state->inputs;
 }
 const std::map<std::string, python::Object>& FlowContext::outputs() const
 {
-    return _outputs;
+    return _state->outputs;
 }
 
 python::Object FlowContext::input(const char* name) const
 {
-    auto it = _inputs.find(name);
-    if (it != _inputs.end())
+    auto it = _state->inputs.find(name);
+    if (it != _state->inputs.end())
         return it->second;
     return python::None();
 }
 python::Object FlowContext::output(const char* name) const
 {
-    auto it = _outputs.find(name);
-    if (it != _outputs.end())
+    auto it = _state->outputs.find(name);
+    if (it != _state->outputs.end())
         return it->second;
     return python::None();
 }
 void FlowContext::set_input(const char* name, const python::Object& value)
 {
-    auto it = _inputs.find(name);
+    auto it = _state->inputs.find(name);
     it->second = value;
 }
 void FlowContext::set_output(const char* name, const python::Object& value)
 {
-    auto it = _outputs.find(name);
+    auto it = _state->outputs.find(name);
     it->second = value;
 }
 const char* FlowContext::temp_dir() const
@@ -265,10 +263,10 @@ const char* FlowContext::temp_dir() const
 }
 std::string FlowContext::temp_node_dir() const
 {
-    if (!_current_node)
+    if (!_state->current_node)
         PYTHON_ERROR(PyExc_ValueError, "No current node");
 
-    QString node_id = guid::to_string(_current_node->node_id()).c_str();
+    QString node_id = guid::to_string(_state->current_node->node_id()).c_str();
 
     QDir dir(_temp_dir->path());
     if (!dir.exists(node_id))
@@ -297,20 +295,20 @@ void FlowContext::reset_error()
 }
 void FlowContext::initialize()
 {
-    if (!_graph)
+    if (!_state->graph)
         return;
 
     set_attribute("env", _env_dict);
 
-    for (auto& n : _graph->nodes())
+    for (auto& n : _state->graph->nodes())
     {
         if (n.second->is_a(GraphInputNode::static_class()))
         {
-            _inputs[n.second->attribute<const char*>("name")] = python::None();
+            _state->inputs[n.second->attribute<const char*>("name")] = python::None();
         }
         else if (n.second->is_a(GraphOutputNode::static_class()))
         {
-            _outputs[n.second->attribute<const char*>("name")] = python::None();
+            _state->outputs[n.second->attribute<const char*>("name")] = python::None();
         }
     }
 

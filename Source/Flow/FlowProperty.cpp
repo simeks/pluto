@@ -1,5 +1,6 @@
 #include <Core/Common.h>
 #include <Core/Python/Sequence.h>
+#include <Core/Python/Str.h>
 
 #include "FlowProperty.h"
 
@@ -18,85 +19,116 @@ namespace python
     }
 }
 
-FlowProperty::FlowProperty(Type type) :
-    type(type),
-    owner(nullptr)
+PYTHON_OBJECT_IMPL(FlowProperty, "Property")
+{
+    cls.def_init<FlowProperty, python::Object>();
+    cls.def("value", &FlowProperty::value, "Returns the current value of this property");
+    cls.def("set_value", &FlowProperty::set_value, "Sets the value of this property");
+}
+
+FlowProperty::FlowProperty() :
+    _owner(nullptr),
+    _value(python::None())
+{
+}
+FlowProperty::FlowProperty(const python::Object& value) :
+    _owner(nullptr),
+    _value(value)
 {
 }
 FlowProperty::~FlowProperty()
 {
 }
-python::Class FlowProperty::python_class()
+const char* FlowProperty::name() const
 {
-    static python::Class cls;
-    if (cls.is_none())
-    {
-        cls = python::make_class<FlowProperty>("Property");
-    }
-    return cls;
+    return _name.c_str();
+}
+void FlowProperty::set_name(const char* name)
+{
+    _name = name;
+}
+FlowNode* FlowProperty::owner() const
+{
+    return _owner;
+}
+void FlowProperty::set_owner(FlowNode* owner)
+{
+    _owner = owner;
+}
+python::Object FlowProperty::value() const
+{
+    return _value;
+}
+void FlowProperty::set_value(const python::Object& value)
+{
+    _value = value;
 }
 
-PrimitiveProperty::PrimitiveProperty() : 
-    FlowProperty(Type_Primitive),
-    default_value(python::None())
+
+PYTHON_OBJECT_IMPL(FileProperty, "FileProperty")
 {
-}
-PrimitiveProperty::PrimitiveProperty(const python::Object& default_value) :
-    FlowProperty(Type_Primitive),
-    default_value(default_value)
-{
-}
-python::Class PrimitiveProperty::python_class()
-{
-    static python::Class cls;
-    if (cls.is_none())
-    {
-        cls = python::make_class<PrimitiveProperty, FlowProperty>("PrimitiveProperty");
-        cls.def_init<PrimitiveProperty, python::Object>();
-    }
-    return cls;
+    cls.def_init_varargs<FileProperty>();
+    cls.def("File_Open", FileProperty::File_Open);
+    cls.def("File_Save", FileProperty::File_Save);
 }
 
-FileProperty::FileProperty() : FlowProperty(Type_File)
+FileProperty::FileProperty() : FlowProperty(python::Str())
 {
 }
-FileProperty::FileProperty(const python::Tuple& args) : FlowProperty(Type_File)
+FileProperty::FileProperty(const python::Tuple& args) : 
+    FlowProperty(python::Str()),
+    _file_mode(File_Open),
+    _file_filter("Files (*.*)")
 {
     if (args.size() > 1)
-        default_value = args.get<const char*>(0);
+    {
+        if (!PyUnicode_Check(args.get(0).ptr()))
+        {
+            PYTHON_ERROR(PyExc_ValueError, "Expected value to be string");
+        }
+        set_value(args.get(0));
+    }
 
     if (args.size() > 2)
-        file_mode = python::from_python<FileMode>(args.get(1));
-    else
-        file_mode = File_Open;
+    {
+        _file_mode = python::from_python<FileMode>(args.get(1));
+    }
 
     if (args.size() > 3)
-        file_filter = python::from_python<std::string>(args.get(2));
-    else
-        file_filter = "Files (*.*)";
-}
-python::Class FileProperty::python_class()
-{
-    static python::Class cls;
-    if (cls.is_none())
     {
-        cls = python::make_class<FileProperty, FlowProperty>("FileProperty");
-        cls.def_init_varargs<FileProperty>();
-        cls.def("File_Open", FileProperty::File_Open);
-        cls.def("File_Save", FileProperty::File_Save);
+        _file_filter = python::from_python<std::string>(args.get(2));
     }
-    return cls;
+}
+FileProperty::FileMode FileProperty::file_mode() const
+{
+    return _file_mode;
+}
+void FileProperty::set_file_mode(FileMode mode)
+{
+    _file_mode = mode;
+}
+const char* FileProperty::file_filter() const
+{
+    return _file_filter.c_str();
+}
+void FileProperty::set_file_filter(const char* filter)
+{
+    _file_filter = filter;
 }
 
-EnumProperty::EnumProperty() : FlowProperty(Type_Enum)
+PYTHON_OBJECT_IMPL(EnumProperty, "EnumProperty")
+{
+    cls.def_init_varargs<EnumProperty>();
+}
+EnumProperty::EnumProperty() : FlowProperty(python::Str())
 {
 }
-EnumProperty::EnumProperty(const python::Tuple& args) : FlowProperty(Type_Enum)
+EnumProperty::EnumProperty(const python::Tuple& args) : 
+    FlowProperty(python::Str()),
+    _default_index(-1)
 {
     if (args.size() < 1)
         PYTHON_ERROR(PyExc_ValueError, "Expected at least 1 arguments");
-
-    default_index = -1;
 
     python::Sequence opts(args.get(0));
     for (int i = 0; i < opts.size(); ++i)
@@ -105,7 +137,7 @@ EnumProperty::EnumProperty(const python::Tuple& args) : FlowProperty(Type_Enum)
         if (!PyUnicode_Check(str.ptr()))
             PYTHON_ERROR(PyExc_TypeError, "Expected all options to be strings");
 
-        options.push_back(PyUnicode_AsUTF8(str.ptr()));
+        _options.push_back(PyUnicode_AsUTF8(str.ptr()));
     }
 
     if (args.size() > 2)
@@ -113,11 +145,12 @@ EnumProperty::EnumProperty(const python::Tuple& args) : FlowProperty(Type_Enum)
         python::Object def = args.get(1);
         if (PyLong_Check(def.ptr()))
         {
-            default_index = python::from_python<int>(def);
-            if (default_index < 0 && default_index >= opts.size())
+            _default_index = python::from_python<int>(def);
+            if (_default_index < 0 && _default_index >= opts.size())
             {
-                PYTHON_ERROR(PyExc_TypeError, "Index out of bounds: 0 <= %d < %d", default_index, opts.size());
+                PYTHON_ERROR(PyExc_TypeError, "Index out of bounds: 0 <= %d < %d", _default_index, opts.size());
             }
+            set_value(opts.get(_default_index));
         }
         else
         {
@@ -125,14 +158,12 @@ EnumProperty::EnumProperty(const python::Tuple& args) : FlowProperty(Type_Enum)
         }
     }
 }
-python::Class EnumProperty::python_class()
+const std::vector<std::string>& EnumProperty::options() const
 {
-    static python::Class cls;
-    if (cls.is_none())
-    {
-        cls = python::make_class<EnumProperty, FlowProperty>("FileProperty");
-        cls.def_init_varargs<EnumProperty>();
-    }
-    return cls;
+    return _options;
+}
+int EnumProperty::default_index() const
+{
+    return _default_index;
 }
 

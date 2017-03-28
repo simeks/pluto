@@ -7,36 +7,35 @@
 
 class FlowNode;
 
-struct FlowProperty
+class FlowProperty : public python::BaseObject
 {
-    enum Type
-    {
-        Type_Primitive, /// I.e. int, float, string, bool
-        Type_File,
-        Type_Enum
-    };
+    PYTHON_OBJECT(FlowProperty, python::BaseObject);
 
-    FlowProperty(Type type);
+public:
+    FlowProperty();
+    FlowProperty(const python::Object& value);
     virtual ~FlowProperty();
 
-    Type type;
-    FlowNode* owner;
+    const char* name() const;
+    void set_name(const char* name);
 
-    static python::Class python_class();
+    FlowNode* owner() const;
+    void set_owner(FlowNode* owner);
+
+    python::Object value() const;
+    void set_value(const python::Object& value);
+
+private:
+    std::string _name;
+    FlowNode* _owner;
+    python::Object _value;
 };
 
-struct PrimitiveProperty : public FlowProperty
+class FileProperty : public FlowProperty
 {
-    PrimitiveProperty();
-    PrimitiveProperty(const python::Object& default_value);
+    PYTHON_OBJECT(FileProperty, FlowProperty);
 
-    python::Object default_value;
-
-    static python::Class python_class();
-};
-
-struct FileProperty : public FlowProperty
-{
+public:
     enum FileMode
     {
         File_Open,
@@ -46,23 +45,31 @@ struct FileProperty : public FlowProperty
     FileProperty();
     FileProperty(const python::Tuple& args);
 
-    std::string default_value;
+    FileMode file_mode() const;
+    void set_file_mode(FileMode mode);
 
-    FileMode file_mode;
-    std::string file_filter;
+    const char* file_filter() const;
+    void set_file_filter(const char* filter);
 
-    static python::Class python_class();
+private:
+    FileMode _file_mode;
+    std::string _file_filter;
 };
 
-struct EnumProperty : public FlowProperty
+class EnumProperty : public FlowProperty
 {
+    PYTHON_OBJECT(EnumProperty, FlowProperty);
+
+public:
     EnumProperty();
     EnumProperty(const python::Tuple& args);
 
-    std::vector<std::string> options;
-    int default_index; // Index to default value
+    const std::vector<std::string>& options() const;
+    int default_index() const;
 
-    static python::Class python_class();
+private:
+    std::vector<std::string> _options;
+    int _default_index; // Index to default value
 };
 
 

@@ -35,21 +35,6 @@ FlowNode::FlowNode() :
     _function(nullptr)
 {
 }
-FlowNode::FlowNode(const FlowNodeDef& def) :
-    _owner_graph(nullptr),
-    _function(def.fn)
-{
-    if (def.pins)
-    {
-        FlowPinDef* pin = def.pins;
-        while (pin->name)
-        {
-            // TODO: Pin doc
-            add_pin(pin->name, pin->type);
-            ++pin;
-        }
-    }
-}
 FlowNode::~FlowNode()
 {
     for (auto p : _pins)
@@ -145,7 +130,15 @@ bool FlowNode::is_pin_linked(const char* name) const
     FlowPin* p = pin(name);
     return p && p->links().size() != 0;
 }
-
+FlowProperty* FlowNode::property(const char* name)
+{
+    for (auto it = _properties.begin(); it != _properties.end(); ++it)
+    {
+        if (strcmp((*it)->name(), name) == 0)
+            return *it;
+    }
+    return nullptr;
+}
 const Guid& FlowNode::node_id() const
 {
     return _node_id;
@@ -167,31 +160,15 @@ void FlowNode::add_pin(const char* name, int pin_type)
 {
     _pins.push_back(python::make_object<FlowPin>(name, (FlowPin::Type)pin_type, this));
 }
-void FlowNode::add_pin(FlowPin* pin)
-{
-    pin->set_owner(this);
-    _pins.push_back(pin);
-}
 void FlowNode::add_property(FlowProperty* prop)
 {
-    prop->owner = this;
-    //_properties.push_back(prop);
-
-    //set_attribute(prop->name, prop->default_value());
+    prop->set_owner(this);
+    _properties.push_back(prop);
 }
 const std::vector<FlowProperty*>& FlowNode::properties() const
 {
     return _properties;
 }
-void FlowNode::set_property(const char* name, const char* value)
-{
-    set_attribute(name, value);
-}
-void FlowNode::set_property(const char* name, const python::Object& value)
-{
-    set_attribute(name, value);
-}
-
 const char* FlowNode::node_class() const
 {
     if (has_attribute("node_class"))
@@ -229,15 +206,15 @@ FlowNode::FlowNode(const FlowNode& other) : python::BaseObject(other)
     for (auto& pin : other._pins)
     {
         FlowPin* p = python::clone_object(pin);
-        add_pin(p);
+        p->set_owner(this);
+        _pins.push_back(p);
     }
-//    for (auto& prop : other._properties)
-//    {
-//        FlowProperty* p = python::clone_object(prop);
-//        add_property(p);
-//
-////        set_attribute(p->name(), other.attribute(p->name()));
-//    }
+    for (auto& prop : other._properties)
+    {
+        FlowProperty* p = python::clone_object(prop);
+        p->set_owner(this);
+        _properties.push_back(p);
+    }
     _owner_graph = other._owner_graph;
     _node_id = other._node_id;
     _function = other._function;

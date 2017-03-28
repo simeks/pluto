@@ -34,10 +34,9 @@ PYTHON_MODULE(_flow)
     module.def("GraphInputNode", GraphInputNode::static_class());
     module.def("GraphOutputNode", GraphOutputNode::static_class());
 
-    module.def("Property", FlowProperty::python_class());
-    module.def("PrimitiveProperty", PrimitiveProperty::python_class());
-    module.def("EnumProperty", EnumProperty::python_class());
-    module.def("FileProperty", FileProperty::python_class());
+    module.def("Property", FlowProperty::static_class());
+    module.def("EnumProperty", EnumProperty::static_class());
+    module.def("FileProperty", FileProperty::static_class());
 
     module.def("open", &flow::open, "open(file)");
     module.def("window", &flow::window, "window()");
@@ -120,7 +119,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     else
         PYTHON_ERROR(PyExc_ValueError, "Invalid argument, expected graph or path to graph file");
 
-    python::Ref<FlowContext> context = python::make_object<FlowContext>(graph);
+    /*python::Ref<FlowContext> context = python::make_object<FlowContext>(graph);
 
     if (kw.valid())
     {
@@ -132,9 +131,10 @@ Dict flow::run(const Tuple& args, const Dict& kw)
 
     if (!context->run())
         return Dict();
-
+*/
     Dict ret;
-    for (auto& it : context->outputs())
+    kw;
+    /*for (auto& it : context->outputs())
     {
         python::Object obj = context->output(it.first.c_str());
         if (!obj.is_none())
@@ -145,7 +145,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
         {
             ret.set(it.first.c_str(), python::None());
         }
-    }
+    }*/
     return ret;
 }
 FlowNode* flow::create_node(const char* node_class)
