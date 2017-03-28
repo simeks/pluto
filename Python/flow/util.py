@@ -1,4 +1,4 @@
-from flow import FlowNode, FlowPin, StringProperty, FileProperty, EnumProperty, install_node_template
+from flow import Node, Pin, FileProperty, node_template
 
 import numpy as np
 
@@ -6,7 +6,7 @@ node_template(
     title='Eval',
     category='Utilities',
     ui={
-        ui_class = 'single_pin_node'
+        'ui_class': 'single_pin_node'
     },
     pins={
         'Out': Pin(Pin.Out)
@@ -22,7 +22,7 @@ node_template(
     title='FileBrowse',
     category='Utilities',
     ui={
-        ui_class = 'single_pin_node'
+        'ui_class': 'single_pin_node'
     },
     pins={
         'Out': Pin(Pin.Out)

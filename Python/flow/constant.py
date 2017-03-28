@@ -11,12 +11,8 @@ node_template(
         'Out': Pin(Pin.Out)
     },
     doc='Boolean constant',
-    func=BoolNode
+    func=lambda value : bool(value)
 )
-
-def BoolNode(value):
-    return value
-
 
 node_template(
     title='Integer',
@@ -28,12 +24,8 @@ node_template(
         'Out': Pin(Pin.Out)
     },
     doc='Integer constant',
-    func=IntNode
+    func=lambda value : int(value)
 )
-
-def IntNode(value):
-    return value
-
 
 node_template(
     title='Float',
@@ -45,12 +37,8 @@ node_template(
         'Out': Pin(Pin.Out)
     },
     doc='Float constant',
-    func=FloatNode
+    func=lambda value : float(value)
 )
-
-def FloatNode(value):
-    return value
-
 
 node_template(
     title='String',
@@ -62,8 +50,6 @@ node_template(
         'Out': Pin(Pin.Out)
     },
     doc='String constant',
-    func=StringNode
+    func=lambda value : str(value)
 )
 
-def StringNode(value):
-    return value

@@ -39,11 +39,11 @@ node_template(
     title='Index',
     category='List',
     ui={
-        ui_class = 'one_to_one_node',
-        ui_node_title_var = 'index'
-    }
+        'ui_class': 'one_to_one_node',
+        'ui_node_title_var': 'index'
+    },
     properties={
-        'index' = '0'
+        'index': '0'
     },
     pins={
         'In': Pin(Pin.In),

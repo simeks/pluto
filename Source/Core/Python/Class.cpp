@@ -32,8 +32,8 @@ namespace python
         if (!PyCapsule_CheckExact(cap))
             return nullptr;
 
-		HolderAllocator alloc = (HolderAllocator)PyCapsule_GetPointer(cap, "__cpp_allocator__");
-		return alloc();
+        HolderAllocator alloc = (HolderAllocator)PyCapsule_GetPointer(cap, "__cpp_allocator__");
+        return alloc();
     }
 }
 

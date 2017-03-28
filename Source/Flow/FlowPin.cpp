@@ -5,7 +5,8 @@
 
 #include <regex>
 
-PYTHON_OBJECT_IMPL(FlowPin, "Pin")
+PYTHON_OBJECT_IMPL_DOC(FlowPin, "Pin", 
+    "Pin(type, name=''): Creates a Pin of specified type (Pin.In or Pin.Out)\n")
 {
     cls.def_init_varargs<FlowPin>();
     cls.def("In", (int)FlowPin::In);
@@ -39,16 +40,23 @@ FlowPin::FlowPin(const FlowPin& other) : python::BaseObject(other)
 }
 FlowPin::FlowPin(const python::Tuple& args)
 {
-    if (args.size() < 2)
-        PYTHON_ERROR(PyExc_ValueError, "FlowPin expected at least 2 arguments");
+    if (args.size() < 1)
+        PYTHON_ERROR(PyExc_ValueError, "Pin expected at least 1 argument");
 
-    std::string name = python::from_python<std::string>(args.get(0));
-    if (!std::regex_match(name, flow_pin::pin_name_pattern))
+    // FlowPin(type, name="")
+
+    _name = "";
+    _pin_type = (FlowPin::Type)args.get<int>(0);
+    
+    if (args.size() > 1)
     {
-        PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
+        std::string name = args.get<const char*>(1);
+        if (!std::regex_match(name, flow_pin::pin_name_pattern))
+        {
+            PYTHON_ERROR(PyExc_ValueError, "Invalid pin name: '%s'", name.c_str());
+        }
+        _name = name;
     }
-    _name = name;
-    _pin_type = (FlowPin::Type)python::from_python<int>(args.get(1));
 }
 FlowPin::~FlowPin()
 {

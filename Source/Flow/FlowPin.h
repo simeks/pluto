@@ -23,6 +23,7 @@ public:
             Type pin_type,
             FlowNode* owner); 
 
+    /// Pin(type, name="")
     FlowPin(const python::Tuple& args);
     
     FlowPin();
@@ -65,6 +66,7 @@ public:
         FlowNode* owner,
         int index = 0);
 
+    /// ArrayPin(type, name="")
     ArrayFlowPin(const python::Tuple& args);
 
     ArrayFlowPin();
