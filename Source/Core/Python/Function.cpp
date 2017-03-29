@@ -40,10 +40,7 @@ static PyObject* function_call(
 {
     try
     {
-        PyObject* ret = (*f->caller)(args, kw);
-        if (PyErr_Occurred())
-            return nullptr;
-        return ret;
+        return (*f->caller)(args, kw);
     }
     catch (const python::ErrorSet&)
     {
@@ -51,11 +48,13 @@ static PyObject* function_call(
     }
     catch (const std::exception& e)
     {
-        PYTHON_ERROR(PyExc_RuntimeError, "std::exception: %s", e.what());
+        PyErr_Format(PyExc_RuntimeError, "std::exception: %s", e.what());
+        return nullptr;
     }
     catch (...)
     {
-        PYTHON_ERROR(PyExc_RuntimeError, "Unknown C++ exception");
+        PyErr_Format(PyExc_RuntimeError, "Unknown C++ exception");
+        return nullptr;
     }
 }
 

@@ -146,7 +146,7 @@ namespace python
         if (TypeInfo<T>::info.py_type &&
             PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
         {
-            *((T**)val) = (T*)holder(obj)->ptr();
+            *((T**)val) = (T*)((Instance*)obj)->holder->ptr();
         }
         else
         {
@@ -175,7 +175,7 @@ namespace python
         if (TypeInfo<T>::info.py_type &&
             PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
         {
-            new (val) T(*((T*)holder(obj)->ptr()));
+            new (val) T(*((T*)((Instance*)obj)->holder->ptr()));
         }
         else
         {
@@ -198,12 +198,6 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
-    template<typename T>
-    Holder* allocate_holder()
-    {
-        return new PtrHolder<T>();
-    }
-
     template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)
     {
@@ -223,7 +217,7 @@ namespace python
             assert(base_type); // We assume that the base type has already been defined
         }
 
-        Class cls = make_class(name, &allocate_holder<TClass>, base_type, doc);
+        Class cls = make_class(name, base_type, doc);
 
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
@@ -257,14 +251,15 @@ namespace python
         return make_instance(type, new PtrHolder<TClass>(value));
     }
 
-
     template<typename TClass, typename ... TArgs>
     void class_init(PyObject* obj, TArgs... args)
     {
-        assert(holder(obj));
-        TClass* self = (TClass*)holder(obj)->ptr();
-        new (self) TClass(args...);
-        initialize_object(obj, self);
+        Instance* self = (Instance*)obj;
+        assert(!self->holder);
+        self->holder = new PtrHolder<TClass>();
+
+        TClass* cppself = new (self->holder->ptr()) TClass(args...);
+        initialize_object(obj, cppself);
     }
 
 }

@@ -10,9 +10,14 @@
 namespace python
 {
     class BaseObject;
+    class Holder;
     class Module;
 
-    typedef void(*ClassInit)(const python::Object& cls);
+    typedef struct {
+        PyObject_HEAD;
+        PyObject* dict;
+        Holder* holder;
+    } Instance;
 
     /// Holder: Responsible for holding a value of some sort for a python object instance. 
     class CORE_API Holder
@@ -60,22 +65,6 @@ namespace python
 
     private:
         std::unique_ptr<T> _p;
-    };
-
-	typedef Holder*(*HolderAllocator)();
-
-    class CORE_API CppClassBase
-    {
-    public:
-        /// Allocates a new holder, deallocate Holder with delete.
-        virtual Holder* allocate() = 0;
-    };
-
-    template<typename T>
-    class CppClass : public CppClassBase
-    {
-    public:
-        Holder* allocate() OVERRIDE;
     };
 
     /// PyObject wrapper for class objects
@@ -139,15 +128,12 @@ namespace python
     /// @remark This function takes ownership of the cpp_class object, deleting it whenever done with it.
     /// @param base_type Specifies the base type of the object, currently only one base type is allowed. 
     ///                  Will inherit the base instance type if nullptr.
-    CORE_API Class make_class(const char* name, HolderAllocator alloc, PyTypeObject* base_type = nullptr, const char* doc = nullptr);
+    CORE_API Class make_class(const char* name, PyTypeObject* base_type = nullptr, const char* doc = nullptr);
 
     /// Creates a new instance of the specified type
     /// @param holder Value holder, this will be deleted whenever GC collects the created instance.
     /// @return The new instance or None if failed
     CORE_API Object make_instance(PyTypeObject* type, Holder* holder);
-
-    /// Returns the value holder for the given instance.
-    CORE_API Holder* holder(PyObject* instance);
 
     /// Sets the module for the specified class
     CORE_API void set_module(const Class& cls, const Module& module);

@@ -3,6 +3,7 @@
 
 #include <Core/Python/Convert.h>
 #include <Core/Python/Dict.h>
+#include <Core/Python/Error.h>
 #include <Core/Python/PythonWrapper.h>
 #include <Core/Python/Tuple.h>
 

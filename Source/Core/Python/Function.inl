@@ -39,12 +39,6 @@ namespace python
         template<typename ... TArgs>
         std::tuple<typename std::decay<TArgs>::type...> DefaultArgumentPolicy::unpack_args(PyObject* args, PyObject*)
         {
-            if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)) 
-            {
-                PyErr_Format(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
-                return std::tuple<typename std::decay<TArgs>::type...>();
-            }
-
             size_t i = 0;
             // Initializer lists are guaranteed to evaluate in order, therefore we can use them to first unpack all args
             std::tuple<typename std::decay<TArgs>::type...> t{
@@ -93,6 +87,11 @@ namespace python
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
         PyObject* FunctionCaller<TArgPolicy, TReturn, TArgs...>::operator()(PyObject* args, PyObject* kw)
         {
+            if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
+            {
+                PYTHON_ERROR(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+            }
+
             auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
             if (PyErr_Occurred())
                 return 0;
@@ -115,11 +114,15 @@ namespace python
                 assert(sizeof...(TArgs) == PyTuple_Size(args) - 1); // Self should be first in args
                 if (PyTuple_Size(args) < 1)
                 {
-                    PyErr_SetString(PyExc_TypeError, "Expected at least 1 argument");
-                    return nullptr;
+                    PYTHON_ERROR(PyExc_TypeError, "Expected at least 1 argument");
                 }
                 TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
                 PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
+
+                if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)+1)
+                {
+                    PYTHON_ERROR(PyExc_TypeError, "TypeError: method takes %d positional argument but %d were given", sizeof...(TArgs)+1, PyTuple_Size(args));
+                }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
                 Py_DECREF(args_slice);
@@ -132,6 +135,11 @@ namespace python
             else
             {
                 assert(sizeof...(TArgs) == PyTuple_Size(args));
+
+                if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
+                {
+                    PYTHON_ERROR(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+                }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
                 if (PyErr_Occurred())

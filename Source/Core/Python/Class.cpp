@@ -10,38 +10,10 @@
 
 using namespace python;
 
-namespace python
-{
-    typedef struct {
-        PyObject_HEAD;
-        PyObject* dict;
-        Holder* holder;
-    } Instance;
-
-    /// Returns the CppClass object for the specified type
-    Holder* allocate_holder(PyObject* type)
-    {
-        assert(PyType_Check(type));
-        PyObject* cap = PyObject_GetAttrString(type, "__cpp_allocator__");
-        if (!cap)
-        {            
-            PyErr_Print();
-            return nullptr;
-        }
-
-        if (!PyCapsule_CheckExact(cap))
-            return nullptr;
-
-        HolderAllocator alloc = (HolderAllocator)PyCapsule_GetPointer(cap, "__cpp_allocator__");
-        return alloc();
-    }
-}
-
 static PyObject* pluto_object_new(PyTypeObject* type, PyObject* , PyObject*)
 {
     Instance* obj = (Instance*)type->tp_alloc(type, 0);
-
-    obj->holder = allocate_holder((PyObject*)type);
+    obj->holder = nullptr;
 
     return (PyObject*)obj;
 }
@@ -139,15 +111,6 @@ namespace python
     Holder::Holder() {}
     Holder::~Holder() {}
 
-    Holder* holder(PyObject* instance)
-    {
-        if (PyObject_IsInstance(instance, (PyObject*)&instance_type()))
-        {
-            return ((Instance*)instance)->holder;
-        }
-        PYTHON_ERROR(PyExc_TypeError, "Expected instance type");
-    }
-
     Class::Class()
     {
     }
@@ -160,7 +123,7 @@ namespace python
         assert(PyType_Check(obj));
     }
 
-    Class make_class(const char* name, HolderAllocator alloc, PyTypeObject* base_type, const char* doc)
+    Class make_class(const char* name, PyTypeObject* base_type, const char* doc)
     {
         PyObject* bases = PyTuple_New(1);
         if (base_type)
@@ -185,11 +148,6 @@ namespace python
 
         if (!cls)
             PyErr_Print();
-
-        assert(alloc);
-        PyObject* cap = PyCapsule_New(alloc, "__cpp_allocator__", nullptr);
-        PyObject_SetAttrString(cls, "__cpp_allocator__", cap);
-        Py_DECREF(cap);
 
         PyObject* mod = PyUnicode_FromString("pluto_builtins");
         PyObject_SetAttrString(cls, "__module__", mod);
