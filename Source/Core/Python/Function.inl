@@ -89,7 +89,7 @@ namespace python
         {
             if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
             {
-                PYTHON_ERROR(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+                PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
             }
 
             auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
@@ -121,7 +121,7 @@ namespace python
 
                 if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)+1)
                 {
-                    PYTHON_ERROR(PyExc_TypeError, "TypeError: method takes %d positional argument but %d were given", sizeof...(TArgs)+1, PyTuple_Size(args));
+                    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs)+1, PyTuple_Size(args));
                 }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
@@ -138,7 +138,7 @@ namespace python
 
                 if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
                 {
-                    PYTHON_ERROR(PyExc_TypeError, "TypeError: function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
+                    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
                 }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
