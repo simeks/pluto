@@ -3,7 +3,7 @@
 #include "GraphNote.h"
 
 
-PYTHON_OBJECT_IMPL(GraphNote, "GraphNote")
+PYTHON_OBJECT_IMPL(GraphNote, "Note")
 {
     cls.def_init<GraphNote>();
 }

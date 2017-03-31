@@ -34,7 +34,7 @@ BaseObject will take care of its own PyObject, only creating a single one. Conve
         { \
             if (!std::is_same<TClass, TClass::Super>::value) \
                 TClass::Super::static_class(); /* Ensure super class is initialized */ \
-            _class = python::make_class<TClass, TClass::Super>(#Name, #Doc); \
+            _class = python::make_class<TClass, TClass::Super>(Name, #Doc); \
             init_python_type(_class); \
         } \
         return _class; \
