@@ -6,7 +6,7 @@
 BlockChangeFlags::BlockChangeFlags(const Vec3i& block_count)
 {
     _flags.resize(2 * (block_count.x + 1) * 2 * (block_count.y + 1) * 2 * (block_count.z + 1));
-    std::fill(_flags.begin(), _flags.end(), 1);
+    std::fill(_flags.begin(), _flags.end(), uint8_t(1));
 }
 bool BlockChangeFlags::is_block_set(const Vec3i& block_p, bool shift) const
 {

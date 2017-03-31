@@ -31,7 +31,7 @@ def options(opt):
 
 def configure(conf):
     v = conf.env
-    v.MSVC_VERSIONS = ['msvc 14.0']# 'msvc 12.0']
+    v.MSVC_VERSIONS = ['msvc 15.0'] #'msvc 14.0']# 'msvc 12.0']
 
     conf.load('compiler_cxx python msvs')
     conf.load('compile_settings', tooldir='Tools/WafLib')
