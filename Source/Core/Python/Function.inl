@@ -87,14 +87,15 @@ namespace python
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
         PyObject* FunctionCaller<TArgPolicy, TReturn, TArgs...>::operator()(PyObject* args, PyObject* kw)
         {
-            if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
+            if (std::is_same<TArgPolicy, DefaultArgumentPolicy>::value && // TODO: Checks for varargs and kw
+                PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs))
             {
                 PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args));
             }
-
+            
             auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
-            if (PyErr_Occurred())
-                return 0;
+            assert(!PyErr_Occurred());
+
             // To unpack all args to actual function arguments we use a wrapper function which indexes all args and then unpacks them using ...-notation
             return invoke(_fn, t, std::index_sequence_for<TArgs...>{});
         }
@@ -119,16 +120,14 @@ namespace python
                 TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
                 PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
 
-                if (PyTuple_Check(args) && PyTuple_Size(args) != sizeof...(TArgs)+1)
+                if (PyTuple_Check(args) && PyTuple_Size(args_slice) != sizeof...(TArgs))
                 {
-                    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs)+1, PyTuple_Size(args));
+                    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args_slice));
                 }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
+                assert(!PyErr_Occurred());
                 Py_DECREF(args_slice);
-                
-                if (PyErr_Occurred())
-                    return 0;
                 
                 return invoke(self, _fn, t, std::index_sequence_for<TArgs...>{});
             }
@@ -142,8 +141,7 @@ namespace python
                 }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args, kw);
-                if (PyErr_Occurred())
-                    return 0;
+                assert(!PyErr_Occurred());
 
                 return invoke(_self, _fn, t, std::index_sequence_for<TArgs...>{});
             }

@@ -65,42 +65,6 @@ class Image(np.ndarray):
                 self.pixel_type = type_from_string(str(self.dtype))
 
 
-node_template(
-    title='Spacing',
-    category='Image/Meta',
-    ui={
-        ui_class = 'one_to_one_node'
-    },
-    pins={
-        'Img': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    node_class = 'image.image.ImageSpacingNode',
-    func=perceptually_uniform
-)
-
-def spacing(img):
-    return img.spacing
-
-
-node_template(
-    title='Slice',
-    category='Image/Slice',
-    ui={
-        ui_class: 'one_to_one_node',
-        ui_node_title_var: 'index'
-    },
-    pins={
-        'Img': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    properties={
-        'index': '0,0'
-    },
-    node_class = 'image.image.SliceImageNode',
-    func=image_slice
-)
-
 def image_slice(img, index):
     if img is None or not isinstance(img, np.ndarray):
         raise ValueError('Expected an Image object')
@@ -121,25 +85,6 @@ def image_slice(img, index):
 
     return eval('img[%s]' % vindex)
 
-
-node_template(
-    title='SetSlice',
-    category='Image/Slice',
-    ui={
-        ui_class: 'one_to_one_node',
-        ui_node_title_var: 'index'
-    },
-    pins={
-        'Img': Pin(Pin.In),
-        'Value': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    properties={
-        'index': '0,0'
-    },
-    node_class = 'image.image.SetSliceImageNode',
-    func=image_set_slice
-)
 
 def image_set_slice(img, value, index):
     img = ctx.read_pin('In')
@@ -163,3 +108,55 @@ def image_set_slice(img, value, index):
     tmp = img
     exec('tmp[%s] = value' % index)
     return tmp
+
+
+node_template(
+    title='Spacing',
+    category='Image/Meta',
+    ui={
+        'ui_class': 'one_to_one_node'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    node_class = 'image.image.ImageSpacingNode',
+    func=lambda img : img.spacing
+)
+
+node_template(
+    title='Slice',
+    category='Image/Slice',
+    ui={
+        'ui_class': 'one_to_one_node',
+        'ui_node_title_var': 'index'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'index': '0,0'
+    },
+    node_class = 'image.image.SliceImageNode',
+    func=image_slice
+)
+
+node_template(
+    title='SetSlice',
+    category='Image/Slice',
+    ui={
+        'ui_class': 'one_to_one_node',
+        'ui_node_title_var': 'index'
+    },
+    pins={
+        'Img': Pin(Pin.In),
+        'Value': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'index': '0,0'
+    },
+    node_class = 'image.image.SetSliceImageNode',
+    func=image_set_slice
+)

@@ -4,7 +4,7 @@ import re
 from .types import *
 from .image import Image
 
-from flow import node_template, Pin
+from flow import node_template, Pin, EnumProperty
 
 from matplotlib import cm
 
@@ -13,24 +13,7 @@ def colorize(img, min, max, cmap):
     return (colorfn((img-min) / float(max-min)) * 255).astype(np.uint8)
 
 
-node_template(
-    title='PerceptuallyUniform',
-    category='Image/Colormaps',
-    pins={
-        'In': Pin(Pin.In),
-        'Min': Pin(Pin.In),
-        'Max': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    properties={
-        'colormap': EnumProperty('colormap', ['viridis', 'inferno', 'plasma', 'magma'], 0),
-    },
-    node_class = 'image.colormap.PerceptuallyUniformNode',
-    func=perceptually_uniform
-)
-
-def perceptually_uniform(in, colormap, min=None, max=None):
-    img = in
+def perceptually_uniform(img, colormap, min=None, max=None):
     if min == None:
         min = img.min()
     if max == None:
@@ -44,21 +27,7 @@ def perceptually_uniform(in, colormap, min=None, max=None):
     return out
 
 
-node_template(
-    title='Jet',
-    category='Image/Colormaps',
-    pins={
-        'In': Pin(Pin.In),
-        'Min': Pin(Pin.In),
-        'Max': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    node_class = 'image.colormap.JetNode',
-    func=jet
-)
-
-def jet(in, min=None, max=None):
-    img = in
+def jet(img, min=None, max=None):
     if min == None:
         min = img.min()
     if max == None:
@@ -71,3 +40,32 @@ def jet(in, min=None, max=None):
         out.origin = img.origin
     return out
 
+
+node_template(
+    title='Jet',
+    category='Image/Colormaps',
+    pins={
+        'Img': Pin(Pin.In),
+        'Min': Pin(Pin.In),
+        'Max': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    node_class = 'image.colormap.JetNode',
+    func=jet
+)
+
+node_template(
+    title='PerceptuallyUniform',
+    category='Image/Colormaps',
+    pins={
+        'Img': Pin(Pin.In),
+        'Min': Pin(Pin.In),
+        'Max': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'colormap': EnumProperty(['viridis', 'inferno', 'plasma', 'magma'], 0),
+    },
+    node_class = 'image.colormap.PerceptuallyUniformNode',
+    func=perceptually_uniform
+)

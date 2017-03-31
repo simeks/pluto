@@ -128,7 +128,7 @@ bool FlowPin::is_linked_to(FlowPin* other) const
 
 PYTHON_OBJECT_IMPL(ArrayFlowPin, "ArrayPin")
 {
-    cls.def_init<ArrayFlowPin>();
+    cls.def_init_varargs<ArrayFlowPin>();
 }
 
 ArrayFlowPin::ArrayFlowPin(const std::string& base_name,

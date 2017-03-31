@@ -1,18 +1,7 @@
 import numpy as np
-from flow import node
+from flow import node, node_template, Pin
 import image
 from .types import *
-
-
-node_template(
-    title='Magnitude',
-    category='Image/Vectorfield',
-    pins={
-        'Img': Pin(Pin.In),
-        'Out': Pin(Pin.Out)
-    },
-    func=magnitude
-)
 
 def magnitude(img):
     if type(img) != image.Image:
@@ -32,3 +21,14 @@ def magnitude(img):
     if hasattr(img, 'origin'):
         out.origin = img.origin
     return out
+    
+
+node_template(
+    title='Magnitude',
+    category='Image/Vectorfield',
+    pins={
+        'Img': Pin(Pin.In),
+        'Out': Pin(Pin.Out)
+    },
+    func=magnitude
+)

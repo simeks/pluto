@@ -4,24 +4,7 @@ from .types import *
 from .image import Image
 
 from flow import node_template, Pin
-from pluto import pluto_class
 
-
-node_template(
-    title='Grid2D',
-    category='Image/New',
-    pins={
-        'Out': Pin(Pin.Out)
-    },
-    properties={
-        'width': 0,
-        'height': 0,
-        'step': 1,
-        'thickness': 1,
-    },
-    node_class = 'image.grid.Grid2DNode',
-    func=perceptually_uniform
-)
 
 def grid2d(width, height, step, thickness):
     h = height
@@ -38,3 +21,19 @@ def grid2d(width, height, step, thickness):
                 img_data[y,x*step+t] = 1
                 
     return Image(img_data, PixelType_UInt8)
+
+node_template(
+    title='Grid2D',
+    category='Image/New',
+    pins={
+        'Out': Pin(Pin.Out)
+    },
+    properties={
+        'width': 0,
+        'height': 0,
+        'step': 1,
+        'thickness': 1,
+    },
+    node_class = 'image.grid.Grid2DNode',
+    func=grid2d
+)

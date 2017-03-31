@@ -3,19 +3,6 @@ from flow import node_template, Pin
 import image
 
 
-node_template(
-    title='SplitChannels',
-    category='Image',
-    pins={
-        'Imgage': Pin(Pin.In),
-        'R': Pin(Pin.Out),
-        'G': Pin(Pin.Out),
-        'B': Pin(Pin.Out),
-        'A': Pin(Pin.Out)
-    },
-    func=split_channels
-)
-
 def split_channels(image):
     if type(img) != image.Image:
         raise TypeError('Expected Image')
@@ -34,3 +21,16 @@ def split_channels(image):
                 image.Image(img[::,::,1], pixel_type), 
                 image.Image(img[::,::,2], pixel_type),
                 image.Image(img[::,::,3], pixel_type))
+
+node_template(
+    title='SplitChannels',
+    category='Image',
+    pins={
+        'Imgage': Pin(Pin.In),
+        'R': Pin(Pin.Out),
+        'G': Pin(Pin.Out),
+        'B': Pin(Pin.Out),
+        'A': Pin(Pin.Out)
+    },
+    func=split_channels
+)

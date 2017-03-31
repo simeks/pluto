@@ -6,11 +6,20 @@ from .image import Image
 from .types import *
 from scipy.ndimage import zoom 
 
+def to_world(img, order):
+    if hasattr(img, 'spacing'):
+        out = Image(zoom(img, img.spacing[::-1], order=order), img.pixel_type)
+        out.spacing = [1]*len(img.spacing)
+        return out
+    else:
+        return out
+
+
 node_template(
     title='ToWorld',
     category='Image/Resample',
     ui={
-        ui_class: 'one_to_one_node',
+        'ui_class': 'one_to_one_node',
     },
     pins={
         'Img': Pin(Pin.In),
@@ -22,12 +31,3 @@ node_template(
     node_class='image.resample.ToWorldNode',
     func=to_world
 )
-
-def to_world(img, order):
-    if hasattr(img, 'spacing'):
-        out = Image(zoom(img, img.spacing[::-1], order=order), img.pixel_type)
-        out.spacing = [1]*len(img.spacing)
-        return out
-    else:
-        return out
-
