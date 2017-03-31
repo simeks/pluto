@@ -14,6 +14,7 @@
 #include "FlowProperty.h"
 #include "FlowPythonModule.h"
 #include "FlowWindow.h"
+#include "GraphNote.h"
 #include "GraphInputNode.h"
 #include "GraphOutputNode.h"
 #include "Qt/QtFlowUI.h"
@@ -29,6 +30,7 @@ PYTHON_MODULE(_flow)
     module.def("Context", FlowContext::static_class());
     module.def("Graph", FlowGraph::static_class());
     module.def("Node", FlowNode::static_class());
+    module.def("Note", GraphNote::static_class());
     module.def("Pin", FlowPin::static_class());
     module.def("ArrayPin", ArrayFlowPin::static_class());
     module.def("GraphInputNode", GraphInputNode::static_class());

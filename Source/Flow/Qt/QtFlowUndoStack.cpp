@@ -54,12 +54,12 @@ NoteCreateCommand::NoteCreateCommand(
 void NoteCreateCommand::undo()
 {
     // TODO:
-    //_scene->remove_note(_note);
+    _scene->remove_note(_note);
 }
 void NoteCreateCommand::redo()
 {
     // TODO:
-    //_scene->add_note(_note);
+    _scene->add_note(_note);
 }
 
 SelectionDestroyCommand::SelectionDestroyCommand(

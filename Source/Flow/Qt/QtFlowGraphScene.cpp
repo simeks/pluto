@@ -63,25 +63,25 @@ void QtFlowGraphScene::remove_node(QtFlowNode* node)
 
     _flow_graph->remove_node(node->node());
 }
-//void QtFlowGraphScene::add_note(QtNoteItem* note)
-//{
-//    if (std::find(_notes.begin(), _notes.end(), note) != _notes.end())
-//        return;
-//
-//    addItem(note);
-//    _flow_graph->add_note(note->note());
-//    _notes.push_back(note);
-//}
-//void QtFlowGraphScene::remove_note(QtNoteItem* note)
-//{
-//    auto it = std::find(_notes.begin(), _notes.end(), note);
-//    if (it != _notes.end())
-//        _notes.erase(it);
-//
-//    removeItem(note);
-//
-//    _flow_graph->remove_note(note->note_id());
-//}
+void QtFlowGraphScene::add_note(QtNoteItem* note)
+{
+    if (std::find(_notes.begin(), _notes.end(), note) != _notes.end())
+        return;
+
+    addItem(note);
+    _flow_graph->add_note(note->note());
+    _notes.push_back(note);
+}
+void QtFlowGraphScene::remove_note(QtNoteItem* note)
+{
+    auto it = std::find(_notes.begin(), _notes.end(), note);
+    if (it != _notes.end())
+        _notes.erase(it);
+
+    removeItem(note);
+
+    _flow_graph->remove_note(note->note());
+}
 void QtFlowGraphScene::node_template_reloaded(FlowNode* tpl)
 {
     _flow_graph->reload_nodes(tpl->node_class());
@@ -249,7 +249,7 @@ void QtFlowGraphScene::set_graph(FlowGraph* graph)
 
     for (auto& n : graph->notes())
     {
-        QtNoteItem* note_item = new QtNoteItem(graph, n.first);
+        QtNoteItem* note_item = new QtNoteItem(n.second);
         addItem(note_item);
 
         _notes.push_back(note_item);

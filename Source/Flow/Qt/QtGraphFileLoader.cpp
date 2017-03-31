@@ -90,9 +90,10 @@ void GraphFileLoader::load(const QString& path)
             class_name += '.';
         }
         class_name += file_info.baseName().toStdString();
-
+        
         // I can't be bothered with the warnings caused by Qts toupper/tolower
-        std::transform(class_name.begin(), class_name.end(), class_name.begin(), ::tolower);
+        for (int i = 0; i < class_name.size(); ++i)
+            class_name[i] = (char)::tolower((int)class_name[i]);
 
         QString title = FlowUIStyle::stylize_text(file_info.baseName().toUtf8().constData());
         QString category = "User/Graphs";
