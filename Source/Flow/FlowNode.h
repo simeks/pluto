@@ -22,6 +22,10 @@ class FLOW_API FlowNode : public python::BaseObject
 
 public:
     FlowNode();
+    FlowNode(
+        const char* node_class,
+        const char* title,
+        const char* category);
     ~FlowNode();
 
     virtual void run(FlowContext* ctx);
@@ -81,14 +85,20 @@ protected:
     /// Removes an array pin updates all other pins accordingly
     void remove_array_pin(ArrayFlowPin* pin);
 
+    std::string _node_class;
+    std::string _title;
+    std::string _category;
+    std::string _doc;
+
     std::vector<FlowPin*> _pins;
     std::vector<FlowProperty*> _properties;
 
+    FlowNodeFunction _function;
+
     FlowGraph* _owner_graph;
     Guid _node_id;
-    Vec2i _ui_pos;
 
-    FlowNodeFunction _function;
+    Vec2i _ui_pos;
 };
 
 

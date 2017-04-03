@@ -101,6 +101,6 @@ namespace python
     BaseObject::BaseObject(const BaseObject& other) 
     {
         _type = other._type;
-       // _obj = ;
+        _obj = nullptr; // Object will allocated by the cloned class
     }
 }

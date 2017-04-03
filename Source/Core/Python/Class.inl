@@ -8,7 +8,8 @@ namespace python
     }
 
     template<typename T>
-    PtrHolder<T>::PtrHolder(T* ptr) : _p(ptr), _own(false)
+    PtrHolder<T>::PtrHolder(T* ptr, bool delete_ptr) : 
+        _p(ptr), _own(delete_ptr)
     {
     }
 

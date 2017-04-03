@@ -11,13 +11,9 @@
 PYTHON_OBJECT_IMPL_DOC(FlowNode, "Node", 
     "FlowNode\n"
     "Base class for nodes\n"
-    "\n"
-    "Attributes:\n"
-    "   node_class (str): Unique class name for this type of node.\n"
-    "   title (str): Title visible in the UI\n"
-    "   category (str): Category of the form 'Category/Subcategory'\n")
+    "\n")
 {
-    cls.def_init<FlowNode>();
+    cls.def_init<FlowNode, const char*, const char*, const char*>();
     cls.def("run", &FlowNode::run, 
         "run(ctx)\n"
         "--\n"
@@ -34,6 +30,34 @@ FlowNode::FlowNode() :
     _owner_graph(nullptr),
     _function(nullptr)
 {
+}
+FlowNode::FlowNode(
+    const char* node_class,
+    const char* title,
+    const char* category) :
+    _node_class(node_class),
+    _title(title),
+    _category(category)
+{
+
+}
+FlowNode::FlowNode(const FlowNode& other) : python::BaseObject(other)
+{
+    for (auto& pin : other._pins)
+    {
+        FlowPin* p = python::clone_object(pin);
+        p->set_owner(this);
+        _pins.push_back(p);
+    }
+    for (auto& prop : other._properties)
+    {
+        FlowProperty* p = python::clone_object(prop);
+        p->set_owner(this);
+        _properties.push_back(p);
+    }
+    _owner_graph = other._owner_graph;
+    _node_id = other._node_id;
+    _function = other._function;
 }
 FlowNode::~FlowNode()
 {
@@ -200,24 +224,6 @@ const char* FlowNode::ui_class() const
     if (has_attribute("ui_class"))
         return attribute<const char*>("ui_class");
     return "";
-}
-FlowNode::FlowNode(const FlowNode& other) : python::BaseObject(other)
-{
-    for (auto& pin : other._pins)
-    {
-        FlowPin* p = python::clone_object(pin);
-        p->set_owner(this);
-        _pins.push_back(p);
-    }
-    for (auto& prop : other._properties)
-    {
-        FlowProperty* p = python::clone_object(prop);
-        p->set_owner(this);
-        _properties.push_back(p);
-    }
-    _owner_graph = other._owner_graph;
-    _node_id = other._node_id;
-    _function = other._function;
 }
 void FlowNode::on_pin_linked(FlowPin* pin)
 {

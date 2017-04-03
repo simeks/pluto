@@ -43,7 +43,8 @@ namespace python
         /// of the pointer so it is still the users responsibility. Be careful, this of course
         /// requires the pointer to be valid as long as the python instance is available.
         /// The holder will not free the memory pointed to when destroyed.
-        PtrHolder(T* ptr);
+        /// @param delete_ptr Specifies whether to delete the ptr when the holder is destroyed or not.
+        PtrHolder(T* ptr, bool delete_ptr = false);
 
         ~PtrHolder();
         void* ptr();
