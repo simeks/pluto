@@ -41,7 +41,8 @@ BaseObject will take care of its own PyObject, only creating a single one. Conve
     } \
     python::BaseObject* TClass::clone() const \
     { \
-        return new TClass(*this); \
+        TClass* i = new TClass(*this); \
+        initialize_object(, i); \
     } \
     void TClass::init_python_type(python::Class cls)
     
