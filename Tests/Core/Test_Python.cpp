@@ -402,6 +402,7 @@ struct BaseClass
     int _var;
 
     BaseClass(int var) : _var(var) {}
+    virtual ~BaseClass() {}
 
     virtual const char* name()
     {
@@ -416,6 +417,7 @@ struct BaseClass
 struct DerivedClass : public BaseClass
 {
     DerivedClass(int var) : BaseClass(var) {}
+    virtual ~DerivedClass() {}
 
     virtual const char* name() OVERRIDE
     {

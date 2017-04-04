@@ -24,7 +24,8 @@ namespace testing
     {
     public:
         TestCase(const char* name) : _name(name), _next(NULL) {}
-
+        virtual ~TestCase() {}
+        
         virtual void Run(TestResult& _test_result) = 0;
 
         TestCase* Next() const;

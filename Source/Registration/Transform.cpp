@@ -1,7 +1,7 @@
 #include <Core/Common.h>
 
-#include <Flow/FlowContext.h>
 #include <Core/Image/Image.h>
+#include <Core/Image/Types.h>
 
 #include "Transform.h"
 

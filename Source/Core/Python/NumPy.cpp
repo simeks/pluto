@@ -40,8 +40,9 @@ int numpy::pixel_type_to_numpy(int pixel_type)
     case image::PixelType_Vec3d:
     case image::PixelType_Vec4d:
         return NPY_FLOAT64;
+    default:
+        return -1;
     }
-    return -1;
 }
 bool numpy::check_type(PyObject* obj)
 {

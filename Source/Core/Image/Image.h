@@ -2,9 +2,7 @@
 #define __CORE_IMAGE_H__
 
 #include "Color.h"
-#include "Types.h"
 #include "Vec3.h"
-#include "Vec2.h"
 
 #include <Core/Python/NumPy.h>
 

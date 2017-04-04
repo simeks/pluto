@@ -11,11 +11,10 @@ PYTHON_OBJECT_IMPL(GraphInputNode, "GraphInputNode")
     cls;
 }
 
-GraphInputNode::GraphInputNode()
+GraphInputNode::GraphInputNode() :
+    FlowNode("flow.GraphInputNode", "Input", "Flow/Graph")
 {
-    //set_attribute("node_class", "flow.GraphInput");
-    //set_attribute("title", "Input");
-    //set_attribute("category", "Flow/Graph");
+
     //set_attribute("doc", "Graph input node");
 
     //set_attribute("ui_class", "graph_input");

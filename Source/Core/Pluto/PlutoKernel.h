@@ -13,6 +13,7 @@ namespace python
 class PlutoModuleCallback
 {
 public:
+    virtual ~PlutoModuleCallback() {}
     virtual void print_html(const char* text) = 0;
 };
 

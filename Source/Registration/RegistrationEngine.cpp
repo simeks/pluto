@@ -1,6 +1,4 @@
 #include <Core/Common.h>
-#include <Core/Image/Image.h>
-#include <Core/Python/PythonFunction.h>
 #include <Core/Python/PythonCommon.h>
 
 #include "BlockedGraphCutOptimizer.h"

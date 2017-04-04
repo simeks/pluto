@@ -1,5 +1,5 @@
 #include <Core/Common.h>
-#include <Core/Python/PythonFunction.h>
+#include <Core/Python/Tuple.h>
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
@@ -184,7 +184,7 @@ python::Object FlowContext::read_pin(const char* name)
             {
                 // The way pin array work we always have n + 1 pins when n is the number of linked pins
 
-                Tuple t(pin_array.size() - 1);
+                python::Tuple t(pin_array.size() - 1);
                 for (int i = 0; i < pin_array.size() - 1; ++i)
                 {
                     auto it = _state->pins.find(pin_array[i]->links()[0]);

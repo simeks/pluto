@@ -1,7 +1,6 @@
 #include "Common.h"
 
 #include "Guid.h"
-#include "Timer.h"
 
 #if defined(PLUTO_PLATFORM_WINDOWS)
 #include <Objbase.h>

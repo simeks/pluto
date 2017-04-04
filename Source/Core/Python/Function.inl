@@ -83,6 +83,10 @@ namespace python
         FunctionCaller<TArgPolicy, TReturn, TArgs...>::FunctionCaller(TReturn(*fn)(TArgs...)) : _fn(fn)
         {
         }
+        template<typename TArgPolicy, typename TReturn, typename ... TArgs>
+        FunctionCaller<TArgPolicy, TReturn, TArgs...>::~FunctionCaller()
+        {
+        }
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
         PyObject* FunctionCaller<TArgPolicy, TReturn, TArgs...>::operator()(PyObject* args, PyObject* kw)
@@ -104,7 +108,10 @@ namespace python
         MethodCaller<TArgPolicy, TClass, TReturn, TArgs...>::MethodCaller(TClass* self, TReturn(TClass::*fn)(TArgs...)) : _self(self), _fn(fn)
         {
         }
-
+        template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
+        MethodCaller<TArgPolicy, TClass, TReturn, TArgs...>::~MethodCaller()
+        {
+        }
         template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
         PyObject* MethodCaller<TArgPolicy, TClass, TReturn, TArgs...>::operator()(PyObject* args, PyObject* kw)
         {

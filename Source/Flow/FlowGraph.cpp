@@ -1,6 +1,5 @@
 #include <Core/Common.h>
 #include <Core/Json/JsonObject.h>
-#include <Core/Python/PythonFunction.h>
 
 #include "GraphNote.h"
 #include "FlowGraph.h"
@@ -170,7 +169,6 @@ void FlowGraph::reload_nodes(const char* node_class)
 {
     FlowNode* tpl = FlowModule::instance().node_template(node_class);
 
-    std::vector<FlowPin*> links;
     for (auto& it : _nodes)
     {
         if (strcmp(it.second->node_class(), node_class) == 0)
@@ -190,7 +188,7 @@ void FlowGraph::reload_nodes(const char* node_class)
             {
                 FlowPin* new_pin = new_node->pin(old_pin->name());
 
-                links = old_pin->links();
+                const std::vector<FlowPin*>& links = old_pin->links();
                 old_pin->break_all_links();
 
                 if (new_pin)

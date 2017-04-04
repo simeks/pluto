@@ -145,7 +145,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
-    break;
     case Qt::Key_Down:
     {
         if (!cursor_in_prompt(textCursor()))
@@ -163,7 +162,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
-    break;
     case Qt::Key_Tab:
     {
         if (e->modifiers() & Qt::Key_Shift)
@@ -226,7 +224,6 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
             return;
         }
     }
-    break;
     case Qt::Key_C:
     {
         if (e->modifiers() & Qt::ControlModifier)
@@ -236,11 +233,8 @@ void ConsoleWidget::keyPressEvent(QKeyEvent *e)
                 emit interrupt_kernel();
                 return;
             }
-            else
-            {
-                cut();
-                return;
-            }
+            cut();
+            return;
         }
     }
     break;

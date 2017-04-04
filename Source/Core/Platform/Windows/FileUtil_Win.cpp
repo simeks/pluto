@@ -12,9 +12,7 @@ void file_util::find_files(const char* path, std::vector<std::string>& files)
     convert_string(path, wpath);
 
     WIN32_FIND_DATA fd;
-    HANDLE fh;
-
-    fh = FindFirstFile(wpath.c_str(), &fd);
+    HANDLE fh = FindFirstFile(wpath.c_str(), &fd);
     if (fh == INVALID_HANDLE_VALUE)
         return;
 
@@ -38,9 +36,7 @@ void file_util::find_directories(const char* path, std::vector<std::string>& dir
     convert_string(path, wpath);
 
     WIN32_FIND_DATA fd;
-    HANDLE fh;
-
-    fh = FindFirstFile(wpath.c_str(), &fd);
+    HANDLE fh = FindFirstFile(wpath.c_str(), &fd);
     if (fh == INVALID_HANDLE_VALUE)
         return;
 

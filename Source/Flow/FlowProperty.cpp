@@ -72,7 +72,9 @@ PYTHON_OBJECT_IMPL(FileProperty, "FileProperty")
     cls.def("File_Save", FileProperty::File_Save);
 }
 
-FileProperty::FileProperty() : FlowProperty(python::Str())
+FileProperty::FileProperty() : FlowProperty(python::Str()),
+    _file_mode(File_Open),
+    _file_filter("Files (*.*)")
 {
 }
 FileProperty::FileProperty(const python::Tuple& args) : 

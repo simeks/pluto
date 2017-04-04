@@ -51,13 +51,13 @@ namespace python
         }
         return attr;
     }
-    Object getattr(const Object& obj, const char* key, const Object& default)
+    Object getattr(const Object& obj, const char* key, const Object& default_value)
     {
         PyObject* attr = PyObject_GetAttrString(obj.ptr(), key);
         if (!attr)
         {
             PyErr_Clear();
-            return default;
+            return default_value;
         }
         return attr;
     }

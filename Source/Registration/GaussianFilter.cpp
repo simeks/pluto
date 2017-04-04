@@ -1,6 +1,7 @@
 #include <Core/Common.h>
 
 #include <Core/Image/Image.h>
+#include <Core/Image/Types.h>
 #include "GaussianFilter.h"
 
 template<typename TImage>

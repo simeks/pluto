@@ -5,6 +5,7 @@
 #include "PythonCommon.h"
 #include "Types.h"
 
+#include <Core/Image/Vec3.h>
 
 namespace
 {
@@ -43,7 +44,6 @@ namespace
             if (v < 0)
             {
                 PYTHON_ERROR(PyExc_OverflowError, "overflow detected");
-                return;
             }
             new (val) T((T)v);
         }
@@ -80,7 +80,6 @@ namespace
             if (v < 0)
             {
                 PYTHON_ERROR(PyExc_OverflowError, "overflow detected");
-                return;
             }
             new (val) uint64_t(v);
         }

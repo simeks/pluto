@@ -52,7 +52,7 @@ namespace python
     CORE_API bool hasattr(const Object& obj, const char* key);
 
     CORE_API Object getattr(const Object& obj, const char* key);
-    CORE_API Object getattr(const Object& obj, const char* key, const Object& default);
+    CORE_API Object getattr(const Object& obj, const char* key, const Object& default_value);
     CORE_API void setattr(const Object& obj, const char* key, const Object& value);
 
     CORE_API Object call(const Object& obj, const Tuple& args, const Dict& kw);

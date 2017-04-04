@@ -115,7 +115,7 @@ namespace python
         PyTypeObject* _type;
 
         // TODO: Do we need this at all?
-        BaseObject& operator=(const BaseObject& other);
+        BaseObject& operator=(const BaseObject& ) { return *this; }
     };
 
     template<typename T>

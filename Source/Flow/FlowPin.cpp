@@ -32,13 +32,14 @@ FlowPin::FlowPin(
 FlowPin::FlowPin() : _pin_type(Unknown), _owner(nullptr)
 {
 }
-FlowPin::FlowPin(const FlowPin& other) : python::BaseObject(other)
+FlowPin::FlowPin(const FlowPin& other) : python::BaseObject(other),
+    _name(other._name),
+    _pin_type(other._pin_type),
+    _owner(other._owner)
 {
-    _name = other._name;
-    _pin_type = other._pin_type;
-    _owner = other._owner;
 }
-FlowPin::FlowPin(const python::Tuple& args)
+FlowPin::FlowPin(const python::Tuple& args) :
+    _owner(nullptr)
 {
     if (args.size() < 1)
         PYTHON_ERROR(PyExc_ValueError, "Pin expected at least 1 argument");

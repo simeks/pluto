@@ -88,7 +88,6 @@ protected:
     std::string _node_class;
     std::string _title;
     std::string _category;
-    std::string _doc;
 
     std::vector<FlowPin*> _pins;
     std::vector<FlowProperty*> _properties;

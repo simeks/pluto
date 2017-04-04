@@ -45,10 +45,6 @@ namespace python
         template<typename T>
         void def(const char* name, const T& obj);
 
-        /// @brief Adds a class to this module
-        template<>
-        void def<Class>(const char* name, const Class& cls);
-
         /// @brief Adds a regular function the the given module or class
         template<typename TReturn, typename ... TArgs>
         void def(const char* name, TReturn(*fn)(TArgs...), const char* doc = nullptr);

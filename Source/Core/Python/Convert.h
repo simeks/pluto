@@ -2,7 +2,6 @@
 #define __CORE_PYTHON_CONVERT_H__
 
 
-#include <Core/Image/Vec3.h>
 #include <Core/Python/Class.h>
 #include <Core/Python/Error.h>
 #include <Core/Python/Object.h>

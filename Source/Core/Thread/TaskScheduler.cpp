@@ -8,7 +8,8 @@
 
 //-------------------------------------------------------------------------------
 TaskScheduler::TaskScheduler(int num_threads)
-    : _next_task_id(0)
+    : _next_task_id(0),
+    _num_processors(4) // TODO:
 {
     _num_threads = num_threads;
     _shutting_down = false;

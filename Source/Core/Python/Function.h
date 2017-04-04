@@ -13,6 +13,8 @@ namespace python
     {
         struct CallerBase
         {
+            virtual ~CallerBase() {}
+
             virtual PyObject* operator()(PyObject* args, PyObject* kw) = 0;
         };
 
@@ -53,6 +55,7 @@ namespace python
             TReturn(*_fn)(TArgs...);
 
             FunctionCaller(TReturn(*fn)(TArgs...));
+            ~FunctionCaller();
 
             PyObject* operator()(PyObject* args, PyObject* kw);
         };
@@ -64,12 +67,13 @@ namespace python
             TReturn(TClass::*_fn)(TArgs...);
 
             MethodCaller(TClass* self, TReturn(TClass::*fn)(TArgs...));
+            ~MethodCaller();
 
             PyObject* operator()(PyObject* args, PyObject* kw);
         };
 
         /// Caller is responsible for deleting the returned pointer
-        template<typename TArgPolicy, typename TClass, typename TReturn, typename ... TArgs>
+        template<typename TArgPolicy, typename TReturn, typename ... TArgs>
         CallerBase* make_caller(TReturn(*fn)(TArgs...));
 
         /// Caller is responsible for deleting the returned pointer

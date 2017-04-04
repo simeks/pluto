@@ -92,7 +92,7 @@ struct SomeTypeConverter
 TEST_CASE(python_custom_converter)
 {
     PYTHON_TEST_PREPARE();
-    python::TypeConverter<SomeType, SomeTypeConverter> pixel_type_converter;
+    python::TypeConverter<SomeType, SomeTypeConverter>;
     {
         SomeType value;
         value.value = 4342;

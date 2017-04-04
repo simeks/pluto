@@ -5,7 +5,6 @@
 #include "Object.h"
 
 #include <memory>
-#include <typeindex>
 
 namespace python
 {
@@ -140,7 +139,6 @@ namespace python
     CORE_API void set_module(const Class& cls, const Module& module);
 
     /// Helper function for creating a class
-    /// @param init_class Function for initializing the class, e.g. setting methods, etc.
     template<typename TClass, typename TBaseClass = TClass>
     Class make_class(const char* name, const char* doc = nullptr);
 

@@ -2,6 +2,7 @@
 #define __REGISTRATION_ENGINE_H__
 
 #include <Core/Image/Image.h>
+#include <Core/Image/Types.h>
 #include <Core/Python/Object.h>
 
 class Optimizer;

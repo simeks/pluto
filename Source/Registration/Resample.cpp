@@ -1,6 +1,7 @@
 #include <Core/Common.h>
 
 #include <Core/Image/Image.h>
+#include <Core/Image/Types.h>
 #include "GaussianFilter.h"
 #include "Resample.h"
 
@@ -65,8 +66,9 @@ Image image::downsample_image(const Image& img, double scale)
         return downsample_image_tpl<ImageRGBA32>(img, scale);
     case image::PixelType_Vec4f:
         return downsample_image_tpl<ImageColorf>(img, scale);
+    default:
+        return Image();
     }
-    return Image();
 }
 Image image::downsample_image_gaussian(const Image& img, double scale, double sigma)
 {

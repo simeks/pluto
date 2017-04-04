@@ -240,8 +240,7 @@ double BlockedGraphCutOptimizer<TImage>::calculate_energy(ImageVec3d& def, const
                 Vec3i p(gx, gy, gz);
                 Vec3d def1 = def(p);
 
-                double f0;
-                f0 = _energy.unary_term(p, def1);
+                double f0 = _energy.unary_term(p, def1);
 
 
                 cost += f0;

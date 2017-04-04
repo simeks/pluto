@@ -1,5 +1,4 @@
 #include <Core/Common.h>
-#include <Core/Python/PythonFunction.h>
 #include <Core/Python/Sequence.h>
 
 #include "FlowContext.h"

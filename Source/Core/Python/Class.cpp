@@ -2,11 +2,9 @@
 
 #include "BaseObject.h"
 #include "Class.h"
-#include "Function.h"
 #include "Module.h"
 #include "PythonCommon.h"
 
-#include <structmember.h>
 
 using namespace python;
 

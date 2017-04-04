@@ -10,7 +10,7 @@ namespace python
         cls;
     }
 
-    BaseObject::BaseObject() : _obj(nullptr)
+    BaseObject::BaseObject() : _obj(nullptr), _type(nullptr)
     {
     }
     BaseObject::~BaseObject()

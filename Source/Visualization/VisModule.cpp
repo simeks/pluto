@@ -1,6 +1,5 @@
 #include <Core/Common.h>
 #include <Core/Pluto/PlutoCore.h>
-#include <Core/Python/PythonFunction.h>
 #include <Core/Qt/WindowManager.h>
 
 #include <Flow/FlowModule.h>

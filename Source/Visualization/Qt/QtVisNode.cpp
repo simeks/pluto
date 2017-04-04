@@ -17,6 +17,7 @@
 
 QtVisNode::QtVisNode(FlowNode* node, QGraphicsObject* parent) :
     QtFlowNode(node, parent),
+    _pin(nullptr),
     _window(nullptr),
     _spacing(1,1,1)
 {
