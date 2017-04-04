@@ -14,13 +14,12 @@ PYTHON_OBJECT_IMPL(GraphInputNode, "GraphInputNode")
 GraphInputNode::GraphInputNode() :
     FlowNode("flow.GraphInputNode", "Input", "Flow/Graph")
 {
-
+    add_pin("Out", FlowPin::Out);
     //set_attribute("doc", "Graph input node");
 
-    //set_attribute("ui_class", "graph_input");
+    set_ui_class("graph_input");
 
-    //add_pin("Out", FlowPin::Out);
-    //add_property(object_new<StringProperty>("name", ""));
+    add_property(python::make_object<FlowProperty>(python::to_python("")));
 }
 GraphInputNode::~GraphInputNode()
 {

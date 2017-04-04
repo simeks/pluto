@@ -67,6 +67,7 @@ public:
     void set_ui_pos(const Vec2i& pos);
 
     const char* ui_class() const;
+    void set_ui_class(const char* cls);
 
     FlowNode(const FlowNode&);
 
@@ -97,6 +98,7 @@ protected:
     FlowGraph* _owner_graph;
     Guid _node_id;
 
+    std::string _ui_class;
     Vec2i _ui_pos;
 };
 

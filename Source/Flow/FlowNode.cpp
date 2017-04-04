@@ -194,21 +194,15 @@ const std::vector<FlowProperty*>& FlowNode::properties() const
 }
 const char* FlowNode::node_class() const
 {
-    if (has_attribute("node_class"))
-        return attribute<const char*>("node_class");
-    return nullptr;
+    return _node_class.c_str();
 }
 const char* FlowNode::title() const
 {
-    if (has_attribute("title"))
-        return attribute<const char*>("title");
-    return nullptr;
+    return _title.c_str();
 }
 const char* FlowNode::category() const
 {
-    if (has_attribute("category"))
-        return attribute<const char*>("category");
-    return "";
+    return _category.c_str();
 }
 const Vec2i& FlowNode::ui_pos() const
 {
@@ -220,9 +214,11 @@ void FlowNode::set_ui_pos(const Vec2i& pos)
 }
 const char* FlowNode::ui_class() const
 {
-    if (has_attribute("ui_class"))
-        return attribute<const char*>("ui_class");
-    return "";
+    return _ui_class.c_str();
+}
+void FlowNode::set_ui_class(const char* cls)
+{
+    _ui_class = cls;
 }
 void FlowNode::on_pin_linked(FlowPin* pin)
 {
