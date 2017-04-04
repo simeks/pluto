@@ -30,7 +30,9 @@ BaseObject will take care of its own PyObject, only creating a single one. Conve
     python::Class TClass::static_class() \
     { \
         static python::Class _class; \
-        if (_class.is_none()) \
+        if (_class.is_none() || \
+            python::TypeInfo<TClass>::info.py_type == nullptr /* Used for test build were TypeInfo is reset. */ \
+            ) \
         { \
             if (!std::is_same<TClass, TClass::Super>::value) \
                 TClass::Super::static_class(); /* Ensure super class is initialized */ \

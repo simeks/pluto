@@ -82,3 +82,39 @@ TEST_CASE(python_base_object)
     }
     PYTHON_TEST_CLEANUP();
 }
+
+class CopyClass : public python::BaseObject
+{
+    PYTHON_OBJECT(CopyClass, python::BaseObject);
+
+public:
+    CopyClass(int value) : _cpp_value(value) {}
+    ~CopyClass() {}
+
+    int _cpp_value;
+};
+
+PYTHON_OBJECT_IMPL(CopyClass, "CopyClass")
+{
+    cls;
+}
+
+TEST_CASE(python_base_object_copy)
+{
+    PYTHON_TEST_PREPARE();
+    {
+        // Initialize class
+        CopyClass::static_class();
+        
+        CopyClass* obj = python::make_object<CopyClass>(456);
+        obj->set_attribute("py_value", 321);
+        ASSERT_EQUAL(obj->_cpp_value, 456);
+        ASSERT_EQUAL(obj->attribute<int>("py_value"), 321);
+
+        CopyClass* copy = python::clone_object(obj);
+        ASSERT_EQUAL(copy->_cpp_value, 456);
+        ASSERT_EQUAL(copy->attribute<int>("py_value"), 321);
+
+    }
+    PYTHON_TEST_CLEANUP();
+}
