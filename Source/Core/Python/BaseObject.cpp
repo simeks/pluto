@@ -101,6 +101,18 @@ namespace python
     BaseObject::BaseObject(const BaseObject& other) 
     {
         _type = other._type;
-        _obj = nullptr; // Object will allocated by the cloned class
+
+        PyObject* copy = _type->tp_new(_type, nullptr, nullptr);
+        // Using PtrHolder<BaseObject> should suffice as all classes here should subclass BaseObject
+        // However, this assumes PtrHolder is just a "holder" that does not perform any magic depending on type
+        ((Instance*)copy)->holder = new PtrHolder<BaseObject>(this, true);
+
+        PyObject* src_dict = PyObject_GetAttrString(other._obj, "__dict__");
+        PyObject* dst_dict = PyObject_GetAttrString(copy, "__dict__");
+        PyDict_Update(dst_dict, src_dict);
+        Py_DECREF(src_dict);
+        Py_DECREF(dst_dict);
+
+        _obj = copy; // Object will allocated by the cloned class
     }
 }
