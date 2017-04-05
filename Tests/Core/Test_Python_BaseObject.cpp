@@ -83,6 +83,26 @@ TEST_CASE(python_base_object)
     PYTHON_TEST_CLEANUP();
 }
 
+TEST_CASE(python_base_object_convert)
+{
+    PYTHON_MODULE_INSTALL(py_test_base_object);
+    PYTHON_TEST_PREPARE();
+    {
+        python::import("py_test_base_object");
+
+        CppBall* ball = python::make_object<CppBall>();
+        python::Object pyobj = python::to_python(ball);
+        CppBall* ball2 = python::from_python<CppBall*>(pyobj);
+
+        // Object should reference both the same PyObject and C++ object at all times.
+
+        ASSERT_EQUAL(ball, ball2);
+        ASSERT_EQUAL(ball->ptr(), ball2->ptr());
+        ASSERT_EQUAL(ball->ptr(), pyobj.ptr());
+    }
+    PYTHON_TEST_CLEANUP();
+}
+
 class CopyClass : public python::BaseObject
 {
     PYTHON_OBJECT(CopyClass, python::BaseObject);
