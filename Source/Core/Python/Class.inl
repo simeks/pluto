@@ -1,5 +1,3 @@
-#include <rpcndr.h>
-
 namespace python
 {
     template<typename T>
@@ -208,20 +206,29 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
-    template<typename TClass, typename std::enable_if<std::is_base_of<python::BaseObject, TClass>::value, void>::type>
-    void initialize_converters(Class& cls)
+
+
+    template<typename TClass>
+    void initialize_converters(const Class& cls, std::true_type /* is base of python::BaseObject */)
     {
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
             base_object_to_python<TClass>,
             instance_ptr_from_python<TClass>);
+
+        type_registry::insert(typeid(TClass),
+            (PyTypeObject*)cls.ptr(),
+            nullptr, // Not supported
+            nullptr // Not supported
+        );
     }
+
     template<typename TClass>
-    void initialize_converters(Class& cls)
+    void initialize_converters(const Class& cls, std::false_type /* is base of python::BaseObject */)
     {
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
-            instance_ptr_to_python<TClass, std::is_base_of<BaseObject, TClass>>,
+            instance_ptr_to_python<TClass>,
             instance_ptr_from_python<TClass>);
 
         type_registry::insert(typeid(TClass),
@@ -257,7 +264,7 @@ namespace python
         }
 
         Class cls = make_class(name, base_type, doc);
-        initialize_converters<TClass>(cls);
+        initialize_converters<TClass>(cls, std::is_base_of<python::BaseObject, TClass>::type());
 
         return cls;
     }
