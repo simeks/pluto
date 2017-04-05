@@ -1,3 +1,5 @@
+#include <rpcndr.h>
+
 namespace python
 {
     template<typename T>
@@ -140,6 +142,13 @@ namespace python
         PtrHolder<T>* h = new PtrHolder<T>(*((T**)val)); // Instance will delete this
         return incref(make_instance(type, h).ptr());
     }
+    template<typename T>
+    PyObject* base_object_to_python(void const* val)
+    {
+        static_assert(std::is_base_of<BaseObject, T>::value, "Object needs to inherit BaseObject");
+        T* p = *((T**)val);
+        return incref(p->ptr());
+    }
 
     template<typename T>
     void instance_ptr_from_python(PyObject* obj, void* val)
@@ -199,6 +208,35 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
+    template<typename TClass, typename std::enable_if<std::is_base_of<python::BaseObject, TClass>::value, void>::type>
+    void initialize_converters(Class& cls)
+    {
+        type_registry::insert(typeid(TClass*),
+            (PyTypeObject*)cls.ptr(),
+            base_object_to_python<TClass>,
+            instance_ptr_from_python<TClass>);
+    }
+    template<typename TClass>
+    void initialize_converters(Class& cls)
+    {
+        type_registry::insert(typeid(TClass*),
+            (PyTypeObject*)cls.ptr(),
+            instance_ptr_to_python<TClass, std::is_base_of<BaseObject, TClass>>,
+            instance_ptr_from_python<TClass>);
+
+        type_registry::insert(typeid(TClass),
+            (PyTypeObject*)cls.ptr(),
+            instance_value_to_python<TClass>,
+            instance_value_from_python<TClass>);
+
+        type_registry::insert(typeid(std::unique_ptr<TClass>),
+            (PyTypeObject*)cls.ptr(),
+            instance_unique_ptr_to_python<TClass>,
+            nullptr // Not supported
+        );
+    }
+
+
     template<typename TClass, typename TBaseClass>
     Class make_class(const char* name, const char* doc)
     {
@@ -219,22 +257,7 @@ namespace python
         }
 
         Class cls = make_class(name, base_type, doc);
-
-        type_registry::insert(typeid(TClass*),
-            (PyTypeObject*)cls.ptr(),
-            instance_ptr_to_python<TClass>,
-            instance_ptr_from_python<TClass>);
-
-        type_registry::insert(typeid(TClass),
-            (PyTypeObject*)cls.ptr(),
-            instance_value_to_python<TClass>,
-            instance_value_from_python<TClass>);
-
-        type_registry::insert(typeid(std::unique_ptr<TClass>),
-            (PyTypeObject*)cls.ptr(),
-            instance_unique_ptr_to_python<TClass>,
-            nullptr // Not supported
-        );
+        initialize_converters<TClass>(cls);
 
         return cls;
     }
