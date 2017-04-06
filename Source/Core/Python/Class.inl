@@ -1,3 +1,9 @@
+
+// TODO: This is forward declared from Object.h, this is ugly and should be avoided 
+class Object;
+CORE_API void initialize_object(PyObject* obj, Object* self);
+CORE_API void initialize_object(PyObject* obj, ...);
+
 namespace python
 {
     template<typename T>
@@ -140,14 +146,7 @@ namespace python
         PtrHolder<T>* h = new PtrHolder<T>(*((T**)val)); // Instance will delete this
         return incref(make_instance(type, h).ptr());
     }
-    template<typename T>
-    PyObject* base_object_to_python(void const* val)
-    {
-        static_assert(std::is_base_of<BaseObject, T>::value, "Object needs to inherit BaseObject");
-        T* p = *((T**)val);
-        return incref(p->ptr());
-    }
-
+    
     template<typename T>
     void instance_ptr_from_python(PyObject* obj, void* val)
     {
@@ -209,7 +208,7 @@ namespace python
 
 
     template<typename TClass>
-    void initialize_converters(const Class& cls, std::true_type /* is base of python::BaseObject */)
+    void initialize_converters(const Class& cls, std::true_type /* is base of Object */)
     {
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
@@ -224,7 +223,7 @@ namespace python
     }
 
     template<typename TClass>
-    void initialize_converters(const Class& cls, std::false_type /* is base of python::BaseObject */)
+    void initialize_converters(const Class& cls, std::false_type /* is base of Object */)
     {
         type_registry::insert(typeid(TClass*),
             (PyTypeObject*)cls.ptr(),
@@ -264,7 +263,7 @@ namespace python
         }
 
         Class cls = make_class(name, base_type, doc);
-        initialize_converters<TClass>(cls, std::is_base_of<python::BaseObject, TClass>::type());
+        initialize_converters<TClass>(cls, std::is_base_of<Object, TClass>::type());
 
         return cls;
     }

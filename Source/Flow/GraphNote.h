@@ -1,15 +1,15 @@
 #ifndef __FLOW_GRAPH_NOTE_H__
 #define __FLOW_GRAPH_NOTE_H__
 
-#include <Core/Python/BaseObject.h>
 #include <Core/Image/Vec2.h>
+#include <Core/Object/Object.h>
 
 #include "API.h"
 
 class FlowGraph;
-class FLOW_API GraphNote : public python::BaseObject
+class FLOW_API GraphNote : public Object
 {
-    PYTHON_OBJECT(GraphNote, python::BaseObject);
+    PLUTO_OBJECT(GraphNote, Object);
 
 public:
     GraphNote();

@@ -13,7 +13,7 @@
 #include "Qt/QtVisWindow.h"
 #include "VisNode.h"
 
-PYTHON_OBJECT_IMPL(VisNode, "VisNode")
+PLUTO_OBJECT_IMPL(VisNode, "VisNode")
 {
     cls;
 }

@@ -2,7 +2,7 @@
 #define __FLOW_CONTEXT_H__
 
 #include "API.h"
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
 #include <Core/Python/Dict.h>
 
 class FlowGraph;
@@ -14,9 +14,9 @@ class QTemporaryDir;
 
 struct FlowGraphState;
 
-class FLOW_API FlowContext : public python::BaseObject
+class FLOW_API FlowContext : public Object
 {
-    PYTHON_OBJECT(FlowContext, python::BaseObject);
+    PLUTO_OBJECT(FlowContext, Object);
 
 public:
     class Callback

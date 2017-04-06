@@ -6,7 +6,7 @@
 /// For running a graph within a graph
 class RunGraphNode : public FlowNode
 {
-    PYTHON_OBJECT(RunGraphNode, FlowNode);
+    PLUTO_OBJECT(RunGraphNode, FlowNode);
 
 public:
     RunGraphNode();

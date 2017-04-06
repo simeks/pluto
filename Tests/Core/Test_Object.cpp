@@ -1,17 +1,17 @@
 #include <Testing/Framework.h>
 
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
+#include <Core/Python/Object.h>
 #include <Core/Python/Class.h>
 #include <Core/Python/Dict.h>
 #include <Core/Python/Function.h>
 #include <Core/Python/Module.h>
 #include <Core/Python/NumPy.h>
-#include <Core/Python/Object.h>
 
 #include "Test_Python.h"
 
 
-class Ball : public python::BaseObject
+class Ball : public Object
 {
 public:
     Ball() {}
@@ -73,9 +73,9 @@ TEST_CASE(python_base_object)
 
         python::Object PyBall = d.get("PyBall");
 
-        python::Ref<Ball> cpp_ball = python::make_object<CppBall>();
-        // TODO: Handle reference count when converting to Ref<>
-        python::Ref<Ball> py_ball = python::from_python<Ball*>(python::incref(PyBall().ptr()));
+        ObjectPtr<Ball> cpp_ball = make_object<CppBall>();
+        // TODO: Handle reference count when converting to ObjectPtr<>
+        ObjectPtr<Ball> py_ball = python::from_python<Ball*>(python::incref(PyBall().ptr()));
 
         ASSERT_EQUAL(cpp_ball->radius(), 5);
         ASSERT_EQUAL(py_ball->radius(), 10);
@@ -90,22 +90,22 @@ TEST_CASE(python_base_object_convert)
     {
         python::import("py_test_base_object");
 
-        CppBall* ball = python::make_object<CppBall>();
-        python::Object pyobj = python::to_python(ball);
-        CppBall* ball2 = python::from_python<CppBall*>(pyobj);
+        ObjectPtr<CppBall> ball = make_object<CppBall>();
+        python::Object pyobj = python::to_python(ball.ptr());
+        ObjectPtr<CppBall> ball2 = python::from_python<CppBall*>(pyobj);
 
         // Object should reference both the same PyObject and C++ object at all times.
 
-        ASSERT_EQUAL(ball, ball2);
-        ASSERT_EQUAL(ball->ptr(), ball2->ptr());
-        ASSERT_EQUAL(ball->ptr(), pyobj.ptr());
+        ASSERT_EQUAL(ball.ptr(), ball2.ptr()); // C++ ptr
+        ASSERT_EQUAL(ball->ptr(), ball2->ptr()); // PyObject*
+        ASSERT_EQUAL(ball->ptr(), pyobj.ptr()); // PyObject*
     }
     PYTHON_TEST_CLEANUP();
 }
 
-class CopyClass : public python::BaseObject
+class CopyClass : public Object
 {
-    PYTHON_OBJECT(CopyClass, python::BaseObject);
+    PLUTO_OBJECT(CopyClass, Object);
 
 public:
     CopyClass(int value) : _cpp_value(value) {}
@@ -114,7 +114,7 @@ public:
     int _cpp_value;
 };
 
-PYTHON_OBJECT_IMPL(CopyClass, "CopyClass")
+PLUTO_OBJECT_IMPL(CopyClass, "CopyClass")
 {
     cls;
 }
@@ -126,12 +126,12 @@ TEST_CASE(python_base_object_copy)
         // Initialize class
         CopyClass::static_class();
         
-        CopyClass* obj = python::make_object<CopyClass>(456);
+        ObjectPtr<CopyClass> obj = make_object<CopyClass>(456);
         obj->set_attribute("py_value", 321);
         ASSERT_EQUAL(obj->_cpp_value, 456);
         ASSERT_EQUAL(obj->attribute<int>("py_value"), 321);
 
-        CopyClass* copy = python::clone_object(obj);
+        ObjectPtr<CopyClass> copy = clone_object(obj.ptr());
         ASSERT_EQUAL(copy->_cpp_value, 456);
         ASSERT_EQUAL(copy->attribute<int>("py_value"), 321);
 

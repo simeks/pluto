@@ -19,7 +19,7 @@ namespace python
     }
 }
 
-PYTHON_OBJECT_IMPL(FlowProperty, "Property")
+PLUTO_OBJECT_IMPL(FlowProperty, "Property")
 {
     cls.def_init<FlowProperty, python::Object>();
     cls.def("value", &FlowProperty::value, "Returns the current value of this property");
@@ -65,7 +65,7 @@ void FlowProperty::set_value(const python::Object& value)
 }
 
 
-PYTHON_OBJECT_IMPL(FileProperty, "FileProperty")
+PLUTO_OBJECT_IMPL(FileProperty, "FileProperty")
 {
     cls.def_init_varargs<FileProperty>();
     cls.def("File_Open", FileProperty::File_Open);
@@ -118,7 +118,7 @@ void FileProperty::set_file_filter(const char* filter)
     _file_filter = filter;
 }
 
-PYTHON_OBJECT_IMPL(EnumProperty, "EnumProperty")
+PLUTO_OBJECT_IMPL(EnumProperty, "EnumProperty")
 {
     cls.def_init_varargs<EnumProperty>();
 }

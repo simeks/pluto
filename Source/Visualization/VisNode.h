@@ -8,7 +8,7 @@
 class QtVisWindow;
 class VIS_API VisNode : public FlowNode
 {
-    PYTHON_OBJECT(VisNode, FlowNode);
+    PLUTO_OBJECT(VisNode, FlowNode);
 
 public:
     VisNode();

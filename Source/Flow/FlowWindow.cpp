@@ -49,11 +49,11 @@ void FlowWindow::save(const char* file)
 FlowGraph* FlowWindow::graph()
 {
     FlowGraph* g = _window->graph();
-    return python::clone_object(g);
+    return clone_object(g);
 }
 void FlowWindow::set_graph(FlowGraph* graph)
 {
-    emit _window->set_graph(python::clone_object(graph));
+    emit _window->set_graph(clone_object(graph));
 }
 void FlowWindow::clear()
 {

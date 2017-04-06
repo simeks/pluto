@@ -11,7 +11,7 @@
 
 #include <regex>
 
-PYTHON_OBJECT_IMPL(FlowGraph, "Graph")
+PLUTO_OBJECT_IMPL(FlowGraph, "Graph")
 {
     cls.def_init<FlowGraph>();
     cls.def("reload_all", &FlowGraph::reload_all);
@@ -206,23 +206,23 @@ void FlowGraph::reload_nodes(const char* node_class)
         // Special case: Update any embedded graphs as well
         if (it.second->is_a(RunGraphNode::static_class()))
         {
-            RunGraphNode* n = python::object_cast<RunGraphNode>(it.second);
+            RunGraphNode* n = object_cast<RunGraphNode>(it.second);
             if (n->graph() != this)
                 n->graph()->reload_nodes(node_class);
         }
     }
 }
-FlowGraph::FlowGraph(const FlowGraph& other) : python::BaseObject(other)
+FlowGraph::FlowGraph(const FlowGraph& other) : Object(other)
 {
     for (auto& n : other._nodes)
     {
-        _nodes[n.first] = python::clone_object(n.second);
+        _nodes[n.first] = clone_object(n.second);
         _nodes[n.first]->set_graph(this);
         _nodes[n.first]->set_node_id(guid::create_guid());
     }
     for (auto& n : other._notes)
     {
-        _notes[n.first] = python::clone_object(n.second);
+        _notes[n.first] = clone_object(n.second);
         _notes[n.first]->set_graph(this);
         _notes[n.first]->set_id(guid::create_guid());
     }
@@ -241,7 +241,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         return nullptr;
     }
 
-    FlowGraph* out_graph = python::make_object<FlowGraph>();
+    FlowGraph* out_graph = make_object<FlowGraph>();
 
     const JsonObject& nodes = root["nodes"];
     if (!nodes.is_array())
@@ -260,7 +260,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
             // TODO: Error handling
             continue;
         }
-        FlowNode* out_node = python::clone_object(tpl);
+        FlowNode* out_node = clone_object(tpl);
 
         out_node->set_node_id(guid::from_string(n["id"].as_string()));
         out_node->set_ui_pos(Vec2i(n["ui_pos"][0].as_int(), n["ui_pos"][1].as_int()));
@@ -354,7 +354,7 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             const JsonObject& n = notes[i];
 
-            GraphNote* note = python::make_object<GraphNote>();
+            GraphNote* note = make_object<GraphNote>();
 
             if (n["id"].is_string())
                 note->set_id(guid::from_string(n["id"].as_string()));
@@ -491,7 +491,7 @@ FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
     if (strcmp(tpl->node_class(), old->node_class()) != 0)
         return nullptr;
 
-    FlowNode* n = python::clone_object(tpl);
+    FlowNode* n = clone_object(tpl);
     n->set_node_id(old->node_id());
     n->set_graph(old->graph());
     n->set_ui_pos(old->ui_pos());

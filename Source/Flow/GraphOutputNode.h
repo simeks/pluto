@@ -5,7 +5,7 @@
 
 class GraphOutputNode : public FlowNode
 {
-    PYTHON_OBJECT(GraphOutputNode, FlowNode);
+    PLUTO_OBJECT(GraphOutputNode, FlowNode);
 
 public:
     GraphOutputNode();

@@ -2,7 +2,7 @@
 #define __FLOW_NODE_H__
 
 #include <Core/Image/Vec2.h>
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
 
 #include "API.h"
 
@@ -16,9 +16,9 @@ class FlowProperty;
 
 typedef void(*FlowNodeFunction)(FlowContext*);
 
-class FLOW_API FlowNode : public python::BaseObject
+class FLOW_API FlowNode : public Object
 {
-    PYTHON_OBJECT(FlowNode, python::BaseObject);
+    PLUTO_OBJECT(FlowNode, Object);
 
 public:
     FlowNode();

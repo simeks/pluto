@@ -6,7 +6,7 @@
 #include "FlowProperty.h"
 #include "GraphOutputNode.h"
 
-PYTHON_OBJECT_IMPL(GraphOutputNode, "GraphOutputNode")
+PLUTO_OBJECT_IMPL(GraphOutputNode, "GraphOutputNode")
 {
     cls;
 }

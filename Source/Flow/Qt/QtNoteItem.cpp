@@ -11,7 +11,7 @@
 QtNoteItem::QtNoteItem(QGraphicsWidget* parent) : 
     QGraphicsObject(parent)
 {
-    _note = python::make_object<GraphNote>();
+    _note = make_object<GraphNote>();
 
     setup_ui();
 }

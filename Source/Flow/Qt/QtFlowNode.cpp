@@ -27,7 +27,7 @@ QtFlowNode::QtFlowNode(FlowNode* node, QGraphicsObject* parent) : QGraphicsObjec
     _node = node;
     _node->addref();
     /*if (_node->is_a(UiFlowNode::static_class()))
-        python::object_cast<UiFlowNode>(_node)->set_ui_node(this);
+        object_cast<UiFlowNode>(_node)->set_ui_node(this);
 */
     _title = _node->title();
 }

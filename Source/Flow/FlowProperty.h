@@ -1,15 +1,15 @@
 #ifndef __FLOW_PROPERTY_H__
 #define __FLOW_PROPERTY_H__
 
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
 
 #include "API.h"
 
 class FlowNode;
 
-class FlowProperty : public python::BaseObject
+class FLOW_API FlowProperty : public Object
 {
-    PYTHON_OBJECT(FlowProperty, python::BaseObject);
+    PLUTO_OBJECT(FlowProperty, Object);
 
 public:
     FlowProperty();
@@ -33,7 +33,7 @@ private:
 
 class FileProperty : public FlowProperty
 {
-    PYTHON_OBJECT(FileProperty, FlowProperty);
+    PLUTO_OBJECT(FileProperty, FlowProperty);
 
 public:
     enum FileMode
@@ -58,7 +58,7 @@ private:
 
 class EnumProperty : public FlowProperty
 {
-    PYTHON_OBJECT(EnumProperty, FlowProperty);
+    PLUTO_OBJECT(EnumProperty, FlowProperty);
 
 public:
     EnumProperty();

@@ -1,7 +1,7 @@
 #ifndef __FLOW_GRAPH_H__
 #define __FLOW_GRAPH_H__
 
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
 
 #include "API.h"
 
@@ -10,9 +10,9 @@ class FlowNode;
 class FlowPin;
 class GraphNote;
 
-class FLOW_API FlowGraph : public python::BaseObject
+class FLOW_API FlowGraph : public Object
 {
-    PYTHON_OBJECT(FlowGraph, python::BaseObject);
+    PLUTO_OBJECT(FlowGraph, Object);
 
 public:
     FlowGraph();

@@ -38,7 +38,7 @@ void VisModule::init()
 
     flow.ui()->install_ui_node_factory<QtVisNode>("vis_node");
 
-    //VisNode* tpl = python::make_object<VisNode>();
+    //VisNode* tpl = make_object<VisNode>();
     //flow.install_node_template(tpl);
     //tpl->release();
 }

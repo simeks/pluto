@@ -6,7 +6,7 @@
 #include "FlowProperty.h"
 #include "GraphInputNode.h"
 
-PYTHON_OBJECT_IMPL(GraphInputNode, "GraphInputNode")
+PLUTO_OBJECT_IMPL(GraphInputNode, "GraphInputNode")
 {
     cls;
 }
@@ -19,7 +19,7 @@ GraphInputNode::GraphInputNode() :
 
     set_ui_class("graph_input");
 
-    add_property(python::make_object<FlowProperty>(python::to_python("")));
+    add_property(make_object<FlowProperty>(python::to_python("")));
 }
 GraphInputNode::~GraphInputNode()
 {

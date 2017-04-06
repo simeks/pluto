@@ -83,7 +83,7 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
             QString property_name = p->name();
             if (p->is_a(FileProperty::static_class()))
             {
-                FileProperty* file_prop = python::object_cast<FileProperty>(p);
+                FileProperty* file_prop = object_cast<FileProperty>(p);
 
                 QFileDialog::AcceptMode accept_mode = file_prop->file_mode() == FileProperty::File_Open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave;
 
@@ -93,7 +93,7 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
             }
             else if (p->is_a(EnumProperty::static_class()))
             {
-                EnumProperty* enum_prop = python::object_cast<EnumProperty>(p);
+                EnumProperty* enum_prop = object_cast<EnumProperty>(p);
 
                 QtProperty* prop = _enum_property_manager->addProperty(property_name);
                 QStringList options;

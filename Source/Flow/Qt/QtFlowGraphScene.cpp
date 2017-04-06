@@ -24,7 +24,7 @@
 QtFlowGraphScene::QtFlowGraphScene(QObject *parent)
     : QGraphicsScene(parent)
 {
-    _flow_graph = python::make_object<FlowGraph>();
+    _flow_graph = make_object<FlowGraph>();
 }
 QtFlowGraphScene::QtFlowGraphScene(FlowGraph* graph, QObject *parent)
     : QGraphicsScene(parent)
@@ -186,7 +186,7 @@ void QtFlowGraphScene::new_graph()
     if (_flow_graph)
         _flow_graph->release();
 
-    _flow_graph = python::make_object<FlowGraph>();
+    _flow_graph = make_object<FlowGraph>();
 }
 FlowGraph* QtFlowGraphScene::graph() const
 {

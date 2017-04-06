@@ -7,7 +7,7 @@
 #include "FlowPin.h"
 #include "FlowProperty.h"
 
-PYTHON_OBJECT_IMPL_DOC(FlowNode, "Node", 
+PLUTO_OBJECT_IMPL_DOC(FlowNode, "Node", 
     "FlowNode\n"
     "Base class for nodes\n"
     "\n")
@@ -40,17 +40,17 @@ FlowNode::FlowNode(
 {
 
 }
-FlowNode::FlowNode(const FlowNode& other) : python::BaseObject(other)
+FlowNode::FlowNode(const FlowNode& other) : Object(other)
 {
     for (auto& pin : other._pins)
     {
-        FlowPin* p = python::clone_object(pin);
+        FlowPin* p = clone_object(pin);
         p->set_owner(this);
         _pins.push_back(p);
     }
     for (auto& prop : other._properties)
     {
-        FlowProperty* p = python::clone_object(prop);
+        FlowProperty* p = clone_object(prop);
         p->set_owner(this);
         _properties.push_back(p);
     }
@@ -115,7 +115,7 @@ ArrayFlowPin* FlowNode::pin(const char* name, int index)
     ArrayFlowPin* last = pins.back();
     while (last->index() < index)
     {
-        ArrayFlowPin* pin = python::clone_object(last);
+        ArrayFlowPin* pin = clone_object(last);
         pin->set_index(last->index() + 1);
         pin->set_previous(last);
         last->set_next(pin);
@@ -135,7 +135,7 @@ std::vector<ArrayFlowPin*> FlowNode::pin_array(const char* name) const
     {
         if (p->is_a(ArrayFlowPin::static_class()))
         {
-            ArrayFlowPin* pin = python::object_cast<ArrayFlowPin>(p);
+            ArrayFlowPin* pin = object_cast<ArrayFlowPin>(p);
 
             // Case-insensitive comparison
             if (_stricmp(pin->base_name(), name) == 0)
@@ -181,7 +181,7 @@ void FlowNode::set_graph(FlowGraph* graph)
 
 void FlowNode::add_pin(const char* name, int pin_type)
 {
-    _pins.push_back(python::make_object<FlowPin>(name, (FlowPin::Type)pin_type, this));
+    _pins.push_back(make_object<FlowPin>(name, (FlowPin::Type)pin_type, this));
 }
 void FlowNode::add_property(FlowProperty* prop)
 {
@@ -224,14 +224,14 @@ void FlowNode::on_pin_linked(FlowPin* pin)
 {
     if (pin->is_a(ArrayFlowPin::static_class()))
     {
-        add_array_pin(python::object_cast<ArrayFlowPin>(pin));
+        add_array_pin(object_cast<ArrayFlowPin>(pin));
     }
 }
 void FlowNode::on_pin_unlinked(FlowPin* pin)
 {
     if (pin->is_a(ArrayFlowPin::static_class()))
     {
-        remove_array_pin(python::object_cast<ArrayFlowPin>(pin));
+        remove_array_pin(object_cast<ArrayFlowPin>(pin));
     }
 }
 void FlowNode::add_array_pin(ArrayFlowPin* prev)
@@ -253,7 +253,7 @@ void FlowNode::add_array_pin(ArrayFlowPin* prev)
     if (n > 0)
         return; // Don't add any new pins to array if we already have free pins
     
-    ArrayFlowPin* pin = python::clone_object(last);
+    ArrayFlowPin* pin = clone_object(last);
     pin->set_index(last->index() + 1);
     pin->set_previous(last);
     last->set_next(pin);

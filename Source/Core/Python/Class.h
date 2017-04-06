@@ -8,7 +8,6 @@
 
 namespace python
 {
-    class BaseObject;
     class Holder;
     class Module;
 
@@ -149,8 +148,6 @@ namespace python
     template<typename TClass, typename ... TArgs>
     void class_init(PyObject* self, TArgs... args);
 
-    CORE_API void initialize_object(PyObject* obj, BaseObject* self);
-    CORE_API void initialize_object(PyObject* obj, ...);
 }
 
 #include "Class.inl"

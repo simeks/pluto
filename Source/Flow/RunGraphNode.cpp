@@ -10,7 +10,7 @@
 #include "GraphOutputNode.h"
 #include "RunGraphNode.h"
 
-PYTHON_OBJECT_IMPL(RunGraphNode, "RunGraphNode")
+PLUTO_OBJECT_IMPL(RunGraphNode, "RunGraphNode")
 {
     cls;
 }
@@ -79,11 +79,11 @@ void RunGraphNode::create_pins()
     {
         if (it.second->is_a(GraphInputNode::static_class()))
         {
-            add_pin(python::object_cast<GraphInputNode>(it.second)->name(), FlowPin::In);
+            add_pin(object_cast<GraphInputNode>(it.second)->name(), FlowPin::In);
         }
         if (it.second->is_a(GraphOutputNode::static_class()))
         {
-            add_pin(python::object_cast<GraphOutputNode>(it.second)->name(), FlowPin::Out);
+            add_pin(object_cast<GraphOutputNode>(it.second)->name(), FlowPin::Out);
         }
     }
 
@@ -129,5 +129,5 @@ bool RunGraphNode::valid() const
 RunGraphNode::RunGraphNode(const RunGraphNode& other) : FlowNode(other)
 {
     _context = nullptr;
-    _graph = python::clone_object(other._graph);
+    _graph = clone_object(other._graph);
 }

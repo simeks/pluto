@@ -121,7 +121,7 @@ Dict flow::run(const Tuple& args, const Dict& kw)
     else
         PYTHON_ERROR(PyExc_ValueError, "Invalid argument, expected graph or path to graph file");
 
-    /*python::Ref<FlowContext> context = python::make_object<FlowContext>(graph);
+    /*python::Ref<FlowContext> context = make_object<FlowContext>(graph);
 
     if (kw.valid())
     {
@@ -154,7 +154,7 @@ FlowNode* flow::create_node(const char* node_class)
 {
     FlowNode* n = FlowModule::instance().node_template(node_class);
     if (n)
-        return python::clone_object(n);
+        return clone_object(n);
     return nullptr;
 }
 Tuple flow::node_templates()

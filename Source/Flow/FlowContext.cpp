@@ -11,7 +11,7 @@
 
 #include <QTemporaryDir>
 
-PYTHON_OBJECT_IMPL(FlowContext, "Context")
+PLUTO_OBJECT_IMPL(FlowContext, "Context")
 {
     cls.def("write_pin", &FlowContext::write_pin, "");
     cls.def("read_pin", &FlowContext::read_pin, "");
@@ -138,7 +138,7 @@ void FlowContext::clean_up()
 }
 FlowContext* FlowContext::create_child_context(FlowGraph*)
 {/*
-    FlowContext* context = python::make_object<FlowContext>(graph);
+    FlowContext* context = make_object<FlowContext>(graph);
     context->_env_dict = _env_dict;
     return context;*/
     return nullptr;

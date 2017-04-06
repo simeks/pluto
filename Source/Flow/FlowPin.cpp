@@ -5,7 +5,7 @@
 
 #include <regex>
 
-PYTHON_OBJECT_IMPL_DOC(FlowPin, "Pin", 
+PLUTO_OBJECT_IMPL_DOC(FlowPin, "Pin", 
     "Pin(type, name=''): Creates a Pin of specified type (Pin.In or Pin.Out)\n")
 {
     cls.def_init_varargs<FlowPin>();
@@ -32,7 +32,7 @@ FlowPin::FlowPin(
 FlowPin::FlowPin() : _pin_type(Unknown), _owner(nullptr)
 {
 }
-FlowPin::FlowPin(const FlowPin& other) : python::BaseObject(other),
+FlowPin::FlowPin(const FlowPin& other) : Object(other),
     _name(other._name),
     _pin_type(other._pin_type),
     _owner(other._owner)
@@ -127,7 +127,7 @@ bool FlowPin::is_linked_to(FlowPin* other) const
     return std::find(_links.begin(), _links.end(), other) != _links.end();
 }
 
-PYTHON_OBJECT_IMPL(ArrayFlowPin, "ArrayPin")
+PLUTO_OBJECT_IMPL(ArrayFlowPin, "ArrayPin")
 {
     cls.def_init_varargs<ArrayFlowPin>();
 }

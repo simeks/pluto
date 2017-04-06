@@ -1,14 +1,14 @@
 #ifndef __FLOW_PIN_H__
 #define __FLOW_PIN_H__
 
-#include <Core/Python/BaseObject.h>
+#include <Core/Object/Object.h>
 
 #include "API.h"
 
 class FlowNode;
-class FLOW_API FlowPin : public python::BaseObject
+class FLOW_API FlowPin : public Object
 {
-    PYTHON_OBJECT(FlowPin, python::BaseObject);
+    PLUTO_OBJECT(FlowPin, Object);
 
 public:
     enum Type
@@ -57,7 +57,7 @@ protected:
 
 class FLOW_API ArrayFlowPin : public FlowPin
 {
-    PYTHON_OBJECT(ArrayFlowPin, FlowPin);
+    PLUTO_OBJECT(ArrayFlowPin, FlowPin);
 
 public:
     /// @param base_name : Can only contain a-z, A-Z, 0-9, '_'. Remember, pin names are case insensitive
