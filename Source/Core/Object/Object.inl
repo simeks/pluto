@@ -25,6 +25,7 @@ template<typename T>
 ObjectPtr<T>::ObjectPtr(T* ptr) : _ptr(ptr)
 {
     assert(_ptr);
+    _ptr->addref();
 }
 template<typename T>
 ObjectPtr<T>::~ObjectPtr()
@@ -62,6 +63,16 @@ ObjectPtr<T>& ObjectPtr<T>::operator=(const ObjectPtr<TOther>& other)
     _ptr = other._ptr;
     return *this;
 }
+template<typename T>
+template<typename TOther>
+ObjectPtr<T>& ObjectPtr<T>::operator=(TOther* other)
+{
+    assert(other);
+    other->addref();
+    _ptr->release();
+    _ptr = other;
+    return *this;
+}
 template<typename T, typename U>
 bool operator!=(const ObjectPtr<T>& rhs, const ObjectPtr<U>& lhs)
 {
@@ -87,6 +98,11 @@ TClass* make_object(TArgs... args)
 
     return obj;
 }
+template<typename TClass, typename ... TArgs>
+ObjectPtr<TClass> make_object_ptr(TArgs... args)
+{
+    return ObjectPtr<TClass>(make_object<TClass>(args...));
+}
 template<typename TClass>
 TClass* object_cast(Object* object)
 {
@@ -106,5 +122,5 @@ PyObject* base_object_to_python(void const* val)
 {
     static_assert(std::is_base_of<Object, T>::value, "Object needs to inherit Object");
     T* p = *((T**)val);
-    return incref(p->ptr());
+    return python::incref(p->ptr());
 }

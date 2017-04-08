@@ -263,7 +263,8 @@ namespace python
         }
 
         Class cls = make_class(name, base_type, doc);
-        initialize_converters<TClass>(cls, std::is_base_of<Object, TClass>::type());
+        // TODO: This does not belong here
+        initialize_converters<TClass>(cls, std::is_base_of<::Object, TClass>::type());
 
         return cls;
     }

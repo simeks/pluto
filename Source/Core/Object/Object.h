@@ -131,6 +131,9 @@ public:
         
     template<typename TOther>
     ObjectPtr<T>& operator=(const ObjectPtr<TOther>& other);
+    
+    template<typename TOther>
+    ObjectPtr<T>& operator=(TOther* other);
 
 private:
     T* _ptr;
@@ -141,6 +144,9 @@ CORE_API void initialize_object(PyObject* obj, ...);
 
 template<typename TClass, typename ... TArgs>
 TClass* make_object(TArgs... args);
+
+template<typename TClass, typename ... TArgs>
+ObjectPtr<TClass> make_object_ptr(TArgs... args);
 
 template<typename TClass>
 TClass* object_cast(Object* object);
