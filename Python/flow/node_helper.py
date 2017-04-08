@@ -4,9 +4,40 @@ import inspect
 import re
 
 
-class FunctionNode(flow.Node):
-    def __init__(self, fn, title=None, category=None):
-        super(FunctionNode, self).__init__()
+class ScriptFunctionNode(flow.Node):
+    def __init__(self, **kwargs):
+        """
+        Arguments:
+            title       : Title of the node. (required)
+            category    : Category, set to '' if not set.
+            node_class  : String identifier of node, automatically required via func 
+                          (func.__module__+'.'+func.__name__) if not set.
+            pins        : List of flow.Pins specifying the pins of the node.
+            properties  : List of properties.
+            ui          : Tuple of UI options.
+            func        : Function bound to node. (required)
+        """
+
+        if 'title' not in kwargs:
+            raise ValueError('\'title\' missing')
+
+        if 'func' not in kwargs:
+            raise ValueError('\'func\' missing')
+
+        node_class = kwargs.get('node_class', func.__module__+'.'+func.__name__)
+        title = kwargs['title']
+        category = kwargs.get('category', '')
+
+        super(ScriptFunctionNode, self).__init__(node_class, title, category)
+
+        pins = kwargs.get('pins', [])
+        for pin in pins:
+            self.add_pin(
+
+        func = kwargs['func']
+        properties = kwargs.get('properties', [])
+        
+        ui = kwargs.get('ui', ())
 
         self.args = inspect.getargspec(fn).args
         if self.args is not None:
@@ -21,12 +52,9 @@ class FunctionNode(flow.Node):
                 self.add_pin(o, flow.Pin.Out)
 
         self.func = fn
-        self.node_class = fn.__module__ + '.' + fn.__name__
 
-        if title != None:
-            self.title = title
-        if category != None:
-            self.category = category
+    def create_pin_to_arg_mapping(self):
+        pass
 
     def run(self, ctx):
         if self.func == None:
@@ -47,42 +75,6 @@ class FunctionNode(flow.Node):
                 ctx.write_pin(self.returns[0], returns)
 
 
-
-def node(title, category = ''):
-    def dec(fn):
-        flow.install_node_template(FunctionNode(fn=fn, title=title, category=category))
-        return fn
-    return dec
-
 def node_template(**kwargs):
-    """
-    Arguments:
-        title       : Title of the node. (required)
-        category    : Category, set to '' if not set.
-        node_class  : String identifier of node, automatically required via func 
-                      (func.__module__+'.'+func.__name__) if not set.
-        pins        : List of flow.Pins specifying the pins of the node.
-        properties  : List of properties.
-        ui          : Tuple of UI options.
-        doc         : Documentation
-        func        : Function bound to node. (required)
-    """
-
-    if 'title' not in kwargs:
-        raise ValueError('\'title\' missing')
-
-    if 'func' not in kwargs:
-        raise ValueError('\'func\' missing')
-
-    title = kwargs['title']
-    func = kwargs['func']
-
-    node_class = kwargs.get('node_class', func.__module__+'.'+func.__name__)
-    category = kwargs.get('category', '')
-
-    pins = kwargs.get('pins', [])
-    properties = kwargs.get('properties', [])
-    
-    doc = kwargs.get('doc', '')
-    ui = kwargs.get('ui', ())
+    flow.install_node_template(ScriptFunctionNode(**kwargs))
     
