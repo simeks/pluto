@@ -153,7 +153,7 @@ bool FlowNode::is_pin_linked(const char* name) const
     FlowPin* p = pin(name);
     return p && p->links().size() != 0;
 }
-FlowProperty* FlowNode::property(const char* name)
+FlowProperty* FlowNode::property(const char* name) const
 {
     for (auto it = _properties.begin(); it != _properties.end(); ++it)
     {
@@ -161,6 +161,13 @@ FlowProperty* FlowNode::property(const char* name)
             return *it;
     }
     return nullptr;
+}
+python::Object FlowNode::property_value(const char* name) const
+{
+    auto prop = property(name);
+    if (!prop)
+        PYTHON_ERROR(PyExc_KeyError, "no property with name '%s' found.", name);
+    return prop->value();
 }
 const Guid& FlowNode::node_id() const
 {

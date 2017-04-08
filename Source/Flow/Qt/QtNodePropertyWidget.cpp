@@ -113,25 +113,25 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
                 if (PyBool_Check(p->value().ptr()))
                 {
                     QtProperty* prop = _bool_property_manager->addProperty(property_name);
-                    _bool_property_manager->setValue(prop, node->attribute<bool>(p->name()));
+                    _bool_property_manager->setValue(prop, node->property_value<bool>(p->name()));
                     _property_browser->addProperty(prop);
                 }
                 else if (PyLong_Check(p->value().ptr()))
                 {
                     QtProperty* prop = _int_property_manager->addProperty(property_name);
-                    _int_property_manager->setValue(prop, node->attribute<int>(p->name()));
+                    _int_property_manager->setValue(prop, node->property_value<int>(p->name()));
                     _property_browser->addProperty(prop);
                 }
                 else if (PyFloat_Check(p->value().ptr()))
                 {
                     QtProperty* prop = _double_property_manager->addProperty(property_name);
-                    _double_property_manager->setValue(prop, node->attribute<double>(p->name()));
+                    _double_property_manager->setValue(prop, node->property_value<double>(p->name()));
                     _property_browser->addProperty(prop);
                 }
                 else
                 {
                     QtProperty* prop = _string_property_manager->addProperty(property_name);
-                    _string_property_manager->setValue(prop, node->attribute<const char*>(p->name()));
+                    _string_property_manager->setValue(prop, node->property_value<const char*>(p->name()));
                     _property_browser->addProperty(prop);
                 }
             }

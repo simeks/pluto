@@ -15,11 +15,12 @@ GraphInputNode::GraphInputNode() :
     FlowNode("flow.GraphInputNode", "Input", "Flow/Graph")
 {
     add_pin("Out", FlowPin::Out);
-    //set_attribute("doc", "Graph input node");
+
+    auto property_name = make_object<FlowProperty>(python::to_python(""));
+    property_name->set_name("name");
+    add_property(property_name);
 
     set_ui_class("graph_input");
-
-    add_property(make_object<FlowProperty>(python::to_python("")));
 }
 GraphInputNode::~GraphInputNode()
 {
@@ -28,7 +29,7 @@ void GraphInputNode::run(FlowContext* ctx)
 {
     ctx->write_pin("Out", ctx->input(name()));
 }
-const char* GraphInputNode::name()
+const char* GraphInputNode::name() const
 {
-    return attribute<const char*>("name");
+    return property_value<const char*>("name");
 }

@@ -47,7 +47,16 @@ public:
     bool is_pin_linked(const char* name) const;
 
     /// Returns the property with the given name, returns null if not found
-    FlowProperty* property(const char* name);
+    FlowProperty* property(const char* name) const;
+
+    /// Returns the value for the specified property. 
+    /// Throws an exception if no property was found.
+    python::Object property_value(const char* name) const;
+
+    /// Returns the value for the specified property. 
+    /// Throws an exception if no property was found.
+    template<typename T>
+    T property_value(const char* name) const;
 
     const Guid& node_id() const;
     void set_node_id(const Guid& id);
@@ -103,6 +112,11 @@ protected:
 };
 
 
+template<typename T>
+T FlowNode::property_value(const char* name) const
+{
+    return python::from_python<T>(property_value(name));
+}
 
 
 #endif // __FLOW_NODE_H__

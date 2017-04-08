@@ -11,17 +11,16 @@ PLUTO_OBJECT_IMPL(GraphOutputNode, "GraphOutputNode")
     cls;
 }
 
-GraphOutputNode::GraphOutputNode()
+GraphOutputNode::GraphOutputNode() :
+    FlowNode("flow.GraphOutputNode", "Output", "Flow/Graph")
 {
-    //set_attribute("node_class", "flow.GraphOutput");
-    //set_attribute("title", "Output");
-    //set_attribute("category", "Flow/Graph");
-    //set_attribute("doc", "Graph output node");
+    add_pin("In", FlowPin::In);
 
-    //set_attribute("ui_class", "graph_output");
+    auto property_name = make_object<FlowProperty>(python::to_python(""));
+    property_name->set_name("name");
+    add_property(property_name);
 
-    //add_pin("In", FlowPin::In);
-    //add_property(object_new<StringProperty>("name", ""));
+    set_ui_class("graph_output");
 }
 GraphOutputNode::~GraphOutputNode()
 {
@@ -31,7 +30,7 @@ void GraphOutputNode::run(FlowContext* ctx)
 {
     ctx->set_output(name(), ctx->read_pin("In"));
 }
-const char* GraphOutputNode::name()
+const char* GraphOutputNode::name() const
 {
-    return attribute<const char*>("name");
+    return property_value<const char*>("name");
 }

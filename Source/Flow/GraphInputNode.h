@@ -14,7 +14,8 @@ public:
     void run(FlowContext* ctx) OVERRIDE;
 
     /// Input name
-    const char* name();
+    const char* name() const;
+
 };
 
 
