@@ -53,7 +53,7 @@ PYTHON_MODULE(py_test_base_object)
 
 
 
-TEST_CASE(python_base_object)
+TEST_CASE(pluto_object)
 {
     PYTHON_MODULE_INSTALL(py_test_base_object);
     PYTHON_TEST_PREPARE();
@@ -73,7 +73,7 @@ TEST_CASE(python_base_object)
 
         python::Object PyBall = d.get("PyBall");
 
-        ObjectPtr<Ball> cpp_ball = make_object<CppBall>();
+        ObjectPtr<Ball> cpp_ball = make_object_ptr<CppBall>();
         // TODO: Handle reference count when converting to ObjectPtr<>
         ObjectPtr<Ball> py_ball = python::from_python<Ball*>(python::incref(PyBall().ptr()));
 
@@ -83,14 +83,14 @@ TEST_CASE(python_base_object)
     PYTHON_TEST_CLEANUP();
 }
 
-TEST_CASE(python_base_object_convert)
+TEST_CASE(pluto_object_convert)
 {
     PYTHON_MODULE_INSTALL(py_test_base_object);
     PYTHON_TEST_PREPARE();
     {
         python::import("py_test_base_object");
 
-        ObjectPtr<CppBall> ball = make_object<CppBall>();
+        ObjectPtr<CppBall> ball = make_object_ptr<CppBall>();
         python::Object pyobj = python::to_python(ball.ptr());
         ObjectPtr<CppBall> ball2 = python::from_python<CppBall*>(pyobj);
 
@@ -119,14 +119,14 @@ PLUTO_OBJECT_IMPL(CopyClass, "CopyClass")
     cls;
 }
 
-TEST_CASE(python_base_object_copy)
+TEST_CASE(pluto_object_copy)
 {
     PYTHON_TEST_PREPARE();
     {
         // Initialize class
         CopyClass::static_class();
         
-        ObjectPtr<CopyClass> obj = make_object<CopyClass>(456);
+        ObjectPtr<CopyClass> obj = make_object_ptr<CopyClass>(456);
         obj->set_attribute("py_value", 321);
         ASSERT_EQUAL(obj->_cpp_value, 456);
         ASSERT_EQUAL(obj->attribute<int>("py_value"), 321);
@@ -136,5 +136,56 @@ TEST_CASE(python_base_object_copy)
         ASSERT_EQUAL(copy->attribute<int>("py_value"), 321);
 
     }
+    PYTHON_TEST_CLEANUP();
+}
+
+class PtrClass : public Object
+{
+    PLUTO_OBJECT(PtrClass, Object);
+
+public:
+    PtrClass(int value) : _cpp_value(value) {}
+    ~PtrClass() { destroyed = true; }
+
+    int _cpp_value;
+
+    static bool destroyed;
+};
+
+bool PtrClass::destroyed = false;
+
+PLUTO_OBJECT_IMPL(PtrClass, "PtrClass")
+{
+    cls;
+}
+
+
+TEST_CASE(pluto_object_ptr)
+{
+    PYTHON_TEST_PREPARE();
+    {
+        // Initialize class
+        PtrClass::static_class();
+
+        ObjectPtr<PtrClass> obj = make_object_ptr<PtrClass>(123);
+        ASSERT_EQUAL(obj->refcnt(), 1);
+
+        ObjectPtr<PtrClass> obj2 = obj;
+        ASSERT_EQUAL(obj->refcnt(), 2);
+
+        python::Object pyobj = python::to_python(obj);
+        ASSERT_EQUAL(obj->refcnt(), 3);
+
+        ObjectPtr<PtrClass> obj_frompy = python::from_python<ObjectPtr<PtrClass>>(pyobj);
+        ASSERT_EQUAL(obj->refcnt(), 4);
+
+        obj2 = nullptr;
+        ASSERT_EQUAL(obj->refcnt(), 3);
+
+        pyobj = python::None();
+        ASSERT_EQUAL(obj->refcnt(), 2);
+    }
+    ASSERT_EXPR(PtrClass::destroyed);
+
     PYTHON_TEST_CLEANUP();
 }

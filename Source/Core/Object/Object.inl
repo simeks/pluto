@@ -43,7 +43,12 @@ T* ObjectPtr<T>::ptr() const
 {
     return _ptr;
 }
-
+template<typename T>
+ObjectPtr<T>::ObjectPtr(const ObjectPtr& other) : _ptr(other._ptr)
+{
+    assert(_ptr);
+    _ptr->addref();
+}
 template<typename T>
 template<typename TOther>
 ObjectPtr<T>::ObjectPtr(const ObjectPtr<TOther>& other) : _ptr(other._ptr)
@@ -51,7 +56,16 @@ ObjectPtr<T>::ObjectPtr(const ObjectPtr<TOther>& other) : _ptr(other._ptr)
     assert(_ptr);
     _ptr->addref();
 }
-
+template<typename T>
+ObjectPtr<T>& ObjectPtr<T>::operator=(const ObjectPtr& other)
+{
+    assert(this != &other);
+    assert(other._ptr);
+    other._ptr->addref();
+    _ptr->release();
+    _ptr = other._ptr;
+    return *this;
+}
 template<typename T>
 template<typename TOther>
 ObjectPtr<T>& ObjectPtr<T>::operator=(const ObjectPtr<TOther>& other)
@@ -108,7 +122,7 @@ TClass* make_object(TArgs... args)
 template<typename TClass, typename ... TArgs>
 ObjectPtr<TClass> make_object_ptr(TArgs... args)
 {
-    return ObjectPtr<TClass>(make_object<TClass>(args...));
+    return ObjectPtr<TClass>::attach(make_object<TClass>(args...));
 }
 template<typename TClass>
 TClass* object_cast(Object* object)

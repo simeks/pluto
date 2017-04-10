@@ -88,6 +88,11 @@ void Object::release()
     assert(_obj);
     Py_DECREF(_obj);
 }
+size_t Object::refcnt() const
+{
+    assert(_obj);
+    return Py_REFCNT(_obj);
+}
 PyObject* Object::ptr() const
 {
     return _obj;

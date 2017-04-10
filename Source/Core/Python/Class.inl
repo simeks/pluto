@@ -157,7 +157,7 @@ namespace python
         }
         else
         {
-            PyErr_Format(PyExc_TypeError, "Cannot convert pointer type %s to %s.",
+            PYTHON_ERROR(PyExc_TypeError, "Cannot convert pointer type %s to %s.",
                 Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
         }
     }
@@ -167,9 +167,8 @@ namespace python
         PyTypeObject* type = TypeInfo<T>::info.py_type;
         if (!type)
         {
-            PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+            PYTHON_ERROR(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
                 typeid(T).name());
-            return nullptr;
         }
 
         PtrHolder<T>* h = new PtrHolder<T>(); // Instance will delete this
@@ -186,7 +185,7 @@ namespace python
         }
         else
         {
-            PyErr_Format(PyExc_TypeError, "Cannot convert type %s to %s.",
+            PYTHON_ERROR(PyExc_TypeError, "Cannot convert type %s to %s.",
                 Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
         }
     }
@@ -196,9 +195,8 @@ namespace python
         PyTypeObject* type = TypeInfo<T>::info.py_type;
         if (!type)
         {
-            PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+            PYTHON_ERROR(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
                 typeid(T).name());
-            return nullptr;
         }
 
         UniquePtrHolder<T>* h = new UniquePtrHolder<T>(std::move(*((std::unique_ptr<T>*)val))); // Instance will delete this
@@ -206,16 +204,16 @@ namespace python
     }
 
 	template<typename T>
-	void instance_value_from_python(PyObject* obj, void* val)
+	void object_ptr_from_python(PyObject* obj, void* val)
 	{
 		if (TypeInfo<T>::info.py_type &&
 			PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
 		{
-			new (val) ObjectPtr<T>(*((T*)((Instance*)obj)->holder->ptr()));
+			new (val) ObjectPtr<T>(((T*)((Instance*)obj)->holder->ptr()));
 		}
 		else
 		{
-			PyErr_Format(PyExc_TypeError, "Cannot convert type %s to %s.",
+            PYTHON_ERROR(PyExc_TypeError, "Cannot convert type %s to %s.",
 				Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
 		}
 	}
@@ -226,15 +224,13 @@ namespace python
 		PyTypeObject* type = TypeInfo<T>::info.py_type;
 		if (!type)
 		{
-			PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+            PYTHON_ERROR(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
 				typeid(T).name());
-			return nullptr;
 		}
 
 		const ObjectPtr<T>& ptr = *((ObjectPtr<T>*)val);
 		return incref(ptr->ptr());
 	}
-
 
     template<typename TClass>
     void initialize_converters(const Class& cls, std::true_type /* is base of Object */)
@@ -250,10 +246,10 @@ namespace python
             nullptr // Not supported
         );
 
-        type_registry::insert(typeid(ObjectPtr<TClass>)),
+        type_registry::insert(typeid(ObjectPtr<TClass>),
             (PyTypeObject*)cls.ptr(),
-            nullptr,
-            nullptr);
+            object_ptr_to_python<TClass>,
+            object_ptr_from_python<TClass>);
     }
 
     template<typename TClass>
@@ -308,9 +304,8 @@ namespace python
         PyTypeObject* type = TypeInfo<TClass>::info.py_type;
         if (type == nullptr)
         {
-            PyErr_Format(PyExc_TypeError, "No python type found for type '%s'",
+            PYTHON_ERROR(PyExc_TypeError, "No python type found for type '%s'",
                 typeid(TClass).name());
-            return None();
         }
 
         return make_instance(type, new PtrHolder<TClass>(value));

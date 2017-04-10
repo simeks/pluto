@@ -85,6 +85,8 @@ public:
     void addref();
     /// Decreases the reference count of the object
     void release();
+    /// Returns the current reference count
+    size_t refcnt() const;
 
     /// Returns the wrapped PyObject*
     PyObject* ptr() const;
@@ -126,19 +128,25 @@ public:
     T* operator->() const;
     T* ptr() const;
 
+    ObjectPtr(const ObjectPtr& other);
+
     template<typename TOther>
     ObjectPtr(const ObjectPtr<TOther>& other);
-        
+
+    ObjectPtr& operator=(const ObjectPtr& other);
+
     template<typename TOther>
     ObjectPtr<T>& operator=(const ObjectPtr<TOther>& other);
-    
+
     template<typename TOther>
     ObjectPtr<T>& operator=(TOther* other);
 
     /// Attaches the given to a new ObjectPtr without increasing the reference count of said object.
     static ObjectPtr<T> attach(T* ptr);
 
-private:
+protected:
+    template<class TOther> friend class ObjectPtr;
+
     T* _ptr;
 };
 
