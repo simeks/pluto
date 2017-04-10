@@ -69,6 +69,7 @@ public:
     const char* category() const;
 
     void add_pin(const char* name, int pin_type);
+    void add_pin(const char* name, FlowPin* pin);
     
     const std::vector<FlowProperty*>& properties() const;
 

@@ -205,6 +205,35 @@ namespace python
         return incref(make_instance(type, h).ptr());
     }
 
+	template<typename T>
+	void instance_value_from_python(PyObject* obj, void* val)
+	{
+		if (TypeInfo<T>::info.py_type &&
+			PyObject_IsInstance(obj, (PyObject*)TypeInfo<T>::info.py_type))
+		{
+			new (val) ObjectPtr<T>(*((T*)((Instance*)obj)->holder->ptr()));
+		}
+		else
+		{
+			PyErr_Format(PyExc_TypeError, "Cannot convert type %s to %s.",
+				Py_TYPE(obj)->tp_name, TypeInfo<T>::info.py_type->tp_name);
+		}
+	}
+
+	template<typename T>
+	PyObject* object_ptr_to_python(void const* val)
+	{
+		PyTypeObject* type = TypeInfo<T>::info.py_type;
+		if (!type)
+		{
+			PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+				typeid(T).name());
+			return nullptr;
+		}
+
+		const ObjectPtr<T>& ptr = *((ObjectPtr<T>*)val);
+		return incref(ptr->ptr());
+	}
 
 
     template<typename TClass>
@@ -220,6 +249,11 @@ namespace python
             nullptr, // Not supported
             nullptr // Not supported
         );
+
+        type_registry::insert(typeid(ObjectPtr<TClass>)),
+            (PyTypeObject*)cls.ptr(),
+            nullptr,
+            nullptr);
     }
 
     template<typename TClass>

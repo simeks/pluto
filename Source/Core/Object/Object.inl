@@ -73,6 +73,13 @@ ObjectPtr<T>& ObjectPtr<T>::operator=(TOther* other)
     _ptr = other;
     return *this;
 }
+template<typename T>
+ObjectPtr<T> ObjectPtr<T>::attach(T* ptr)
+{
+    ObjectPtr<T> p(ptr);
+    ptr->release();
+    return p;
+}
 template<typename T, typename U>
 bool operator!=(const ObjectPtr<T>& rhs, const ObjectPtr<U>& lhs)
 {

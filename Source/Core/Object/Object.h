@@ -135,6 +135,9 @@ public:
     template<typename TOther>
     ObjectPtr<T>& operator=(TOther* other);
 
+    /// Attaches the given to a new ObjectPtr without increasing the reference count of said object.
+    static ObjectPtr<T> attach(T* ptr);
+
 private:
     T* _ptr;
 };

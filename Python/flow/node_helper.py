@@ -8,12 +8,12 @@ class ScriptFunctionNode(flow.Node):
     def __init__(self, **kwargs):
         """
         Arguments:
-            title       : Title of the node. (required)
-            category    : Category, set to '' if not set.
             node_class  : String identifier of node, automatically required via func 
                           (func.__module__+'.'+func.__name__) if not set.
-            pins        : List of flow.Pins specifying the pins of the node.
-            properties  : List of properties.
+            title       : Title of the node. (required)
+            category    : Category, set to '' if not set.
+            pins        : Dict of flow.Pins specifying the pins of the node.
+            properties  : Dict of properties.
             ui          : Tuple of UI options.
             func        : Function bound to node. (required)
         """
@@ -31,11 +31,15 @@ class ScriptFunctionNode(flow.Node):
         super(ScriptFunctionNode, self).__init__(node_class, title, category)
 
         pins = kwargs.get('pins', [])
-        for pin in pins:
-            self.add_pin(
+        for pin in pins.keys():
+            self.add_pin(pin, pins[pin])
+
+        properties = kwargs.get('properties', [])
+        for prop in properties.keys():
+            self.add_property(prop, properties[prop])
+        
 
         func = kwargs['func']
-        properties = kwargs.get('properties', [])
         
         ui = kwargs.get('ui', ())
 
@@ -54,6 +58,18 @@ class ScriptFunctionNode(flow.Node):
         self.func = fn
 
     def create_pin_to_arg_mapping(self):
+        """
+        Here we map pins and properties to the function arguments.
+            For instance: If we have a node with function signature fn(a, b),
+            then we want to map any pins (or properties) named a or b to arguments
+            when invoking the function.
+
+        Pins and properties are mapped according to this priority list:
+            Given a function argument 'a':
+            1. If we have a pin 'a' that is currently linked, pass value on pin 'a' as argument.
+            2. Else if we have an property 'a', pass value of property 'a' as argument.
+            3. Else, pass None as argument
+        """
         pass
 
     def run(self, ctx):
