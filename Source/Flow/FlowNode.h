@@ -47,6 +47,7 @@ public:
     bool is_pin_linked(const char* name) const;
 
     /// Returns the property with the given name, returns null if not found
+	/// @remark case-insensitive
     FlowProperty* property(const char* name) const;
 
     /// Returns the value for the specified property. 

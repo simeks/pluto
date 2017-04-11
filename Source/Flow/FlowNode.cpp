@@ -23,6 +23,9 @@ PLUTO_OBJECT_IMPL_DOC(FlowNode, "Node",
     cls.def<FlowNode, void, const char*, int>("add_pin", &FlowNode::add_pin, "");
     cls.def("node_id", &FlowNode::node_id, "");
     cls.def("is_pin_linked", &FlowNode::is_pin_linked, "");
+	cls.def("set_ui_class", &FlowNode::set_ui_class, "");
+
+	cls.def("property", &FlowNode::property, "");
 }
 
 FlowNode::FlowNode() :
@@ -157,7 +160,7 @@ FlowProperty* FlowNode::property(const char* name) const
 {
     for (auto it = _properties.begin(); it != _properties.end(); ++it)
     {
-        if (strcmp((*it)->name(), name) == 0)
+        if (_stricmp((*it)->name(), name) == 0)
             return *it;
     }
     return nullptr;

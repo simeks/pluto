@@ -38,45 +38,38 @@ class ScriptFunctionNode(flow.Node):
         for prop in properties.keys():
             self.add_property(prop, properties[prop])
         
+        self.func = kwargs['func']
+        self.signature = inspect.signature(self.func)
 
-        func = kwargs['func']
-        
-        ui = kwargs.get('ui', ())
-
-        self.args = inspect.getargspec(fn).args
-        if self.args is not None:
-            for i in self.args:
-                self.add_pin(i, flow.Pin.In)
-
-        if fn.__doc__ is not None:
-            ndoc = NodeDocstringParse(fn.__doc__)
-
-            self.returns = ndoc.outputs
-            for o in self.returns:
-                self.add_pin(o, flow.Pin.Out)
-
-        self.func = fn
-
-    def create_pin_to_arg_mapping(self):
-        """
-        Here we map pins and properties to the function arguments.
-            For instance: If we have a node with function signature fn(a, b),
-            then we want to map any pins (or properties) named a or b to arguments
-            when invoking the function.
-
-        Pins and properties are mapped according to this priority list:
-            Given a function argument 'a':
-            1. If we have a pin 'a' that is currently linked, pass value on pin 'a' as argument.
-            2. Else if we have an property 'a', pass value of property 'a' as argument.
-            3. Else, pass None as argument
-        """
-        pass
+        ui = kwargs.get('ui', {})
+        if 'ui_class' in ui:
+            self.set_ui_class(ui['ui_class'])
 
     def run(self, ctx):
         if self.func == None:
             return
-        args = []
-        for a in self.args:
+        
+        # Here we map pins and properties to the function arguments.
+        #     For instance: If we have a node with function signature fn(a, b),
+        #     then we want to map any pins (or properties) named a or b to arguments
+        #     when invoking the function.
+        # Pins and properties are mapped according to this priority list:
+        #     Given a function argument 'a':
+        #     1. If we have a pin 'a' that is currently linked, pass value on pin 'a' as argument.
+        #     2. Else if we have an property 'a', pass value of property 'a' as argument.
+        #     3. Else if argument has a default value, pass that
+        #     4. Else, pass None
+        
+        args = {}
+        for arg in self.signature.parameters:
+            if ctx.is_pin_linked(arg): # Check both if pin is exists and if linked
+                args[arg] = ctx.read_pin(arg)
+            elif self.property(arg):
+                args[arg] = self.property(arg).value()
+            else:
+                if self.signature.parameters[arg].default == inspect._empty:
+                    
+
             args.append(ctx.read_pin(a))
         
         returns = self.func(*args)
