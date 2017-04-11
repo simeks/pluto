@@ -57,6 +57,7 @@ Object will take care of its own PyObject, only creating a single one. Convertin
 ///     only be allocated using make_object(). Also, user should never use 
 ///     delete directly on objects derived from Object. Python GC is responsible
 ///     for deleting this object.
+/// The PLUTO_OBJECT macros are required for all subclasses.
 class CORE_API Object
 {
     PLUTO_OBJECT(Object, Object);

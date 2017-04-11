@@ -13,6 +13,7 @@
 
 class Ball : public Object
 {
+	PLUTO_OBJECT(Ball, Object);
 public:
     Ball() {}
     virtual ~Ball() {}
@@ -27,9 +28,16 @@ public:
         return -1;
     }
 };
+PLUTO_OBJECT_IMPL(Ball, "Ball")
+{
+	cls.def_init<Ball>();
+}
+
 
 class CppBall : public Ball
 {
+	PLUTO_OBJECT(CppBall, Ball);
+
 public:
     CppBall() {}
     virtual ~CppBall() {}
@@ -40,15 +48,16 @@ public:
     }
 };
 
+PLUTO_OBJECT_IMPL(CppBall, "CppBall")
+{
+	cls;
+}
+
+
 
 PYTHON_MODULE(py_test_base_object)
 {
-    python::Class cls = python::make_class<Ball>("Ball");
-    cls.def_init<Ball>();
-    
-    module.def("Ball", cls);
-
-    python::make_class<CppBall, Ball>("CppBall");
+    module.def("Ball", Ball::static_class());
 }
 
 

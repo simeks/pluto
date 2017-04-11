@@ -1,5 +1,25 @@
 namespace python
 {
+	/// TODO: @hack This should be reconsidered, probably the whole conversion model
+	/// When converting a value from python we want a temporary storage for the resulting object.
+	///		We want to avoid calling the constructor of said object as we only want the object
+	///		to be copy-constructed during conversion. At the same time we still need to call the
+	///		destructor of the temporary variable.
+	template<typename T>
+	struct ConvertValue
+	{
+		ConvertValue() {}
+		~ConvertValue() 
+		{
+			// Call destructor, assuming object has been constructed
+			ptr()->~T();
+		}
+
+		T* ptr() { return (T*)&value; }
+
+		uint8_t value[sizeof(T)];
+	};
+
     template<typename T>
     T from_python(PyObject* obj)
     {
@@ -9,9 +29,10 @@ namespace python
             PYTHON_ERROR(PyExc_TypeError, "from_python: No converter found for type %s", 
                 TypeInfo<T>::info.cpp_type.name());
         }
-        T* val = (T*)alloca(sizeof(T)); // Avoid calling the constructor, conv() will call copy-constructor
-        conv(obj, val);
-        return *val;
+
+		ConvertValue<T> val;
+        conv(obj, val.ptr());
+        return *val.ptr();
     }
 
     template<typename T>

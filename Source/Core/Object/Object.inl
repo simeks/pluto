@@ -24,14 +24,14 @@ T Object::attribute(const char* name) const
 template<typename T>
 ObjectPtr<T>::ObjectPtr(T* ptr) : _ptr(ptr)
 {
-    assert(_ptr);
-    _ptr->addref();
+	if (_ptr)
+		_ptr->addref();
 }
 template<typename T>
 ObjectPtr<T>::~ObjectPtr()
 {
-    assert(_ptr);
-    _ptr->release();
+    if (_ptr)
+		_ptr->release();
 }
 template<typename T>
 T* ObjectPtr<T>::operator->() const
@@ -46,23 +46,24 @@ T* ObjectPtr<T>::ptr() const
 template<typename T>
 ObjectPtr<T>::ObjectPtr(const ObjectPtr& other) : _ptr(other._ptr)
 {
-    assert(_ptr);
-    _ptr->addref();
+	if (_ptr)
+		_ptr->addref();
 }
 template<typename T>
 template<typename TOther>
 ObjectPtr<T>::ObjectPtr(const ObjectPtr<TOther>& other) : _ptr(other._ptr)
 {
-    assert(_ptr);
-    _ptr->addref();
+	if (_ptr)
+		_ptr->addref();
 }
 template<typename T>
 ObjectPtr<T>& ObjectPtr<T>::operator=(const ObjectPtr& other)
 {
     assert(this != &other);
-    assert(other._ptr);
-    other._ptr->addref();
-    _ptr->release();
+	if (other._ptr)
+		other._ptr->addref();
+	if (_ptr)
+		_ptr->release();
     _ptr = other._ptr;
     return *this;
 }
@@ -71,9 +72,10 @@ template<typename TOther>
 ObjectPtr<T>& ObjectPtr<T>::operator=(const ObjectPtr<TOther>& other)
 {
     assert(this != &other);
-    assert(other._ptr);
-    other._ptr->addref();
-    _ptr->release();
+	if (other._ptr)
+		other._ptr->addref();
+	if (_ptr)
+		_ptr->release();
     _ptr = other._ptr;
     return *this;
 }
@@ -81,9 +83,10 @@ template<typename T>
 template<typename TOther>
 ObjectPtr<T>& ObjectPtr<T>::operator=(TOther* other)
 {
-    assert(other);
-    other->addref();
-    _ptr->release();
+	if (other)
+		other->addref();
+	if (_ptr)
+		_ptr->release();
     _ptr = other;
     return *this;
 }
@@ -91,7 +94,8 @@ template<typename T>
 ObjectPtr<T> ObjectPtr<T>::attach(T* ptr)
 {
     ObjectPtr<T> p(ptr);
-    ptr->release();
+	if (ptr)
+		ptr->release();
     return p;
 }
 template<typename T, typename U>
