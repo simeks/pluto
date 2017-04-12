@@ -138,13 +138,17 @@ namespace python
         PyTypeObject* type = TypeInfo<T>::info.py_type;
         if (!type)
         {
-            PyErr_Format(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
+            PYTHON_ERROR(PyExc_TypeError, "PyTypeObject not found for type '%s'.",
                 typeid(T).name());
-            return nullptr;
         }
 
-        PtrHolder<T>* h = new PtrHolder<T>(*((T**)val)); // Instance will delete this
-        return incref(make_instance(type, h).ptr());
+		T* ptr = *((T**)val);
+		if (ptr)
+		{
+			PtrHolder<T>* h = new PtrHolder<T>(ptr); // Instance will delete this
+			return incref(make_instance(type, h).ptr());
+		}
+		Py_RETURN_NONE;
     }
     
     template<typename T>
@@ -199,8 +203,13 @@ namespace python
                 typeid(T).name());
         }
 
-        UniquePtrHolder<T>* h = new UniquePtrHolder<T>(std::move(*((std::unique_ptr<T>*)val))); // Instance will delete this
-        return incref(make_instance(type, h).ptr());
+		std::unique_ptr<T>& ptr = *((std::unique_ptr<T>*)val);
+		if (ptr.get())
+		{
+			UniquePtrHolder<T>* h = new UniquePtrHolder<T>(std::move(ptr)); // Instance will delete this
+			return incref(make_instance(type, h).ptr());
+		}
+		Py_RETURN_NONE;
     }
 
 	template<typename T>
@@ -229,7 +238,11 @@ namespace python
 		}
 
 		const ObjectPtr<T>& ptr = *((ObjectPtr<T>*)val);
-		return incref(ptr->ptr());
+		if (ptr.valid())
+		{
+			return incref(ptr->ptr());
+		}
+		Py_RETURN_NONE;
 	}
 
     template<typename TClass>

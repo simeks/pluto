@@ -142,6 +142,9 @@ public:
     template<typename TOther>
     ObjectPtr<T>& operator=(TOther* other);
 
+	/// Returns true if this is a valid pointer (not a nullptr), else false
+	bool valid() const;
+
     /// Attaches the given to a new ObjectPtr without increasing the reference count of said object.
     static ObjectPtr<T> attach(T* ptr);
 

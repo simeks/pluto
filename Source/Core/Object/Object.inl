@@ -91,6 +91,12 @@ ObjectPtr<T>& ObjectPtr<T>::operator=(TOther* other)
     return *this;
 }
 template<typename T>
+bool ObjectPtr<T>::valid() const
+{
+	return _ptr != nullptr;
+}
+
+template<typename T>
 ObjectPtr<T> ObjectPtr<T>::attach(T* ptr)
 {
     ObjectPtr<T> p(ptr);
@@ -147,5 +153,7 @@ PyObject* base_object_to_python(void const* val)
 {
     static_assert(std::is_base_of<Object, T>::value, "Object needs to inherit Object");
     T* p = *((T**)val);
-    return python::incref(p->ptr());
+	if (p)
+		return python::incref(p->ptr());
+	Py_RETURN_NONE;
 }

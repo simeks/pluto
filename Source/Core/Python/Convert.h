@@ -53,6 +53,8 @@ Pointers: Behaviour of converting pointers to PyObject* depends on the type.
         Suitable if you have some factory function in C++ function returning a new object and you want the caller to take ownership 
         of the object.
 
+		Converting a nullptr (either raw or wrapped in a smartptr) should always result in None.
+
         (TODO: To implement: Shared ptr)
         (The prefered way to pass pointers between Python and C++ is to use shared pointers. Shared pointers works as expected,
         by passing a shared pointer to a PyObject the user is not required to manage the object.)
