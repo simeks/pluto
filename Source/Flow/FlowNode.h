@@ -46,6 +46,9 @@ public:
     /// Note: Pin names are case-insensitive
     bool is_pin_linked(const char* name) const;
 
+    /// Ïncreases the refcount of prop
+    void add_property(FlowProperty* prop);
+
     /// Returns the property with the given name, returns null if not found
 	/// @remark case-insensitive
     FlowProperty* property(const char* name) const;
@@ -70,7 +73,9 @@ public:
     const char* category() const;
 
     void add_pin(const char* name, int pin_type);
-    void add_pin(const char* name, FlowPin* pin);
+
+    /// Increases refcount of pin
+    void add_pin(FlowPin* pin);
     
     const std::vector<FlowProperty*>& properties() const;
 
@@ -88,9 +93,6 @@ public:
     void on_pin_unlinked(FlowPin* pin);
 
 protected:
-    /// Steals the reference to prop
-    void add_property(FlowProperty* prop);
-
     /// Adds a new array pin after the specified pin
     void add_array_pin(ArrayFlowPin* prev);
 

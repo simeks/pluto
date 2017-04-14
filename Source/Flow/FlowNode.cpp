@@ -20,12 +20,13 @@ PLUTO_OBJECT_IMPL_DOC(FlowNode, "Node",
         "Args:\n"
         "   ctx : Context\n");
     // TODO: Template args specifies which add_pin to use, ugly so probably needs rethinking
-    cls.def<FlowNode, void, const char*, int>("add_pin", &FlowNode::add_pin, "");
+    cls.def<FlowNode, void, FlowPin*>("add_pin", &FlowNode::add_pin, "");
     cls.def("node_id", &FlowNode::node_id, "");
     cls.def("is_pin_linked", &FlowNode::is_pin_linked, "");
 	cls.def("set_ui_class", &FlowNode::set_ui_class, "");
 
-	cls.def("property", &FlowNode::property, "");
+    cls.def("property", &FlowNode::property, "");
+    cls.def("add_property", &FlowNode::add_property, "");
 }
 
 FlowNode::FlowNode() :
@@ -193,9 +194,15 @@ void FlowNode::add_pin(const char* name, int pin_type)
 {
     _pins.push_back(make_object<FlowPin>(name, (FlowPin::Type)pin_type, this));
 }
+void FlowNode::add_pin(FlowPin* pin)
+{
+    pin->addref();
+    _pins.push_back(pin);
+}
 void FlowNode::add_property(FlowProperty* prop)
 {
     prop->set_owner(this);
+    prop->addref();
     _properties.push_back(prop);
 }
 const std::vector<FlowProperty*>& FlowNode::properties() const

@@ -5,12 +5,16 @@
 
 #include <regex>
 
+
 PLUTO_OBJECT_IMPL_DOC(FlowPin, "Pin", 
     "Pin(type, name=''): Creates a Pin of specified type (Pin.In or Pin.Out)\n")
 {
     cls.def_init_varargs<FlowPin>();
     cls.def("In", (int)FlowPin::In);
     cls.def("Out", (int)FlowPin::Out);
+    cls.def("pin_type", &FlowPin::pin_type, "");
+    cls.def("name", &FlowPin::name);
+    cls.def("set_name", &FlowPin::set_name);
 }
 
 namespace flow_pin
@@ -62,7 +66,7 @@ FlowPin::FlowPin(const python::Tuple& args) :
 FlowPin::~FlowPin()
 {
 }
-FlowPin::Type FlowPin::pin_type() const
+int FlowPin::pin_type() const
 {
     return _pin_type;
 }

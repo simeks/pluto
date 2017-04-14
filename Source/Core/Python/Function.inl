@@ -133,6 +133,8 @@ namespace python
                 }
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
+                if (PyErr_Occurred())
+                    PyErr_Print();
                 assert(!PyErr_Occurred());
                 Py_DECREF(args_slice);
                 

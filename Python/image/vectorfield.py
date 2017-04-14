@@ -1,5 +1,5 @@
 import numpy as np
-from flow import node, node_template, Pin
+from flow import node_template, Pin
 import image
 from .types import *
 

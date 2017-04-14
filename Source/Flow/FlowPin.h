@@ -30,7 +30,7 @@ public:
     FlowPin(const FlowPin& other);
     virtual ~FlowPin();
     
-    Type pin_type() const;
+    int pin_type() const;
 
     const char* name() const;
     void set_name(const char* name);
@@ -46,7 +46,7 @@ public:
     bool is_linked_to(FlowPin* other) const;
 
 protected:
-    Type _pin_type;
+    int _pin_type;
     std::string _name;
 
     FlowNode* _owner;

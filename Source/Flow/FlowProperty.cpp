@@ -24,6 +24,8 @@ PLUTO_OBJECT_IMPL(FlowProperty, "Property")
     cls.def_init<FlowProperty, python::Object>();
     cls.def("value", &FlowProperty::value, "Returns the current value of this property");
     cls.def("set_value", &FlowProperty::set_value, "Sets the value of this property");
+    cls.def("name", &FlowProperty::name);
+    cls.def("set_name", &FlowProperty::set_name);
 }
 
 FlowProperty::FlowProperty() :

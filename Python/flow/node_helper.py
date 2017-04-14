@@ -1,10 +1,10 @@
-import flow
+from flow import Node, Pin, Property, install_node_template
 import numpy as np
 import inspect
 import re
 
 
-class ScriptFunctionNode(flow.Node):
+class ScriptFunctionNode(Node):
     def __init__(self, **kwargs):
         """
         Arguments:
@@ -24,22 +24,32 @@ class ScriptFunctionNode(flow.Node):
         if 'func' not in kwargs:
             raise ValueError('\'func\' missing')
 
-        node_class = kwargs.get('node_class', func.__module__+'.'+func.__name__)
+        self.func = kwargs['func']
+        self.signature = inspect.signature(self.func)
+
+        node_class = kwargs.get('node_class', self.func.__module__+'.'+self.func.__name__)
         title = kwargs['title']
         category = kwargs.get('category', '')
 
         super(ScriptFunctionNode, self).__init__(node_class, title, category)
 
-        pins = kwargs.get('pins', [])
-        for pin in pins.keys():
-            self.add_pin(pin, pins[pin])
+        self.out_pins = []
 
-        properties = kwargs.get('properties', [])
-        for prop in properties.keys():
-            self.add_property(prop, properties[prop])
-        
-        self.func = kwargs['func']
-        self.signature = inspect.signature(self.func)
+        pins = kwargs.get('pins', {})
+        for pin in pins.keys():
+            # Set name according to the dict defined by the user
+            pins[pin].set_name(pin)
+            self.add_pin(pins[pin])
+            if pins[pin].pin_type() == Pin.Out:
+                self.out_pins.append(pin)
+
+        properties = kwargs.get('properties', {})
+        for key in properties.keys():
+            prop = properties[key]
+            if not isinstance(prop, Property):
+                prop = Property(prop)
+            prop.set_name(key)
+            self.add_property(prop)
 
         ui = kwargs.get('ui', {})
         if 'ui_class' in ui:
@@ -64,26 +74,46 @@ class ScriptFunctionNode(flow.Node):
         for arg in self.signature.parameters:
             if ctx.is_pin_linked(arg): # Check both if pin is exists and if linked
                 args[arg] = ctx.read_pin(arg)
-            elif self.property(arg):
-                args[arg] = self.property(arg).value()
             else:
-                if self.signature.parameters[arg].default == inspect._empty:
-                    
+                p = self.property(arg)
+                if p:
+                    args[arg] = p.value()
+                else:
+                    if self.signature.parameters[arg].default == inspect._empty:
+                        args[arg] = None
 
-            args.append(ctx.read_pin(a))
-        
-        returns = self.func(*args)
-        if returns is not None:
-            if len(self.returns) > 1:
-                if len(returns) > len(self.returns):
-                    raise ValueError('To many return arguments')
+        returns = self.func(**args)
 
-                for i in range(0, len(returns)):
-                    ctx.write_pin(self.returns[i], returns[i])
+        # For return values:
+        #   1. If function returns a dict, map each entry in dict to an output pin
+        #   2. Else if function returns a tuple, 
+        #       2.1 if we only have one pin, write tuple to pin
+        #       2.2 else map tuple to pins
+        #   3. Else if function returns a single value, write value to pin (if any)
+        #   4. Else if function returns None, write None we have an existing pin, or do nothing.
+
+        if type(returns) is dict:
+            for key in returns:
+                if ctx.is_pin_linked(key):
+                    ctx.write_pin(key, returns[key])
+        elif type(returns) is tuple:
+            if len(self.out_pins) == 1:
+                ctx.write_pin(self.out_pins[0])
+            elif len(self.out_pins) == 0:
+                print('[Warning] Node missing output pins')
             else:
-                ctx.write_pin(self.returns[0], returns)
+                for i in range(0, min(len(self.out_pins), len(returns))):
+                    ctx.write_pin(self.out_pins[i], returns[i])
+        elif returns is not None:
+            if len(self.out_pins) > 0:
+                ctx.write_pin(self.out_pins[0], returns)
+            else:
+                print('[Warning] Node missing output pins')
+        else:
+            if len(self.out_pins) > 0:
+                ctx.write_pin(self.out_pins[0], None)
 
 
 def node_template(**kwargs):
-    flow.install_node_template(ScriptFunctionNode(**kwargs))
+    install_node_template(ScriptFunctionNode(**kwargs))
     

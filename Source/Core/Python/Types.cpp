@@ -115,7 +115,7 @@ namespace
             new (val) bool(obj == Py_True);
             return;
         }
-        PyErr_SetString(PyExc_ValueError, "Expected bool");
+        PYTHON_ERROR(PyExc_ValueError, "Expected bool");
     }
 
     // void
@@ -211,7 +211,7 @@ namespace
             new (val) Dict(python::incref(obj));
             return;
         }
-        PyErr_SetString(PyExc_ValueError, "Expected dict");
+        PYTHON_ERROR(PyExc_ValueError, "Expected dict");
     }
 
 
@@ -241,7 +241,7 @@ namespace
             }
             return;
         }
-        PyErr_SetString(PyExc_ValueError, "Failed to convert value to Vec3i");
+        PYTHON_ERROR(PyExc_ValueError, "Failed to convert value to Vec3i");
     }
 
     void register_builtin_types()
