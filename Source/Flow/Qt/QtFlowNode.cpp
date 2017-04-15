@@ -220,7 +220,7 @@ void QtFlowNode::setup()
 }
 void QtFlowNode::node_updated()
 {
-    emit ((QtFlowGraphScene*)scene())->graph_changed();
+    emit ((QtFlowGraphScene*)scene())->node_property_changed(this);
 }
 void QtFlowNode::reset_run_status()
 {

@@ -144,7 +144,7 @@ void QtNodePropertyWidget::set_selected(QtFlowNode* selected)
         _property_browser->hide();
     }
 }
-void QtNodePropertyWidget::flow_node_selected(QtFlowNode* qt_node)
+void QtNodePropertyWidget::node_selected(QtFlowNode* qt_node)
 {
     if (qt_node)
     {

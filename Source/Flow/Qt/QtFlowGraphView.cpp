@@ -47,7 +47,7 @@ QtFlowGraphView::QtFlowGraphView(QWidget *parent)
     _scene = graph_scene;
     setScene(graph_scene);
 
-    connect(graph_scene, SIGNAL(graph_changed()), this, SIGNAL(graph_changed()));
+    connect(graph_scene, SIGNAL(node_property_changed()), this, SIGNAL(graph_changed()));
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -148,14 +148,14 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
                 {
                     if (!_scene->selectedItems().contains(item))
                     {
-                        emit flow_node_selected(nullptr);
+                        emit node_selected(nullptr);
 
                         _scene->clearSelection();
                         _scene->clearFocus();
 
                         node->setSelected(true);
 
-                        emit flow_node_selected((QtFlowNode*)node);
+                        emit node_selected((QtFlowNode*)node);
 
                         _mode = Mode_Move;
                         _move_start = item->pos();
@@ -171,7 +171,7 @@ void QtFlowGraphView::mousePressEvent(QMouseEvent* mouse_event)
             {
                 if (!_scene->selectedItems().contains(item))
                 {
-                    emit flow_node_selected(nullptr);
+                    emit node_selected(nullptr);
 
                     _scene->clearSelection();
                     _scene->clearFocus();
@@ -323,12 +323,12 @@ void QtFlowGraphView::mouseReleaseEvent(QMouseEvent* mouse_event)
     {
         QGraphicsView::mouseMoveEvent(mouse_event);
 
-        emit flow_node_selected(nullptr);
+        emit node_selected(nullptr);
         if (_scene->selectedItems().size() == 1)
         {
             QGraphicsItem* item = _scene->selectedItems()[0];
             if (item->type() == QtFlowNode::Type)
-                emit flow_node_selected((QtFlowNode*)item);
+                emit node_selected((QtFlowNode*)item);
         }
 
     }
@@ -664,7 +664,7 @@ void QtFlowGraphView::run_graph_started()
     _run_status = RunStatus_Running;
     _run_start_time.restart();
 
-    emit flow_node_selected(nullptr);
+    emit node_selected(nullptr);
     _scene->clearSelection();
     _scene->clearFocus();
     _mode = Mode_Nothing;

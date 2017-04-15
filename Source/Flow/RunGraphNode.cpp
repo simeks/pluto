@@ -90,37 +90,39 @@ void RunGraphNode::create_pins()
 }
 void RunGraphNode::run(FlowContext* ctx)
 {
-    if (!_graph)
-        return;
+    PYTHON_ERROR(PyExc_NotImplementedError, "");
+    ctx;
+    //if (!_graph)
+    //    return;
 
-    if (!_context)
-    {
-        _context = ctx->create_child_context(_graph);
-        for (auto p : pins())
-        {
-            if (p->pin_type() == FlowPin::In)
-            {
-                _context->set_input(p->name(), ctx->read_pin(p->name()));
-            }
-        }
-    }
+    //if (!_context)
+    //{
+    //    _context = ctx->create_child_context(_graph);
+    //    for (auto p : pins())
+    //    {
+    //        if (p->pin_type() == FlowPin::In)
+    //        {
+    //            _context->set_input(p->name(), ctx->read_pin(p->name()));
+    //        }
+    //    }
+    //}
 
-    if (!_context->run())
-    {
-        ctx->raise_error(_context->error());
-        return;
-    }
+    //if (!_context->run())
+    //{
+    //    ctx->raise_error(_context->error());
+    //    return;
+    //}
 
-    for (auto p : pins())
-    {
-        if (p->pin_type() == FlowPin::Out)
-        {
-            ctx->write_pin(p->name(), _context->output(p->name()));
-        }
-    }
+    //for (auto p : pins())
+    //{
+    //    if (p->pin_type() == FlowPin::Out)
+    //    {
+    //        ctx->write_pin(p->name(), _context->output(p->name()));
+    //    }
+    //}
 
-    _context->release();
-    _context = nullptr;
+    //_context->release();
+    //_context = nullptr;
 }
 bool RunGraphNode::valid() const
 {

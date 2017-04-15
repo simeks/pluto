@@ -4,6 +4,7 @@ from flow import node_template, Pin
 node_template(
     title='Bool',
     category='Constants',
+    node_class='constant.Bool',
     properties={
         'value': False
     },
@@ -17,6 +18,7 @@ node_template(
 node_template(
     title='Integer',
     category='Constants',
+    node_class='constant.Integer',
     properties={
         'value': 0
     },
@@ -30,6 +32,7 @@ node_template(
 node_template(
     title='Float',
     category='Constants',
+    node_class='constant.Float',
     properties={
         'value': 0.0
     },
@@ -43,6 +46,7 @@ node_template(
 node_template(
     title='String',
     category='Constants',
+    node_class='constant.String',
     properties={
         'value': ''
     },

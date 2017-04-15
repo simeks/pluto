@@ -40,7 +40,7 @@ private:
     QtAbstractPropertyBrowser* _property_browser;
     
 public slots:
-    void flow_node_selected(QtFlowNode* node);
+    void node_selected(QtFlowNode* node);
 
 private slots:
     void property_changed(QtProperty *property, const QString &val);

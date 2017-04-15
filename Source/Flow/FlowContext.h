@@ -19,21 +19,8 @@ class FLOW_API FlowContext : public Object
     PLUTO_OBJECT(FlowContext, Object);
 
 public:
-    class Callback
-    {
-    public:
-        virtual void node_started(FlowNode*) {}
-        virtual void node_finished(FlowNode*) {}
-        virtual void node_failed(FlowNode*) {}
-    };
-    
     FlowContext(FlowGraphState* state);
     ~FlowContext();
-
-    /// Returns true if the run was successful, false if not.
-    /// Run will continue from previous state if last run failed.
-    bool run(Callback* cb = nullptr);
-    void clean_up();
 
     FlowContext* create_child_context(FlowGraph* graph);
 
@@ -64,12 +51,6 @@ public:
     /// Returns the path to the temporary directory for the current node.
     ///     Creates a new directory if there is none
     std::string temp_node_dir() const;
-
-    bool failed() const;
-    const char* error() const;
-
-    void raise_error(const char* error);
-    void reset_error();
 
     template<typename T>
     void write_pin_(const char* name, const T& obj)
@@ -109,15 +90,11 @@ public:
 
 private:
     void initialize();
-    void find_dependents(FlowNode* node, std::set<FlowNode*>& dependents);
 
     FlowGraphState* _state;
     python::Dict _env_dict;
 
     QTemporaryDir* _temp_dir;
-
-    bool _failed;
-    std::string _error;
 };
 
 #endif // __FLOW_CONTEXT_H__

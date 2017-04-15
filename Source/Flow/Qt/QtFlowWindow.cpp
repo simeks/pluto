@@ -7,9 +7,14 @@
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
+#include "FlowGraphState.h"
+#include "FlowNode.h"
 #include "QtFlowWindow.h"
 #include "QtFlowGraphScene.h"
 #include "QtFlowGraphView.h"
+#include "QtFlowLink.h"
+#include "QtFlowNode.h"
+#include "QtFlowPin.h"
 #include "QtFlowUndoStack.h"
 #include "QtNodePropertyWidget.h"
 #include "QtNoteItem.h"
@@ -27,96 +32,25 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 
-namespace
-{
-    class QtFlowGraphRunnerCallback : public FlowContext::Callback
-    {
-    public:
-        QtFlowGraphRunnerCallback(QtFlowGraphRunner* r) : _runner(r) {}
 
-        virtual void node_started(FlowNode* node)
-        {
-            emit _runner->node_started(node);
-        }
-        virtual void node_finished(FlowNode* node)
-        {
-            emit _runner->node_finished(node);
-        }
-        virtual void node_failed(FlowNode* node)
-        {
-            emit _runner->node_failed(node);
-        }
-
-    private:
-        QtFlowGraphRunner* _runner;
-    };
-}
-
-QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window), _context(nullptr)
+QtFlowGraphRunner::QtFlowGraphRunner(QtFlowWindow* window) : _window(window), _state(nullptr)
 {
     qRegisterMetaType<FlowGraph*>("FlowGraph*");
     this->moveToThread(PlutoCore::instance().kernel_thread());
 }
 QtFlowGraphRunner::~QtFlowGraphRunner()
 {
-    if (_context)
-        _context->release();
-}
-Dict QtFlowGraphRunner::run(FlowGraph* , const Tuple& , const Dict& kw)
-{
-    emit run_started();
-
-    PYTHON_STDOUT("Running graph...\n");
-
-    if (!_context)
-    {
-        //_context = make_object<FlowContext>(graph);
-
-        if (kw.valid())
-        {
-            for (auto& it : _context->inputs())
-            {
-                _context->set_input(it.first.c_str(), kw.get(it.first.c_str()));
-            }
-        }
-    }
-
-    QtFlowGraphRunnerCallback cb(this);
-    if (!_context->run(&cb))
-    {
-        emit run_failed(_context->error());
-        return Dict();
-    }
-
-    Dict ret;
-    for (auto& it : _context->outputs())
-    {
-        python::Object obj = _context->output(it.first.c_str());
-        if (!obj.is_none())
-        {
-            ret.set(it.first.c_str(), obj);
-        }
-        else
-        {
-            ret.set(it.first.c_str(), python::None());
-        }
-    }
-
-    // If the run was sucessful we destroy the context, 
-    // If not we save the state for future re-runs
-    _context->release();
-    _context = nullptr;
-
-    emit run_ended();
-    return ret;
-
+    if (_state)
+        delete _state;
 }
 bool QtFlowGraphRunner::failed() const
 {
-    return _context != nullptr;
+    return _state != nullptr;
 }
-void QtFlowGraphRunner::run(FlowGraph* )
+void QtFlowGraphRunner::run()
 {
+    assert(_state);
+
     emit run_started();
 
     PlutoKernelProxy* kernel = PlutoCore::instance().kernel_proxy();
@@ -124,32 +58,93 @@ void QtFlowGraphRunner::run(FlowGraph* )
 
     PYTHON_STDOUT("Running graph...\n");
 
-    //if (!_context)
-    //    _context = make_object<FlowContext>(graph);
-    
-    QtFlowGraphRunnerCallback cb(this);
-    if (_context->run(&cb))
+    bool failed = false;
+    std::string error;
     {
-        // If the run was sucessful we destroy the context, 
-        // If not we save the state for future re-runs
-        _context->release();
-        _context = nullptr;
+        ObjectPtr<FlowContext> context = make_object_ptr<FlowContext>(_state);
+    
+        _state->build_execution_list();
+        for (auto current_node : _state->execution_list)
+        {
+            _state->current_node = current_node;
+           
+            std::cout << "Running " << current_node->category() << "/" << current_node->title() << std::endl;
+
+            emit node_started(current_node);
+            try
+            {
+                current_node->run(context.ptr());
+            }
+            catch (const python::ErrorSet&)
+            {
+                failed = true;
+
+                PyObject *type, *value, *traceback;
+                PyErr_Fetch(&type, &value, &traceback);
+
+                if (type && value)
+                {
+                    std::stringstream ss;
+                    ss << ((PyTypeObject*)type)->tp_name << ": " << PyUnicode_AsUTF8(PyObject_Str(value));
+                    error = ss.str();
+                }
+                else
+                {
+                    error = "Unknown error";
+                }
+
+                // Kinda ugly but it works
+                PyErr_Restore(type, value, traceback);
+                PyErr_Print();
+
+                emit node_failed(current_node);
+
+                PyErr_Print();
+
+                break;
+            }
+
+            emit node_finished(current_node);
+
+            _state->current_node = nullptr;
+        }
     }
     
     emit kernel->ready();
 
-    if (_context && _context->failed())
-        emit run_failed(_context->error());
+    if (failed)
+        emit run_failed(QString::fromStdString(error));
     else
         emit run_ended();
 }
+void QtFlowGraphRunner::setup(FlowGraph* graph)
+{
+    reset();
+
+    _state = new FlowGraphState(graph);
+}
 void QtFlowGraphRunner::reset()
 {
-    if (_context)
+    if (_state)
     {
-        _context->release();
-        _context = nullptr;
+        delete _state;
+        _state = nullptr;
     }
+}
+void QtFlowGraphRunner::node_added(QtFlowNode* node)
+{
+    if (_state)
+        _state->node_added(node->node_id());
+}
+void QtFlowGraphRunner::node_removed(QtFlowNode* node)
+{
+    if (_state)
+        _state->node_removed(node->node_id());
+}
+void QtFlowGraphRunner::node_changed(QtFlowNode* node)
+{
+    if (_state)
+        _state->node_changed(node->node_id());
 }
 
 int QtFlowWindow::s_max_num_recent_files = 5;
@@ -190,6 +185,8 @@ QtFlowWindow::QtFlowWindow(QWidget *parent) :
     connect(_graph_runner, SIGNAL(node_finished(FlowNode*)), _graph_view, SLOT(node_finished(FlowNode*)));
     connect(_graph_runner, SIGNAL(node_failed(FlowNode*)), _graph_view, SLOT(node_failed(FlowNode*)));
 
+    new_graph();
+
     crash_check();
 }
 
@@ -210,14 +207,14 @@ void QtFlowWindow::run_graph()
     if (!graph())
         return;
     
-    QMetaObject::invokeMethod(_graph_runner, "run", Q_ARG(FlowGraph*, graph()));
+    QMetaObject::invokeMethod(_graph_runner, "run");
 }
-Dict QtFlowWindow::run_graph(const Tuple& args, const Dict& kw)
-{
-    if (!graph())
-        return Dict();
-    return _graph_runner->run(graph(), args, kw);
-}
+//Dict QtFlowWindow::run_graph(const Tuple& args, const Dict& kw)
+//{
+//    if (!graph())
+//        return Dict();
+//    return _graph_runner->run(graph(), args, kw);
+//}
 void QtFlowWindow::reset_run()
 {
     _graph_runner->reset();
@@ -237,6 +234,7 @@ void QtFlowWindow::new_graph()
     set_current_file("");
     set_graph_changed(false);
 
+    _graph_runner->setup(scene->graph());
     _graph_view->reset_view();
 }
 void QtFlowWindow::load_graph(const QString& file)
@@ -261,7 +259,7 @@ void QtFlowWindow::load_graph(const QString& file)
         return;
     }
 
-    set_graph(graph);
+    emit set_graph(graph);
 
     set_current_file(file);
     add_recent_file(file);
@@ -439,6 +437,8 @@ void QtFlowWindow::_set_graph(FlowGraph* graph)
     QtFlowGraphScene* scene = _graph_view->scene();
     scene->set_graph(graph);
     _graph_view->reset_nodes();
+
+    _graph_runner->setup(graph);
 }
 void QtFlowWindow::_clear_graph()
 {
@@ -607,7 +607,7 @@ void QtFlowWindow::setup_ui()
     connect(this, SIGNAL(node_template_reloaded(FlowNode*)), _graph_view, SLOT(node_template_reloaded(FlowNode*)));
 
     _node_property_view = new QtNodePropertyWidget(this);
-    connect(_graph_view, SIGNAL(flow_node_selected(QtFlowNode*)), _node_property_view, SLOT(flow_node_selected(QtFlowNode*)));
+    connect(_graph_view, SIGNAL(node_selected(QtFlowNode*)), _node_property_view, SLOT(node_selected(QtFlowNode*)));
 
 
     QSplitter* splitter = new QSplitter(this);
@@ -773,14 +773,16 @@ void QtFlowWindow::node_create(QtFlowNode* node)
 {
     _undo_stack->push(new NodeCreateCommand(node, _graph_view->scene()));
 
-    _graph_runner->reset();
+    _graph_runner->node_added(node);
     _graph_view->run_graph_reset();
 }
 void QtFlowWindow::link_create(QtFlowLink* link)
 {
     _undo_stack->push(new LinkCreateCommand(link, _graph_view->scene()));
 
-    _graph_runner->reset();
+    // We only need to notify about the source node,
+    //  the other node is a dependent, hence, it will be marked as dirty as well.
+    _graph_runner->node_changed(link->start()->owner());
     _graph_view->run_graph_reset();
 }
 void QtFlowWindow::note_create(QtNoteItem* note)
@@ -793,8 +795,15 @@ void QtFlowWindow::selection_move(const QPointF& old_pos, const QPointF& new_pos
 }
 void QtFlowWindow::selection_destroy()
 {
+    auto items = _graph_view->scene()->selectedItems();
+    for (auto& i : items)
+    {
+        if (i->type() == QtFlowNode::Type)
+        {
+            _graph_runner->node_removed((QtFlowNode*)i);
+        }
+    }
     _undo_stack->push(new SelectionDestroyCommand(_graph_view->scene()));
 
-    _graph_runner->reset();
     _graph_view->run_graph_reset();
 }

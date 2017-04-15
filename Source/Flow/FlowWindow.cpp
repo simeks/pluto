@@ -59,20 +59,22 @@ void FlowWindow::clear()
 {
     emit _window->clear_graph();
 }
-Dict FlowWindow::run(const Tuple& args, const Dict& kw)
+Dict FlowWindow::run(const Tuple&, const Dict&)
 {
-    if (args.size() != 0)
-        PYTHON_ERROR(PyExc_ValueError, "run takes only keyword arguments");
+    PYTHON_ERROR(PyExc_NotImplementedError, "");
+    //if (args.size() != 0)
+    //    PYTHON_ERROR(PyExc_ValueError, "run takes only keyword arguments");
 
-    if (_window->run_pending())
-        _window->reset_run();
+    //if (_window->run_pending())
+    //    _window->reset_run();
 
-    return _window->run_graph(args, kw);
+    //return _window->run_graph(args, kw);
 }
 Dict FlowWindow::resume()
 {
-    if (_window->run_pending())
-        return _window->run_graph(Tuple(), Dict());
-    PYTHON_ERROR(PyExc_ValueError, "no run pending");
+    PYTHON_ERROR(PyExc_NotImplementedError, "");
+    //if (_window->run_pending())
+    //    return _window->run_graph(Tuple(), Dict());
+    //PYTHON_ERROR(PyExc_ValueError, "no run pending");
 }
 

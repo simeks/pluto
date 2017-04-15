@@ -102,7 +102,7 @@ private slots:
     void running_text_anim();
 
 signals:
-    void flow_node_selected(QtFlowNode* node);
+    void node_selected(QtFlowNode* node);
     void graph_changed();
 
     void node_create(QtFlowNode* node);

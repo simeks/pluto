@@ -9,6 +9,7 @@
 
 class FlowContext;
 class FlowGraph;
+struct FlowGraphState;
 class FlowNode;
 class QtFlowGraphView;
 class QtFlowLink;
@@ -25,20 +26,23 @@ public:
     QtFlowGraphRunner(QtFlowWindow* window);
     ~QtFlowGraphRunner();
 
-    /// Note: Assumes the caller is on the kernel thread
-    Dict run(FlowGraph* graph, const Tuple& args, const Dict& kw);
-
     bool failed() const;
 
 public slots:
-    void run(FlowGraph* graph);
+    void run();
+    
+    void setup(FlowGraph* graph);
     
     /// Resets the runner, meaning the next run will be a full run
     void reset();
 
+    void node_added(QtFlowNode* node);
+    void node_removed(QtFlowNode* node);
+    void node_changed(QtFlowNode* node);
+
 private:
     QtFlowWindow* _window;
-    FlowContext* _context;
+    FlowGraphState* _state;
 
 signals:
     void run_started();
@@ -62,7 +66,7 @@ public:
 
     void run_graph();
 
-    Dict run_graph(const Tuple& args, const Dict& kw);
+    //Dict run_graph(const Tuple& args, const Dict& kw);
   
     /// Do we have a failed run that is waiting?
     bool run_pending();

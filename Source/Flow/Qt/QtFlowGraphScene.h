@@ -66,7 +66,7 @@ private:
     std::vector<QtNoteItem*> _notes;
 
 signals:
-    void graph_changed();
+    void node_property_changed(QtFlowNode*);
 
 
 };

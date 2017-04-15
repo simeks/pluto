@@ -3,7 +3,7 @@
 
 #include "FlowContext.h"
 #include "FlowGraph.h"
-#include "FlowGraphRunner.h"
+#include "FlowGraphState.h"
 #include "FlowNode.h"
 #include "FlowPin.h"
 #include "GraphInputNode.h"
@@ -22,119 +22,12 @@ PLUTO_OBJECT_IMPL(FlowContext, "Context")
 
 FlowContext::FlowContext(FlowGraphState* state) :
     _state(state),
-    _temp_dir(new QTemporaryDir()),
-    _failed(false)
+    _temp_dir(new QTemporaryDir())
 {
 }
 FlowContext::~FlowContext()
 {
-    clean_up();
     delete _temp_dir;
-}
-bool FlowContext::run(Callback* cb)
-{
-    std::map<FlowNode*, int> incoming_edges;
-
-    // Only perform initialization if last run didn't fail
-    if (!_failed)
-    {
-        _state->nodes_to_execute.clear();
-
-        // Find all nodes without inputs
-        for (auto& n : _state->graph->nodes())
-        {
-            int edges = 0;
-            for (auto p : n.second->pins())
-            {
-                if (p->pin_type() == FlowPin::In && !p->links().empty())
-                    ++edges;
-            }
-            incoming_edges[n.second] = edges;
-            if (edges == 0)
-                _state->nodes_to_execute.push_back(n.second);
-        }
-    }
-    else
-    {
-        // Reload nodes
-        for (auto it = _state->nodes_to_execute.begin(); it != _state->nodes_to_execute.end(); ++it)
-        {
-            (*it) = _state->graph->node((*it)->node_id());
-        }
-        reset_error();
-    }
-
-    std::set<FlowNode*> next;
-    while (!_state->nodes_to_execute.empty())
-    {
-        _state->current_node = _state->nodes_to_execute.back();
-
-        std::cout << "Running " << _state->current_node->category() << "/" << _state->current_node->title() << std::endl;
-
-        if (cb)
-            cb->node_started(_state->current_node);
-
-        _state->current_node->run(this);
-
-        if (failed())
-        {
-            if (cb)
-                cb->node_failed(_state->current_node);
-
-            return false;
-        }
-        else if (PyErr_Occurred())
-        {
-            PyObject *type, *value, *traceback;
-            PyErr_Fetch(&type, &value, &traceback);
-
-            if (type && value)
-            {
-                std::stringstream ss;
-                ss << ((PyTypeObject*)type)->tp_name << ": " << PyUnicode_AsUTF8(PyObject_Str(value));
-                _error = ss.str();
-            }
-            else
-            {
-                _error = "Unknown error";
-            }
-
-            // Kinda ugly but it works
-            PyErr_Restore(type, value, traceback);
-            PyErr_Print();
-
-            if (cb)
-                cb->node_failed(_state->current_node);
-
-            _failed = true;
-            return false;
-        }
-        else
-        {
-            if (cb)
-                cb->node_finished(_state->current_node);
-        }
-        _state->nodes_to_execute.pop_back();
-
-        next.clear();
-        find_dependents(_state->current_node, next);
-        for (auto n : next)
-        {
-            for (auto p : n->pins())
-            {
-                if (p->pin_type() == FlowPin::In && !p->links().empty() && p->links()[0]->owner() == _state->current_node)
-                    --incoming_edges[n];
-            }
-            if (incoming_edges[n] == 0)
-                _state->nodes_to_execute.push_back(n);
-        }
-        _state->current_node = nullptr;
-    }
-    return true;
-}
-void FlowContext::clean_up()
-{
-    _env_dict.clear();
 }
 FlowContext* FlowContext::create_child_context(FlowGraph*)
 {/*
@@ -275,54 +168,11 @@ std::string FlowContext::temp_node_dir() const
     dir = QDir::cleanPath(dir.path() + QDir::separator() + node_id);
     return dir.path().toStdString();
 }
-bool FlowContext::failed() const
-{
-    return _failed;
-}
-const char* FlowContext::error() const
-{
-    return _error.c_str();
-}
-void FlowContext::raise_error(const char* error)
-{
-    _failed = true;
-    _error = error;
-}
-void FlowContext::reset_error()
-{
-    _failed = false;
-    _error = "";
-}
 void FlowContext::initialize()
 {
     if (!_state->graph)
         return;
 
     set_attribute("env", _env_dict);
-
-    for (auto& n : _state->graph->nodes())
-    {
-        if (n.second->is_a(GraphInputNode::static_class()))
-        {
-            _state->inputs[n.second->attribute<const char*>("name")] = python::None();
-        }
-        else if (n.second->is_a(GraphOutputNode::static_class()))
-        {
-            _state->outputs[n.second->attribute<const char*>("name")] = python::None();
-        }
-    }
-
 }
-void FlowContext::find_dependents(FlowNode* node, std::set<FlowNode*>& dependents)
-{
-    for (auto p : node->pins())
-    {
-        if (p->pin_type() == FlowPin::Out)
-        {
-            for (auto& p2 : p->links())
-            {
-                dependents.emplace(p2->owner());
-            }
-        }
-    }
-}
+
