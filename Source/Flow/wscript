@@ -25,6 +25,7 @@ def build(bld):
 			'Qt/QtGraphFileLoader.h', 
 			'Qt/QtNodePropertyWidget.h',
 			'Qt/QtNoteItem.h',
+			'Qt/Nodes/QtPrintNode.h',
 			'Qt/Nodes/QtTextViewNode.h'
 			],
 		includes='. .. ../../External/qtextra/src/qtpropertybrowser',

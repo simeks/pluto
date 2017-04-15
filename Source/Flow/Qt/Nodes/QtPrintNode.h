@@ -5,6 +5,8 @@
 
 class QtPrintNode : public QtSinglePinNode
 {
+    Q_OBJECT
+
 public:
     QtPrintNode(FlowNode* node, QGraphicsObject* parent = nullptr);
     virtual ~QtPrintNode();
