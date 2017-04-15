@@ -32,6 +32,8 @@ namespace python
 
 		ConvertValue<T> val;
         conv(obj, val.ptr());
+        if (PyErr_Occurred())
+            throw ErrorSet();
         return *val.ptr();
     }
 
@@ -50,7 +52,10 @@ namespace python
             PYTHON_ERROR(PyExc_TypeError, "to_python: No converter found for type %s",
                 TypeInfo<T>::info.cpp_type.name());
         }
-        return conv(&value);
+        PyObject* obj = conv(&value);
+        if (PyErr_Occurred())
+            throw ErrorSet();
+        return obj;
     }
 
 

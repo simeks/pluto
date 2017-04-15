@@ -13,14 +13,14 @@
 QtGraphOutputNode::QtGraphOutputNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
 }
 QtGraphOutputNode::~QtGraphOutputNode()
 {
 }
 void QtGraphOutputNode::node_updated()
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
 
     QtSinglePinNode::node_updated();
 }

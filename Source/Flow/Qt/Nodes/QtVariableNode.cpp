@@ -13,13 +13,13 @@
 QtVariableNode::QtVariableNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
 }
 QtVariableNode::~QtVariableNode()
 {
 }
 void QtVariableNode::node_updated()
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
     QtSinglePinNode::node_updated();
 }

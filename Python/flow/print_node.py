@@ -1,20 +1,16 @@
-from flow import node_template, Pin
+from flow import Node, Pin, install_node_template
 
+class PrintNode(Node):
+    def __init__(self):
+        super(PrintNode, self).__init__('print_node.PrintNode', 'Print', 'Flow')
 
+        self.add_pin(Pin(Pin.In, 'In'))
+        self.set_ui_class('print_node')
 
-# node_template(
-#     title='Print',
-#     category='Flow',
-#     ui={
-#         ui_class = 'print_node'
-#     },
-#     pins={
-#         'In': Pin(Pin.In)
-#     },
-#     func=Print
-# )
-# def Print(In):
-#     self.value = str(ctx.read_pin('In'))
-#     print(self.value)
+        self.text = ''
 
+    def run(self, ctx):
+        self.text = str(ctx.read_pin('In'))
+        print(self.text)
 
+install_node_template(PrintNode())

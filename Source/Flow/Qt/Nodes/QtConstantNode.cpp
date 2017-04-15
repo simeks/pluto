@@ -10,19 +10,18 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
-using namespace python;
 
 QtConstantNode::QtConstantNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
     if (_node->has_attribute("ui_constant_var"))
     {
-        const char* var = from_python<const char*>(_node->attribute("ui_constant_var"));
-        _text = from_python<const char*>(_node->attribute(var));
+        const char* var = _node->property_value<const char*>("ui_constant_var");
+        _text = _node->attribute<const char*>(var);
     }
     else if (_node->has_attribute("value"))
     {
-        python::Object value = _node->attribute("value");
+        python::Object value = _node->property_value("value");
         _text = python::from_python<const char*>(PyObject_Str(value.ptr()));
     }
     
@@ -39,12 +38,12 @@ void QtConstantNode::node_updated()
 {
     if (_node->has_attribute("ui_constant_var"))
     {
-        const char* var = from_python<const char*>(_node->attribute("ui_constant_var"));
-        _text = from_python<const char*>(_node->attribute(var));
+        const char* var = _node->property_value<const char*>("ui_constant_var");
+        _text = _node->attribute<const char*>(var);
     }
     else if (_node->has_attribute("value"))
     {
-        python::Object value = _node->attribute("value");
+        python::Object value = _node->property_value("value");
         _text = python::from_python<const char*>(PyObject_Str(value.ptr()));
     }
 

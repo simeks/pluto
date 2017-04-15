@@ -13,14 +13,14 @@
 QtGraphInputNode::QtGraphInputNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
 }
 QtGraphInputNode::~QtGraphInputNode()
 {
 }
 void QtGraphInputNode::node_updated()
 {
-    _text = _node->attribute<const char*>("name");
+    _text = _node->property_value<const char*>("name");
     QtSinglePinNode::node_updated();
 }
 void QtGraphInputNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)

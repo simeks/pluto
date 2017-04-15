@@ -40,11 +40,22 @@ FlowNode::FlowNode(
     const char* category) :
     _node_class(node_class),
     _title(title),
-    _category(category)
+    _category(category),
+    _function(nullptr),
+    _owner_graph(nullptr)
 {
 
 }
-FlowNode::FlowNode(const FlowNode& other) : Object(other)
+FlowNode::FlowNode(const FlowNode& other) : 
+    Object(other),
+    _node_class(other._node_class),
+    _title(other._title),
+    _category(other._category),
+    _owner_graph(other._owner_graph),
+    _node_id(other._node_id),
+    _function(other._function),
+    _ui_class(other._ui_class),
+    _ui_pos(other._ui_pos)
 {
     for (auto& pin : other._pins)
     {
@@ -58,9 +69,6 @@ FlowNode::FlowNode(const FlowNode& other) : Object(other)
         p->set_owner(this);
         _properties.push_back(p);
     }
-    _owner_graph = other._owner_graph;
-    _node_id = other._node_id;
-    _function = other._function;
 }
 FlowNode::~FlowNode()
 {
