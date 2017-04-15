@@ -98,7 +98,7 @@ class ScriptFunctionNode(Node):
                     ctx.write_pin(key, returns[key])
         elif type(returns) is tuple:
             if len(self.out_pins) == 1:
-                ctx.write_pin(self.out_pins[0])
+                ctx.write_pin(self.out_pins[0], returns)
             elif len(self.out_pins) == 0:
                 print('[Warning] Node missing output pins')
             else:

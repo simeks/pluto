@@ -163,7 +163,17 @@ std::vector<ArrayFlowPin*> FlowNode::pin_array(const char* name) const
 bool FlowNode::is_pin_linked(const char* name) const
 {
     FlowPin* p = pin(name);
-    return p && p->links().size() != 0;
+    if (p)
+    {
+        return p->links().size() != 0;
+    }
+    else
+    {
+        // If no single pin was found, try for pin array
+
+        std::vector<ArrayFlowPin*> pinarr = pin_array(name);
+        return pinarr.size() > 1;
+    }
 }
 FlowProperty* FlowNode::property(const char* name) const
 {

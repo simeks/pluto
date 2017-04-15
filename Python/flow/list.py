@@ -29,7 +29,7 @@ node_template(
     },
     doc='Combines all input items to a list',
     node_class = 'flow.list.BuildNode',
-    func=lambda items : items # Items should already be a list by now
+    func=lambda item : item # Items should already be a list by now
 )
 
 node_template(

@@ -134,6 +134,7 @@ bool FlowPin::is_linked_to(FlowPin* other) const
 PLUTO_OBJECT_IMPL(ArrayFlowPin, "ArrayPin")
 {
     cls.def_init_varargs<ArrayFlowPin>();
+    cls.def("set_name", &ArrayFlowPin::set_name);
 }
 
 ArrayFlowPin::ArrayFlowPin(const std::string& base_name,
@@ -184,6 +185,8 @@ ArrayFlowPin::ArrayFlowPin(const ArrayFlowPin& other) : FlowPin(other)
     _index = other._index;
     _prev = nullptr;
     _next = nullptr;
+
+    set_index(_index);
 }
 ArrayFlowPin::~ArrayFlowPin()
 {
@@ -191,6 +194,10 @@ ArrayFlowPin::~ArrayFlowPin()
 const char* ArrayFlowPin::base_name() const
 {
     return _base_name.c_str();
+}
+void ArrayFlowPin::set_name(const char* name)
+{
+    _base_name = name;
 }
 int ArrayFlowPin::index() const
 {

@@ -73,8 +73,8 @@ public:
     ArrayFlowPin(const ArrayFlowPin& other);
     virtual ~ArrayFlowPin();
 
-
     const char* base_name() const;
+    void set_name(const char* name);
 
     int index() const;
     void set_index(int index);
