@@ -189,7 +189,6 @@ void FlowGraph::reload_nodes(const char* node_class)
                 FlowPin* new_pin = new_node->pin(old_pin->name());
 
                 const std::vector<FlowPin*>& links = old_pin->links();
-                old_pin->break_all_links();
 
                 if (new_pin)
                 {
@@ -199,6 +198,7 @@ void FlowGraph::reload_nodes(const char* node_class)
                         new_node->on_pin_linked(new_pin);
                     }
                 }
+                old_pin->break_all_links();
             }
             old->release();
         }
