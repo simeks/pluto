@@ -270,21 +270,22 @@ FlowGraph* flow_graph::load(const JsonObject& root)
         {
             for (auto& p : properties)
             {
+                FlowProperty* prop = out_node->property(p.first.c_str());
                 if (p.second.is_string())
                 {
-                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_string()));
+                    prop->set_value(python::to_python(p.second.as_string()));
                 }
                 else if (p.second.is_int())
                 {
-                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_int()));
+                    prop->set_value(python::to_python(p.second.as_int()));
                 }
                 else if (p.second.is_float())
                 {
-                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_double()));
+                    prop->set_value(python::to_python(p.second.as_double()));
                 }
                 else if (p.second.is_bool())
                 {
-                    //out_node->set_property(p.first.c_str(), python::to_python(p.second.as_bool()));
+                    prop->set_value(python::to_python(p.second.as_bool()));
                 }
 
             }
@@ -404,38 +405,37 @@ void flow_graph::save(FlowGraph* graph, JsonObject& root)
 
         JsonObject& properties = node["properties"];
         properties.set_empty_object();
-        //for (auto p : n.second->properties())
-        //{
-        //    switch (p->type)
-        //    {
-
-        //    }
-
-            /*if (p->is_a(FileProperty::static_class()))
+        for (auto p : n.second->properties())
+        {
+            if (p->is_a(FileProperty::static_class()))
             {
-                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-            }*/
-            //else if (p->is_a(BoolProperty::static_class()))
-            //{
-            //    properties[p->name()].set_bool(n.second->attribute<bool>(p->name()));
-            //}
-            //else if (p->is_a(IntProperty::static_class()))
-            //{
-            //    properties[p->name()].set_int(n.second->attribute<int>(p->name()));
-            //}
-            //else if (p->is_a(FloatProperty::static_class()))
-            //{
-            //    properties[p->name()].set_double(n.second->attribute<double>(p->name()));
-            //}
-            /*else if (p->is_a(EnumProperty::static_class()))
+                properties[p->name()].set_string(n.second->property_value<const char*>(p->name()));
+            }
+            else if (p->is_a(EnumProperty::static_class()))
             {
-                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
+                properties[p->name()].set_string(n.second->property_value<const char*>(p->name()));
             }
             else
             {
-                properties[p->name()].set_string(n.second->attribute<std::string>(p->name()));
-            }*/
-        //}
+                python::Object val = n.second->property_value(p->name());
+                if (val.is_instance(&PyLong_Type))
+                {
+                    properties[p->name()].set_int(python::from_python<int>(val));
+                }
+                else if (val.is_instance(&PyFloat_Type))
+                {
+                    properties[p->name()].set_double(python::from_python<double>(val));
+                }
+                else if (val.is_instance(&PyBool_Type))
+                {
+                    properties[p->name()].set_bool(python::from_python<bool>(val));
+                }
+                else
+                {
+                    properties[p->name()].set_string(python::from_python<const char*>(val));
+                }
+            }
+        }
 
         for (auto outpin : n.second->pins())
         {
@@ -495,10 +495,12 @@ FlowNode* flow_graph::reload_node(FlowNode* tpl, FlowNode* old)
     n->set_node_id(old->node_id());
     n->set_graph(old->graph());
     n->set_ui_pos(old->ui_pos());
-    /*for (auto p : old->properties())
+    for (auto p : old->properties())
     {
-        n->set_attribute(p->name(), old->attribute(p->name()));
-    }*/
+        auto p2 = n->property(p->name());
+        if (p2)
+            p2->set_value(p->value());
+    }
 
     return n;
 }
