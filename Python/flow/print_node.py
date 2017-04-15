@@ -10,7 +10,7 @@ class PrintNode(Node):
         self.text = ''
 
     def run(self, ctx):
-        self.text = str(ctx.read_pin('In'))
+        self.invoke_ui_method('print_text', str(ctx.read_pin('In')))
         print(self.text)
 
 install_node_template(PrintNode())

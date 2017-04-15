@@ -85,6 +85,9 @@ public:
     const char* ui_class() const;
     void set_ui_class(const char* cls);
 
+    void set_ui_node(QtFlowNode* node);
+    void invoke_ui_method(const python::Tuple& args);
+
     FlowNode(const FlowNode&);
 
     /// Called whenever the given pin receives a new link
@@ -113,6 +116,8 @@ protected:
 
     std::string _ui_class;
     Vec2i _ui_pos;
+
+    QtFlowNode* _ui_node;
 };
 
 

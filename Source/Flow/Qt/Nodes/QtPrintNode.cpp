@@ -13,14 +13,12 @@
 QtPrintNode::QtPrintNode(FlowNode* node, QGraphicsObject* parent) :
     QtSinglePinNode(node, parent)
 {
-    _text = _node->attribute<const char*>("text");
 }
 QtPrintNode::~QtPrintNode()
 {
 }
 void QtPrintNode::node_finished()
 {
-    _text = _node->attribute<const char*>("text");
     if (_text.length() > 50)
     {
         _text = _text.right(50);
@@ -35,4 +33,9 @@ void QtPrintNode::reset_run_status()
 {
     _text = "";
 }
+void QtPrintNode::print_text(const QString& text)
+{
+    _text = text;
+}
+
 

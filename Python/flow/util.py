@@ -2,6 +2,10 @@ from flow import Node, Pin, FileProperty, node_template
 
 import numpy as np
 
+def eval_wrapper(code):
+    if code != '':
+        return eval(code)
+
 node_template(
     title='Eval',
     category='Utilities',
@@ -15,8 +19,11 @@ node_template(
         'code': ''
     },
     node_class = 'flow.util.Eval',
-    func=eval
+    func=eval_wrapper
 )
+
+def file_browse(file):
+    return file
 
 node_template(
     title='FileBrowse',
@@ -31,8 +38,6 @@ node_template(
         'file': FileProperty('')
     },
     node_class = 'flow.util.FileBrowse',
-    func=eval
+    func=file_browse
 )
-def file_browse(file):
-    return file
 

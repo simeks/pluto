@@ -1,4 +1,5 @@
 #include <Core/Common.h>
+#include <Core/Image/Image.h>
 #include <Core/Python/Sequence.h>
 
 #include "FlowContext.h"
@@ -6,6 +7,8 @@
 #include "FlowNode.h"
 #include "FlowPin.h"
 #include "FlowProperty.h"
+
+#include "Qt/QtFlowNode.h"
 
 PLUTO_OBJECT_IMPL_DOC(FlowNode, "Node", 
     "FlowNode\n"
@@ -27,11 +30,14 @@ PLUTO_OBJECT_IMPL_DOC(FlowNode, "Node",
 
     cls.def("property", &FlowNode::property, "");
     cls.def("add_property", &FlowNode::add_property, "");
+
+    cls.def_varargs("invoke_ui_method", &FlowNode::invoke_ui_method, "");
 }
 
 FlowNode::FlowNode() :
     _owner_graph(nullptr),
-    _function(nullptr)
+    _function(nullptr),
+    _ui_node(nullptr)
 {
 }
 FlowNode::FlowNode(
@@ -42,7 +48,8 @@ FlowNode::FlowNode(
     _title(title),
     _category(category),
     _function(nullptr),
-    _owner_graph(nullptr)
+    _owner_graph(nullptr),
+    _ui_node(nullptr)
 {
 
 }
@@ -55,7 +62,8 @@ FlowNode::FlowNode(const FlowNode& other) :
     _node_id(other._node_id),
     _function(other._function),
     _ui_class(other._ui_class),
-    _ui_pos(other._ui_pos)
+    _ui_pos(other._ui_pos),
+    _ui_node(other._ui_node)
 {
     for (auto& pin : other._pins)
     {
@@ -254,6 +262,95 @@ const char* FlowNode::ui_class() const
 void FlowNode::set_ui_class(const char* cls)
 {
     _ui_class = cls;
+}
+void FlowNode::set_ui_node(QtFlowNode* node)
+{
+    _ui_node = node;
+}
+namespace
+{
+    struct ArgVariableBase
+    {
+        virtual ~ArgVariableBase() {}
+    };
+
+    template<typename T>
+    struct ArgVariable : public ArgVariableBase
+    {
+        ArgVariable(const T& obj) : p(obj)
+        {
+        }
+        ~ArgVariable()
+        {
+        }
+        T p;
+    };
+}
+void FlowNode::invoke_ui_method(const python::Tuple& args)
+{
+    if (!_ui_node)
+        PYTHON_ERROR(PyExc_RuntimeError, "FlowNode: No UI object\n");
+
+    if (args.size() < 1)
+        PYTHON_ERROR(PyExc_ValueError, "Expected at least one argument");
+
+    const char* meth_name = args.get<const char*>(0);
+
+
+    QGenericArgument qargs[9];
+
+    /*
+    QGenericArgument stores a pointer to the variable that it represents, this of course
+    causes a problem with the solution below as all variables are bound to a local scope.
+
+    ArgVariable is an ugly way to solve this, ArgVariable<T> is allocated on the heap
+    with the objective to temporary store and then destroy the object after the invokeMethod has
+    been called, in this case when qargs_data is destroyed.
+    */
+
+    std::vector<std::auto_ptr<ArgVariableBase>> qargs_data;
+
+    assert(args.size() <= 10);
+
+    int i = 0;
+    for (; i < args.size() - 1; ++i)
+    {
+        // TODO: Is there any better way to do this?
+
+        python::Object obj = args.get(i + 1);
+        if (PyUnicode_Check(obj.ptr()))
+        {
+            auto data = new ArgVariable<QString>(python::from_python<QString>(obj));
+            qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
+            qargs[i] = Q_ARG(QString, data->p);
+        }
+        else if (PyLong_Check(obj.ptr()))
+        {
+            auto data = new ArgVariable<int>(python::from_python<int>(obj));
+            qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
+            qargs[i] = Q_ARG(int, data->p);
+        }
+        else if (PyFloat_Check(obj.ptr()))
+        {
+            auto data = new ArgVariable<float>(python::from_python<float>(obj));
+            qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
+            qargs[i] = Q_ARG(float, data->p);
+        }
+        else if (numpy::check_type(obj.ptr()))
+        {
+            auto data = new ArgVariable<Image>(python::from_python<Image>(obj));
+            qargs_data.push_back(std::auto_ptr<ArgVariableBase>(data));
+            qargs[i] = Q_ARG(Image, data->p);
+        }
+    }
+    if (i <= 9)
+        qargs[i] = (QGenericArgument)nullptr;
+
+    QMetaObject::invokeMethod(_ui_node, meth_name, Qt::BlockingQueuedConnection,
+        qargs[0], qargs[1], qargs[2],
+        qargs[3], qargs[4], qargs[5],
+        qargs[6], qargs[7], qargs[8]);
+
 }
 void FlowNode::on_pin_linked(FlowPin* pin)
 {

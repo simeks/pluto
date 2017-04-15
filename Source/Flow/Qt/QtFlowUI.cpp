@@ -58,6 +58,7 @@ QtFlowNode* QtFlowUI::create_ui_node(FlowNode* node)
 
     QtFlowNode* n = it->second->create(node);
     n->setup();
+    node->set_ui_node(n);
     return n;
 }
 

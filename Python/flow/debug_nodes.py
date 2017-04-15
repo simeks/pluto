@@ -1,8 +1,8 @@
 from flow import Pin, node_template
-import time
+from time import sleep
 
 def Sleep(In, time):
-    time.sleep(int(time))
+    sleep(int(time))
     return In
 
 def Fail(In, error):

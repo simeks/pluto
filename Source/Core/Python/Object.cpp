@@ -21,7 +21,11 @@ namespace python
     Object Object::operator()(const Tuple& args) const
     {
         PyObject* ret = PyObject_Call(ptr(), args.ptr(), nullptr);
-        assert(ret);
+        if (!ret)
+        {
+            PyErr_Print();
+            return None();
+        }
         return Object(ret);
     }
     Object Object::operator()(const Tuple& args, const Dict& kw) const
@@ -29,7 +33,6 @@ namespace python
         PyObject* ret = PyObject_Call(ptr(), args.ptr(), kw.ptr());
         assert(ret);
         return Object(ret);
-
     }
 
     Object None() { return Object(); }

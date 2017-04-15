@@ -52,7 +52,7 @@ namespace python
         template<typename TTuple>
         std::tuple<Tuple> VarargsArgumentPolicy::unpack_args(PyObject* args, PyObject*)
         {
-            return{ Tuple(args) };
+            return{ Tuple(Borrowed(args)) };
         }
 
         template<typename TSelf, typename TTuple>
@@ -67,7 +67,7 @@ namespace python
         template<typename TTuple, typename TDict>
         static std::tuple<Tuple, Dict> VarargsKeywordsArgumentPolicy::unpack_args(PyObject* args, PyObject* kw)
         {
-            return{ Tuple(args), Dict(kw) };
+            return{ Tuple(Borrowed(args)), Dict(Borrowed(kw)) };
         }
 
         template<typename TSelf, typename TTuple, typename TDict>
@@ -76,7 +76,7 @@ namespace python
             // Assume we have a function(Type* self, Tuple tuple)
             TSelf self = from_python<TSelf>(PyTuple_GetItem(args, 0));
             PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
-            return{ self, Tuple(args_slice), Dict(kw) };
+            return{ self, Tuple(args_slice), Dict(Borrowed(kw)) };
         }
 
         template<typename TArgPolicy, typename TReturn, typename ... TArgs>
@@ -119,7 +119,7 @@ namespace python
             /// in this case our _self is located in the first argument in args.
             if (!_self)
             {
-                assert(sizeof...(TArgs) == PyTuple_Size(args) - 1); // Self should be first in args
+                //assert(sizeof...(TArgs) == PyTuple_Size(args) - 1); // Self should be first in args
                 if (PyTuple_Size(args) < 1)
                 {
                     PYTHON_ERROR(PyExc_TypeError, "Expected at least 1 argument");
@@ -127,10 +127,11 @@ namespace python
                 TClass* self = from_python<TClass*>(PyTuple_GetItem(args, 0));
                 PyObject* args_slice = PyTuple_GetSlice(args, 1, PyTuple_Size(args)); // Strip away self from args (args[1:])
 
-                if (PyTuple_Check(args) && PyTuple_Size(args_slice) != sizeof...(TArgs))
-                {
-                    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args_slice));
-                }
+                // TODO:
+                //if (PyTuple_Check(args) && PyTuple_Size(args_slice) != sizeof...(TArgs))
+                //{
+                //    PYTHON_ERROR(PyExc_TypeError, "function takes %d positional argument but %d were given", sizeof...(TArgs), PyTuple_Size(args_slice));
+                //}
 
                 auto t = TArgPolicy::unpack_args<TArgs...>(args_slice, kw);
                 if (PyErr_Occurred())
