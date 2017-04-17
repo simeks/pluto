@@ -104,6 +104,7 @@ void QtFlowGraphRunner::run()
                 break;
             }
 
+            _state->node_completed(current_node->node_id());
             emit node_finished(current_node);
 
             _state->current_node = nullptr;
@@ -218,6 +219,8 @@ void QtFlowWindow::run_graph()
 void QtFlowWindow::reset_run()
 {
     _graph_runner->reset();
+    _graph_runner->setup(_graph_view->scene()->graph());
+
     _graph_view->reset_nodes();
 }
 bool QtFlowWindow::run_pending()
@@ -755,7 +758,10 @@ void QtFlowWindow::on_full_run()
 {
     perform_backup();
     _graph_view->run_graph_reset();
+
     _graph_runner->reset();
+    _graph_runner->setup(_graph_view->scene()->graph());
+
     run_graph();
 }
 void QtFlowWindow::about()
